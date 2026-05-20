@@ -1,0 +1,57 @@
+import {
+  AlertTriangle,
+  BookOpen,
+  CalendarDays,
+  ClipboardCheck,
+  ClipboardList,
+  Clock3,
+  Cpu,
+  FileText,
+  GraduationCap,
+  Home,
+  LayoutDashboard,
+  Monitor,
+  Presentation,
+  UserRound,
+  Users,
+  Wrench,
+} from "lucide-react";
+
+export const roleMenus = {
+  admin: [
+    { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
+    {
+      to: "/admin/users",
+      label: "Người dùng",
+      icon: Users,
+      children: [
+        { to: "/admin/users/students", label: "Sinh viên", icon: UserRound },
+        { to: "/admin/users/teachers", label: "Giảng viên", icon: Presentation },
+      ],
+    },
+    { to: "/admin/classes", label: "Lớp học", icon: GraduationCap },
+    { to: "/admin/shifts", label: "Ca học", icon: Clock3 },
+    { to: "/admin/subjects", label: "Môn học", icon: BookOpen },
+    { to: "/admin/rooms", label: "Phòng máy", icon: Monitor },
+    { to: "/admin/computers", label: "Máy tính & cấu hình", icon: Cpu },
+    { to: "/admin/maintenance", label: "Bảo trì", icon: Wrench },
+    { to: "/admin/schedules", label: "Lịch phòng máy", icon: CalendarDays },
+    { to: "/admin/loan-requests", label: "Phiếu mượn", icon: FileText },
+    { to: "/admin/room-bookings", label: "Đăng ký phòng", icon: ClipboardList },
+  ],
+  teacher: [
+    { to: "/teacher", label: "Dashboard", icon: Home },
+    { to: "/teacher/schedules", label: "Lịch giảng dạy", icon: CalendarDays },
+    { to: "/teacher/attendance", label: "Tạo điểm danh", icon: ClipboardCheck },
+    { to: "/teacher/incidents", label: "Báo sự cố", icon: AlertTriangle },
+    { to: "/teacher/bookings", label: "Đăng ký phòng", icon: ClipboardList },
+  ],
+  student: [
+    { to: "/student", label: "Dashboard", icon: Home },
+    { to: "/student/schedules", label: "Lịch học", icon: CalendarDays },
+    { to: "/student/computers", label: "Tra cứu máy", icon: Monitor },
+    { to: "/student/incidents", label: "Báo hỏng", icon: AlertTriangle },
+    { to: "/student/attendance", label: "Điểm danh", icon: ClipboardCheck },
+    { to: "/student/loan-requests", label: "Phiếu mượn", icon: FileText },
+  ],
+};

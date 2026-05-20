@@ -1,0 +1,90 @@
+<?php
+
+namespace App\Http\Controllers\admin;
+
+use App\Http\Controllers\Controller;
+use App\Http\Resources\AdminClassStudentResource;
+use App\Models\SchoolClass;
+use App\Models\Student;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Throwable;
+
+class ClassStudentController extends Controller
+{
+    public function index(Request $request, SchoolClass $class)
+    {
+        try {
+            $request->validate([
+                'keyword' => 'nullable|string|max:255',
+                'per_page' => 'nullable|integer|min:1|max:100',
+            ]);
+
+            $keyword = trim((string) $request->input('keyword', ''));
+            $perPage = (int) $request->input('per_page', 15);
+
+            // Load sinh viên theo lớp kèm user để tránh N+1 khi render danh sách.
+            $students = Student::query()
+                ->select([
+                    'id',
+                    'user_id',
+                    'class_id',
+                    'student_code',
+                    'role',
+                    'course_year',
+                ])
+                ->with([
+                    'user:id,full_name,email,status',
+                ])
+                ->where('class_id', $class->id)
+                ->when($keyword !== '', function ($query) use ($keyword) {
+                    $query->where(function ($subQuery) use ($keyword) {
+                        $subQuery
+                            ->where('student_code', 'like', "%{$keyword}%")
+                            ->orWhereHas('user', function ($userQuery) use ($keyword) {
+                                $userQuery
+                                    ->where('full_name', 'like', "%{$keyword}%")
+                                    ->orWhere('email', 'like', "%{$keyword}%");
+                            });
+                    });
+                })
+                ->orderBy('student_code')
+                ->paginate($perPage);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Lấy danh sách sinh viên theo lớp thành công',
+                'error_code' => 200,
+                'data' => [
+                    'class' => [
+                        'id' => $class->id,
+                        'class_code' => $class->class_code,
+                        'class_name' => $class->class_name,
+                        'course_year' => $class->course_year,
+                    ],
+                    'students' => AdminClassStudentResource::collection($students),
+                    'pagination' => [
+                        'current_page' => $students->currentPage(),
+                        'per_page' => $students->perPage(),
+                        'total' => $students->total(),
+                        'last_page' => $students->lastPage(),
+                    ],
+                ],
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Dữ liệu lọc sinh viên không hợp lệ',
+                'error_code' => 422,
+                'data' => $e->errors(),
+            ], 422);
+        } catch (Throwable $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Không thể lấy danh sách sinh viên theo lớp',
+                'error_code' => 500,
+                'data' => '',
+            ], 500);
+        }
+    }
+}
