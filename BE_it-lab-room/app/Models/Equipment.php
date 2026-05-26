@@ -12,7 +12,7 @@ class Equipment extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['room_id', 'equipment_name', 'equipment_type', 'quantity', 'status', 'note'];
+    protected $fillable = ['room_id', 'equipment_name', 'quantity', 'unit', 'status', 'note'];
     protected $casts = ['quantity' => 'integer'];
 
     public function room(): BelongsTo { return $this->belongsTo(Room::class); }

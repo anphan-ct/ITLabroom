@@ -23,7 +23,9 @@ export default function MaintenancePage() {
         <DataTable
           columns={[
             { key: "reporter", title: "Người báo" },
-            { key: "computer", title: "Máy" },
+            { key: "targetType", title: "Loại" },
+            { key: "target", title: "Đối tượng" },
+            { key: "room", title: "Phòng" },
             { key: "issue", title: "Mô tả lỗi" },
             { key: "date", title: "Ngày báo" },
             { key: "status", title: "Trạng thái", isStatus: true },

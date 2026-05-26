@@ -13,7 +13,7 @@ class SchoolClass extends Model
     use HasFactory, SoftDeletes;
 
     protected $table = 'classes';
-    protected $fillable = ['class_code', 'class_name', 'course_year', 'major', 'teacher_id'];
+    protected $fillable = ['class_code', 'course_year', 'major', 'teacher_id'];
 
     public function teacher(): BelongsTo { return $this->belongsTo(Teacher::class); }
     public function students(): HasMany { return $this->hasMany(Student::class, 'class_id'); }

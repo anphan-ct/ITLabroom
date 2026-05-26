@@ -6,11 +6,23 @@ import SectionCard from "../../common/SectionCard";
 import { getSubjects, upsertSubject } from "../../../data/subjectsStore";
 
 const initialForm = {
-  code: "",
   name: "",
+  type: "LT",
   credits: 3,
-  description: "",
 };
+
+const subjectTypes = ["LT", "TH"];
+
+function getInitialForm(subject) {
+  if (!subject) {
+    return initialForm;
+  }
+
+  return {
+    ...subject,
+    type: subject.type || "LT",
+  };
+}
 
 export default function SubjectFormPage() {
   const navigate = useNavigate();
@@ -19,7 +31,7 @@ export default function SubjectFormPage() {
   const editingSubject = subjectId
     ? subjects.find((subject) => subject.id === Number(subjectId))
     : null;
-  const [formData, setFormData] = useState(editingSubject || initialForm);
+  const [formData, setFormData] = useState(() => getInitialForm(editingSubject));
   const [error, setError] = useState("");
 
   if (subjectId && !editingSubject) {
@@ -39,18 +51,18 @@ export default function SubjectFormPage() {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    if (!formData.code.trim() || !formData.name.trim()) {
-      setError("Vui lòng nhập đầy đủ mã môn và tên môn.");
+    if (!formData.name.trim() || !formData.type) {
+      setError("Vui lòng nhập đầy đủ tên môn và loại môn.");
       return;
     }
 
-    const duplicatedCode = subjects.some((subject) => {
-      return subject.code.toUpperCase() === formData.code.trim().toUpperCase()
+    const duplicatedName = subjects.some((subject) => {
+      return subject.name.toLowerCase() === formData.name.trim().toLowerCase()
         && subject.id !== editingSubject?.id;
     });
 
-    if (duplicatedCode) {
-      setError("Mã môn đã tồn tại.");
+    if (duplicatedName) {
+      setError("Tên môn đã tồn tại.");
       return;
     }
 
@@ -70,18 +82,6 @@ export default function SubjectFormPage() {
       <SectionCard title="Thông tin môn học">
         <form onSubmit={handleSubmit} className="grid gap-5 lg:grid-cols-2">
           <label className="space-y-2">
-            <span className="text-sm font-semibold text-slate-700">Mã môn</span>
-            <input
-              type="text"
-              name="code"
-              value={formData.code}
-              onChange={handleChange}
-              placeholder="VD: LTWEB"
-              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm uppercase outline-none transition focus:border-blue-500 focus:bg-white"
-            />
-          </label>
-
-          <label className="space-y-2">
             <span className="text-sm font-semibold text-slate-700">Tên môn</span>
             <input
               type="text"
@@ -94,7 +94,23 @@ export default function SubjectFormPage() {
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm font-semibold text-slate-700">Số tín chỉ</span>
+            <span className="text-sm font-semibold text-slate-700">Loại</span>
+            <select
+              name="type"
+              value={formData.type || "LT"}
+              onChange={handleChange}
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
+            >
+              {subjectTypes.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-slate-700">ĐVHP</span>
             <input
               type="number"
               name="credits"
@@ -103,18 +119,6 @@ export default function SubjectFormPage() {
               value={formData.credits}
               onChange={handleChange}
               className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
-            />
-          </label>
-
-          <label className="space-y-2 lg:col-span-2">
-            <span className="text-sm font-semibold text-slate-700">Mô tả</span>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows={4}
-              placeholder="Nội dung ngắn về môn học"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
             />
           </label>
 

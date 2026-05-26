@@ -23,19 +23,20 @@ export function saveSubjects(nextSubjects) {
 
 export function upsertSubject(subject) {
   const currentSubjects = getSubjects();
-  const normalizedCode = subject.code.trim().toUpperCase();
+  const subjectId = subject.id || Date.now();
   const normalizedSubject = {
     ...subject,
-    code: normalizedCode,
+    id: subjectId,
+    code: subject.code?.trim().toUpperCase() || `MH${subjectId}`,
     name: subject.name.trim(),
+    type: subject.type || "LT",
     credits: Number(subject.credits),
-    description: subject.description?.trim() || "",
   };
 
   const existedSubject = currentSubjects.find((item) => item.id === normalizedSubject.id);
   const nextSubjects = existedSubject
     ? currentSubjects.map((item) => (item.id === normalizedSubject.id ? normalizedSubject : item))
-    : [...currentSubjects, { ...normalizedSubject, id: Date.now() }];
+    : [...currentSubjects, normalizedSubject];
 
   saveSubjects(nextSubjects);
   return nextSubjects;

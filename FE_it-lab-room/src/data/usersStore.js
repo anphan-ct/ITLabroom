@@ -9,7 +9,7 @@ function normalizeUser(user) {
   const classes = getClasses();
   const classroom = isStudent && user.classId
     ? classes.find((item) => item.id === Number(user.classId))
-    : classes.find((item) => item.code === user.className || item.name === user.className);
+    : classes.find((item) => item.code === user.className);
 
   return {
     ...user,

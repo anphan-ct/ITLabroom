@@ -8,7 +8,6 @@ import { getUsers } from "../../../data/usersStore";
 
 const initialForm = {
   code: "",
-  name: "",
   courseYear: "",
   size: 40,
   advisor: "",
@@ -39,8 +38,8 @@ export default function ClassFormPage() {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    if (!formData.code.trim() || !formData.name.trim() || !formData.courseYear.trim() || !formData.advisor.trim()) {
-      setError("Vui lòng nhập đầy đủ mã lớp, tên lớp, niên khóa và giảng viên.");
+    if (!formData.code.trim() || !formData.courseYear.trim() || !formData.advisor.trim()) {
+      setError("Vui lòng nhập đầy đủ mã lớp, niên khóa và giảng viên.");
       return;
     }
 
@@ -91,18 +90,6 @@ export default function ClassFormPage() {
               onChange={handleChange}
               placeholder="VD: CNTT03"
               className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm uppercase outline-none transition focus:border-blue-500 focus:bg-white"
-            />
-          </label>
-
-          <label className="space-y-2">
-            <span className="text-sm font-semibold text-slate-700">Tên lớp</span>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="VD: Công nghệ thông tin 03"
-              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
             />
           </label>
 

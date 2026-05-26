@@ -39,7 +39,7 @@ export default function ClassStudentsPage() {
     <AppShell
       role="admin"
       title={`Sinh viên lớp ${classroom.code}`}
-      subtitle={classroom.name}
+      subtitle={`Niên khóa ${classroom.courseYear}`}
     >
       <SectionCard
         title="Danh sách sinh viên"

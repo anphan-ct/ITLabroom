@@ -7,7 +7,7 @@ export default function StudentIncidentPage() {
   const { state } = useLocation();
 
   return (
-    <AppShell role="student" title="Báo hỏng máy tính" subtitle="Sinh viên cập nhật tình trạng máy hoặc thiết bị">
+    <AppShell role="student" title="Báo hỏng thiết bị" subtitle="Sinh viên cập nhật tình trạng máy tính hoặc thiết bị phòng máy">
       <SectionCard title="Form báo hỏng">
         <IncidentForm
           initialComputerCode={state?.computerCode}

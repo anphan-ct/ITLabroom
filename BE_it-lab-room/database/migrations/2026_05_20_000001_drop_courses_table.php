@@ -48,7 +48,7 @@ return new class extends Migration
         Schema::table('classes', function (Blueprint $table) {
             $table->foreignId('course_id')
                 ->nullable()
-                ->after('class_name')
+                ->after('class_code')
                 ->constrained('courses')
                 ->nullOnDelete()
                 ->cascadeOnUpdate();

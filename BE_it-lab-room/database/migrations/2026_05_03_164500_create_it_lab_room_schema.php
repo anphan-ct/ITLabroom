@@ -23,7 +23,6 @@ return new class extends Migration
         Schema::create('classes', function (Blueprint $table) {
             $table->id();
             $table->string('class_code')->unique();
-            $table->string('class_name');
             $table->string('major')->nullable();
             $table->foreignId('teacher_id')->nullable()->constrained('teachers')->nullOnDelete()->cascadeOnUpdate();
             $table->timestamps();
@@ -43,8 +42,8 @@ return new class extends Migration
 
         Schema::create('subjects', function (Blueprint $table) {
             $table->id();
-            $table->string('subject_code')->unique();
             $table->string('subject_name');
+            $table->enum('subject_type', ['LT', 'TH'])->default('LT')->comment('LT: Lý thuyết, TH: Thực hành');
             $table->unsignedTinyInteger('credits')->default(0);
             $table->text('description')->nullable();
             $table->timestamps();
@@ -88,6 +87,7 @@ return new class extends Migration
             $table->foreignId('config_id')->nullable()->constrained('computer_configs')->nullOnDelete()->cascadeOnUpdate();
             $table->string('computer_code')->unique();
             $table->string('computer_name');
+            $table->string('qr_token')->unique();
             $table->string('ip_address', 45)->nullable()->unique();
             $table->string('mac_address', 17)->nullable()->unique();
             $table->enum('status', ['Sẵn sàng', 'Đang sử dụng', 'Bị hỏng', 'Đang bảo trì', 'Ngoại tuyến'])->default('Sẵn sàng');
@@ -100,8 +100,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('room_id')->constrained('rooms')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('equipment_name');
-            $table->string('equipment_type');
             $table->unsignedInteger('quantity')->default(1);
+            $table->string('unit', 50)->default('Cái');
             $table->enum('status', ['Sẵn sàng', 'Bị hỏng', 'Đang bảo trì', 'Thất lạc'])->default('Sẵn sàng');
             $table->text('note')->nullable();
             $table->timestamps();
@@ -153,12 +153,14 @@ return new class extends Migration
             $table->id();
             $table->foreignId('schedule_id')->constrained('schedules')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('student_id')->constrained('students')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('computer_id')->nullable()->constrained('computers')->nullOnDelete()->cascadeOnUpdate();
             $table->dateTime('check_in_time')->nullable();
             $table->enum('status', ['Có mặt', 'Vắng mặt', 'Đi muộn', 'Có phép'])->default('Vắng mặt');
             $table->text('note')->nullable();
             $table->timestamps();
 
             $table->unique(['schedule_id', 'student_id'], 'attendance_schedule_student_unique');
+            $table->unique(['schedule_id', 'computer_id'], 'attendance_schedule_computer_unique');
         });
 
         Schema::create('room_booking_requests', function (Blueprint $table) {

@@ -16,7 +16,6 @@ export default function ClassesPage() {
       const matchesKeyword =
         !keyword ||
         classroom.code.toLowerCase().includes(keyword) ||
-        classroom.name.toLowerCase().includes(keyword) ||
         classroom.courseYear.toLowerCase().includes(keyword) ||
         classroom.advisor.toLowerCase().includes(keyword);
 
@@ -51,7 +50,7 @@ export default function ClassesPage() {
             type="search"
             value={searchKeyword}
             onChange={(event) => setSearchKeyword(event.target.value)}
-            placeholder="Tìm mã lớp, tên lớp, giảng viên..."
+            placeholder="Tìm mã lớp, niên khóa, giảng viên..."
             className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white md:max-w-md"
           />
         </div>
@@ -59,7 +58,6 @@ export default function ClassesPage() {
         <DataTable
           columns={[
             { key: "code", title: "Mã lớp" },
-            { key: "name", title: "Tên lớp" },
             { key: "courseYear", title: "Niên khóa" },
             { key: "size", title: "Sĩ số" },
             { key: "advisor", title: "Giảng viên" },

@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (! Schema::hasColumn('classes', 'class_name')) {
+            return;
+        }
+
         Schema::table('classes', function (Blueprint $table) {
-            // Lưu niên khóa trực tiếp trên lớp sau khi bỏ bảng khóa học.
-            $table->string('course_year', 20)->nullable()->after('class_code');
+            // Bỏ tên lớp, hệ thống chỉ còn dùng mã lớp để định danh lớp học.
+            $table->dropColumn('class_name');
         });
     }
 
@@ -22,8 +26,12 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (Schema::hasColumn('classes', 'class_name')) {
+            return;
+        }
+
         Schema::table('classes', function (Blueprint $table) {
-            $table->dropColumn('course_year');
+            $table->string('class_name')->nullable()->after('class_code');
         });
     }
 };

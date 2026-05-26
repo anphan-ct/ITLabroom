@@ -3,13 +3,14 @@ import { classes } from "./mockData";
 const STORAGE_KEY = "it_lab_room_classes";
 
 function normalizeClassroom(classroom) {
+  const { name, ...classroomData } = classroom;
+
   return {
-    ...classroom,
-    code: classroom.code.trim().toUpperCase(),
-    name: classroom.name.trim(),
-    courseYear: classroom.courseYear?.trim() || "Chưa cập nhật",
-    size: Number(classroom.size),
-    advisor: classroom.advisor.trim(),
+    ...classroomData,
+    code: classroomData.code.trim().toUpperCase(),
+    courseYear: classroomData.courseYear?.trim() || "Chưa cập nhật",
+    size: Number(classroomData.size),
+    advisor: classroomData.advisor.trim(),
   };
 }
 

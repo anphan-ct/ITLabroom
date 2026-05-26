@@ -59,7 +59,6 @@ class ClassStudentController extends Controller
                     'class' => [
                         'id' => $class->id,
                         'class_code' => $class->class_code,
-                        'class_name' => $class->class_name,
                         'course_year' => $class->course_year,
                     ],
                     'students' => AdminClassStudentResource::collection($students),

@@ -260,7 +260,7 @@ export default function UserFormPage({ defaultRole = "Admin" }) {
                 <option value="">Chọn lớp học</option>
                 {classes.map((classroom) => (
                   <option key={classroom.id} value={classroom.id}>
-                    {classroom.code} - {classroom.name}
+                    {classroom.code}
                   </option>
                 ))}
               </select>

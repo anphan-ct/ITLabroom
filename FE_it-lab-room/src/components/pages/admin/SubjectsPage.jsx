@@ -33,9 +33,10 @@ export default function SubjectsPage() {
       >
         <DataTable
           columns={[
-            { key: "code", title: "Mã môn" },
+            { key: "ordinal", title: "TT" },
             { key: "name", title: "Tên môn" },
-            { key: "credits", title: "Số tín chỉ" },
+            { key: "type", title: "Loại", render: (value) => value || "LT" },
+            { key: "credits", title: "ĐVHP" },
             {
               key: "actions",
               title: "Thao tác",
@@ -60,7 +61,10 @@ export default function SubjectsPage() {
               ),
             },
           ]}
-          data={subjects}
+          data={subjects.map((subject, index) => ({
+            ...subject,
+            ordinal: index + 1,
+          }))}
         />
       </SectionCard>
     </AppShell>

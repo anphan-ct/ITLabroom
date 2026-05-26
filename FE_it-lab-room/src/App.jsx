@@ -15,6 +15,7 @@ import RoomsPage from "./components/pages/admin/RoomsPage.jsx";
 import RoomFormPage from "./components/pages/admin/RoomFormPage.jsx";
 import ComputersPage from "./components/pages/admin/ComputersPage.jsx";
 import ComputerCreatePage from "./components/pages/admin/ComputerCreatePage.jsx";
+import ComputerConfigsPage from "./components/pages/admin/ComputerConfigsPage.jsx";
 import ComputerConfigDetailPage from "./components/pages/admin/ComputerConfigDetailPage.jsx";
 import ComputerConfigEditPage from "./components/pages/admin/ComputerConfigEditPage.jsx";
 import MaintenancePage from "./components/pages/admin/MaintenancePage.jsx";
@@ -70,6 +71,7 @@ export default function App() {
       <Route path="/admin/rooms/:roomId/edit" element={<ProtectedRoute role="admin"><RoomFormPage /></ProtectedRoute>} />
       <Route path="/admin/computers" element={<ProtectedRoute role="admin"><ComputersPage /></ProtectedRoute>} />
       <Route path="/admin/computers/create" element={<ProtectedRoute role="admin"><ComputerCreatePage /></ProtectedRoute>} />
+      <Route path="/admin/computers/:computerId/edit" element={<ProtectedRoute role="admin"><ComputerCreatePage /></ProtectedRoute>} />
       <Route path="/admin/computers/:computerCode/config" element={<ProtectedRoute role="admin"><ComputerConfigDetailPage /></ProtectedRoute>} />
       <Route path="/admin/computers/:computerCode/config/edit" element={<ProtectedRoute role="admin"><ComputerConfigEditPage /></ProtectedRoute>} />
       <Route path="/admin/maintenance" element={<ProtectedRoute role="admin"><MaintenancePage /></ProtectedRoute>} />
@@ -81,7 +83,7 @@ export default function App() {
       <Route path="/admin/shifts" element={<ProtectedRoute role="admin"><ShiftsPage /></ProtectedRoute>} />
       <Route path="/admin/shifts/create" element={<ProtectedRoute role="admin"><ShiftFormPage /></ProtectedRoute>} />
       <Route path="/admin/shifts/:shiftId/edit" element={<ProtectedRoute role="admin"><ShiftFormPage /></ProtectedRoute>} />
-      <Route path="/admin/computer-configs" element={<ProtectedRoute role="admin"><Navigate to="/admin/computers" replace /></ProtectedRoute>} />
+      <Route path="/admin/computer-configs" element={<ProtectedRoute role="admin"><ComputerConfigsPage /></ProtectedRoute>} />
       <Route path="/teacher" element={<ProtectedRoute role="teacher"><TeacherDashboard /></ProtectedRoute>} />
       <Route path="/teacher/schedules" element={<ProtectedRoute role="teacher"><TeacherSchedulePage /></ProtectedRoute>} />
       <Route path="/teacher/attendance" element={<ProtectedRoute role="teacher"><AttendancePage /></ProtectedRoute>} />

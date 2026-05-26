@@ -94,7 +94,6 @@ class DatabaseSeeder extends Seeder
         $class = SchoolClass::query()->updateOrCreate(
             ['class_code' => 'CTK_TEST_01'],
             [
-                'class_name' => 'Lớp test đăng nhập',
                 'course_year' => '2022-2026',
                 'major' => 'Công nghệ thông tin',
                 'teacher_id' => $teacher->id,

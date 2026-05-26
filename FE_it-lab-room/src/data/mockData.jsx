@@ -8,14 +8,14 @@ export const users = [
 ];
 
 export const classes = [
-  { id: 1, code: "CNTT01", name: "Công nghệ thông tin 01", courseYear: "2022-2026", size: 42, advisor: "Trần Thị B" },
-  { id: 2, code: "CNTT02", name: "Công nghệ thông tin 02", courseYear: "2023-2027", size: 40, advisor: "Hoàng Minh Khang" },
+  { id: 1, code: "CNTT01", courseYear: "2022-2026", size: 42, advisor: "Trần Thị B" },
+  { id: 2, code: "CNTT02", courseYear: "2023-2027", size: 40, advisor: "Hoàng Minh Khang" },
 ];
 
 export const subjects = [
-  { id: 1, code: "LTWEB", name: "Lập trình web", credits: 3 },
-  { id: 2, code: "CSDL", name: "Cơ sở dữ liệu", credits: 3 },
-  { id: 3, code: "MMT", name: "Mạng máy tính", credits: 2 },
+  { id: 1, code: "LTWEB", name: "Lập trình web", type: "LT", credits: 3 },
+  { id: 2, code: "CSDL", name: "Cơ sở dữ liệu", type: "LT", credits: 3 },
+  { id: 3, code: "MMT", name: "Mạng máy tính", type: "LT", credits: 2 },
 ];
 
 export const shifts = [
@@ -36,10 +36,18 @@ export const computers = [
   { id: 4, code: "PC021", name: "Máy 21", room: "PM03", ip: "192.168.30.31", mac: "A0-B1-C2-D3-E4-21", cpu: "Ryzen 5", ram: "8GB", storage: "256GB SSD", status: "Bảo trì" },
 ];
 
+export const equipments = [
+  { id: 1, code: "TB001", name: "Máy chiếu Epson EB-X41", room: "PM01", quantity: 1, unit: "Cái", status: "Sẵn sàng", note: "Dùng trình chiếu thực hành" },
+  { id: 2, code: "TB002", name: "Switch D-Link 24 port", room: "PM01", quantity: 2, unit: "Cái", status: "Sẵn sàng", note: "Thiết bị mạng phòng máy" },
+  { id: 3, code: "TB003", name: "Bộ bàn phím + chuột dự phòng", room: "PM02", quantity: 12, unit: "Bộ", status: "Sẵn sàng", note: "Dùng thay thế khi báo hỏng" },
+  { id: 4, code: "TB004", name: "Máy chiếu Sony VPL-DX221", room: "PM03", quantity: 1, unit: "Cái", status: "Đang bảo trì", note: "Đang kiểm tra bóng đèn" },
+];
+
 export const maintenanceTickets = [
-  { id: 1, reporter: "GV Trần Thị B", computer: "PC002", issue: "Không khởi động được", date: "2026-04-20", status: "Chờ xử lý" },
-  { id: 2, reporter: "SV Lê Văn C", computer: "PC021", issue: "Màn hình bị nhấp nháy", date: "2026-04-21", status: "Đang sửa" },
-  { id: 3, reporter: "Admin", computer: "PC010", issue: "Bàn phím hỏng", date: "2026-04-22", status: "Hoàn thành" },
+  { id: 1, reporter: "GV Trần Thị B", targetType: "Máy tính", target: "PC002", room: "PM01", issue: "Không khởi động được", date: "2026-04-20", status: "Chờ xử lý" },
+  { id: 2, reporter: "SV Lê Văn C", targetType: "Máy tính", target: "PC021", room: "PM03", issue: "Màn hình bị nhấp nháy", date: "2026-04-21", status: "Đang sửa" },
+  { id: 3, reporter: "Admin", targetType: "Máy tính", target: "PC010", room: "PM01", issue: "Bàn phím hỏng", date: "2026-04-22", status: "Hoàn thành" },
+  { id: 4, reporter: "GV Hoàng Minh Khang", targetType: "Thiết bị", target: "Máy chiếu Sony VPL-DX221", room: "PM03", issue: "Hình chiếu mờ, quạt kêu lớn", date: "2026-04-23", status: "Chờ xử lý" },
 ];
 
 export const schedules = [

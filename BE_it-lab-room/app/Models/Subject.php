@@ -11,8 +11,10 @@ class Subject extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['subject_code', 'subject_name', 'credits', 'description'];
-    protected $casts = ['credits' => 'integer'];
+    protected $fillable = ['subject_name', 'subject_type', 'credits', 'description'];
+    protected $casts = [
+        'credits' => 'integer',
+    ];
 
     public function assignments(): HasMany { return $this->hasMany(TeacherAssignment::class); }
     public function schedules(): HasMany { return $this->hasMany(Schedule::class); }
