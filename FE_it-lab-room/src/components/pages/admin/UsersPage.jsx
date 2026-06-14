@@ -38,7 +38,7 @@ const userPageConfig = {
 };
 
 export default function UsersPage({ type = "all" }) {
-  const [facultyFilter, setFacultyFilter] = useState("all");
+  const [departmentFilter, setDepartmentFilter] = useState("all");
   const [courseYearFilter, setCourseYearFilter] = useState("all");
   const [searchKeyword, setSearchKeyword] = useState("");
   const [users] = useState(() => getUsers());
@@ -48,8 +48,8 @@ export default function UsersPage({ type = "all" }) {
     () => (config.roles ? users.filter((user) => config.roles.includes(user.role)) : users),
     [config.roles, users],
   );
-  const facultyOptions = useMemo(
-    () => Array.from(new Set(baseUsers.map((user) => user.faculty).filter(Boolean))),
+  const departmentOptions = useMemo(
+    () => Array.from(new Set(baseUsers.map((user) => user.department).filter(Boolean))),
     [baseUsers],
   );
   const courseYearOptions = useMemo(
@@ -60,32 +60,25 @@ export default function UsersPage({ type = "all" }) {
     const keyword = searchKeyword.trim().toLowerCase();
 
     return baseUsers.filter((user) => {
-      const matchesFaculty = facultyFilter === "all" || user.faculty === facultyFilter;
+      const matchesDepartment = type !== "teachers" || departmentFilter === "all" || user.department === departmentFilter;
       const matchesCourseYear = type !== "students" || courseYearFilter === "all" || user.course === courseYearFilter;
       const matchesKeyword =
         !keyword ||
         user.name.toLowerCase().includes(keyword) ||
-        (user.code || "").toLowerCase().includes(keyword);
+        user.email.toLowerCase().includes(keyword) ||
+        (user.code || "").toLowerCase().includes(keyword) ||
+        (user.phone || "").toLowerCase().includes(keyword);
 
-      return matchesFaculty && matchesCourseYear && matchesKeyword;
+      return matchesDepartment && matchesCourseYear && matchesKeyword;
     });
-  }, [baseUsers, courseYearFilter, facultyFilter, searchKeyword, type]);
+  }, [baseUsers, courseYearFilter, departmentFilter, searchKeyword, type]);
   const columns = [
     ...(hasAdvancedFilters ? [{ key: "code", title: config.codeTitle }] : []),
     { key: "name", title: "Họ tên" },
     { key: "email", title: "Email" },
-    {
-      key: "role",
-      title: "Vai trò",
-      render: (_, user) => {
-        if (type === "students") {
-          return Number(user.studentRole) === 1 ? "Lớp trưởng" : "Sinh viên";
-        }
-
-        return user.role;
-      },
-    },
-    ...(hasAdvancedFilters ? [{ key: "faculty", title: "Khoa" }] : []),
+    { key: "phone", title: "Số điện thoại", render: (value) => value || "-" },
+    { key: "role", title: "Vai trò" },
+    ...(type === "teachers" ? [{ key: "department", title: "Bộ môn" }] : []),
     ...(type === "students" ? [{ key: "className", title: "Lớp" }] : []),
     ...(type === "students" ? [{ key: "course", title: "Niên khóa" }] : []),
     { key: "status", title: "Trạng thái", isStatus: true },
@@ -126,7 +119,7 @@ export default function UsersPage({ type = "all" }) {
         }
       >
         {hasAdvancedFilters && (
-          <div className={`mb-5 grid gap-3 ${type === "students" ? "md:grid-cols-[minmax(0,1fr)_220px_220px]" : "md:grid-cols-[minmax(0,1fr)_240px]"}`}>
+          <div className={`mb-5 grid gap-3 ${type === "students" ? "md:grid-cols-[minmax(0,1fr)_220px]" : "md:grid-cols-[minmax(0,1fr)_240px]"}`}>
             <input
               type="search"
               value={searchKeyword}
@@ -134,19 +127,6 @@ export default function UsersPage({ type = "all" }) {
               placeholder={config.searchPlaceholder}
               className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
             />
-
-            <select
-              value={facultyFilter}
-              onChange={(event) => setFacultyFilter(event.target.value)}
-              className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
-            >
-              <option value="all">Tất cả khoa</option>
-              {facultyOptions.map((faculty) => (
-                <option key={faculty} value={faculty}>
-                  {faculty}
-                </option>
-              ))}
-            </select>
 
             {type === "students" && (
               <select
@@ -158,6 +138,21 @@ export default function UsersPage({ type = "all" }) {
                 {courseYearOptions.map((courseYear) => (
                   <option key={courseYear} value={courseYear}>
                     {courseYear}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            {type === "teachers" && (
+              <select
+                value={departmentFilter}
+                onChange={(event) => setDepartmentFilter(event.target.value)}
+                className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
+              >
+                <option value="all">Tất cả bộ môn</option>
+                {departmentOptions.map((department) => (
+                  <option key={department} value={department}>
+                    {department}
                   </option>
                 ))}
               </select>

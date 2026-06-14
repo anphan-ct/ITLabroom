@@ -36,7 +36,7 @@ export default function RoomsPage() {
             { key: "code", title: "Mã phòng" },
             { key: "name", title: "Tên phòng" },
             { key: "location", title: "Vị trí" },
-            { key: "computers", title: "Số máy" },
+            { key: "capacity", title: "Sức chứa" },
             { key: "status", title: "Trạng thái", isStatus: true },
             {
               key: "actions",

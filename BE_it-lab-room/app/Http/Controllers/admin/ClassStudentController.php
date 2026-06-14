@@ -27,28 +27,27 @@ class ClassStudentController extends Controller
             $students = Student::query()
                 ->select([
                     'id',
-                    'user_id',
-                    'class_id',
-                    'student_code',
-                    'role',
-                    'course_year',
+                    'ma_nguoi_dung',
+                    'ma_lop',
+                    'ma_sinh_vien',
+                    'nien_khoa',
                 ])
                 ->with([
-                    'user:id,full_name,email,status',
+                    'user:id,ho_ten,email,trang_thai',
                 ])
-                ->where('class_id', $class->id)
+                ->where('ma_lop', $class->id)
                 ->when($keyword !== '', function ($query) use ($keyword) {
                     $query->where(function ($subQuery) use ($keyword) {
                         $subQuery
-                            ->where('student_code', 'like', "%{$keyword}%")
+                            ->where('ma_sinh_vien', 'like', "%{$keyword}%")
                             ->orWhereHas('user', function ($userQuery) use ($keyword) {
                                 $userQuery
-                                    ->where('full_name', 'like', "%{$keyword}%")
+                                    ->where('ho_ten', 'like', "%{$keyword}%")
                                     ->orWhere('email', 'like', "%{$keyword}%");
                             });
                     });
                 })
-                ->orderBy('student_code')
+                ->orderBy('ma_sinh_vien')
                 ->paginate($perPage);
 
             return response()->json([
@@ -58,8 +57,8 @@ class ClassStudentController extends Controller
                 'data' => [
                     'class' => [
                         'id' => $class->id,
-                        'class_code' => $class->class_code,
-                        'course_year' => $class->course_year,
+                        'class_code' => $class->ma_lop,
+                        'course_year' => $class->nien_khoa,
                     ],
                     'students' => AdminClassStudentResource::collection($students),
                     'pagination' => [

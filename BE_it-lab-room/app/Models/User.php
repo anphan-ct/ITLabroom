@@ -17,29 +17,30 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
+    protected $table = 'nguoi_dung';
     protected $fillable = [
-        'role_id', 'full_name', 'email', 'password', 'phone', 'gender',
-        'date_of_birth', 'address', 'status',
+        'ma_vai_tro', 'ho_ten', 'email', 'mat_khau', 'so_dien_thoai', 'gioi_tinh',
+        'ngay_sinh', 'trang_thai',
     ];
 
-    protected $hidden = ['password', 'remember_token'];
+    protected $hidden = ['mat_khau'];
 
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'date_of_birth' => 'date',
-            'status' => 'integer',
+            'mat_khau' => 'hashed',
+            'ngay_sinh' => 'date',
+            'trang_thai' => 'integer',
         ];
     }
 
-    public function role(): BelongsTo { return $this->belongsTo(Role::class); }
-    public function teacher(): HasOne { return $this->hasOne(Teacher::class); }
-    public function student(): HasOne { return $this->hasOne(Student::class); }
-    public function approvedRoomBookings(): HasMany { return $this->hasMany(RoomBookingRequest::class, 'approved_by'); }
-    public function approvedLoanRequests(): HasMany { return $this->hasMany(LoanRequest::class, 'approved_by'); }
-    public function incidentReports(): HasMany { return $this->hasMany(IncidentReport::class, 'reported_by_user_id'); }
-    public function assignedMaintenanceTickets(): HasMany { return $this->hasMany(MaintenanceTicket::class, 'assigned_to'); }
-    public function computerStatusLogs(): HasMany { return $this->hasMany(ComputerStatusLog::class, 'updated_by_user_id'); }
+    public function getAuthPassword(): string
+    {
+        return $this->mat_khau;
+    }
+
+    public function role(): BelongsTo { return $this->belongsTo(Role::class, 'ma_vai_tro'); }
+    public function teacher(): HasOne { return $this->hasOne(Teacher::class, 'ma_nguoi_dung'); }
+    public function student(): HasOne { return $this->hasOne(Student::class, 'ma_nguoi_dung'); }
+    public function incidentReports(): HasMany { return $this->hasMany(IncidentReport::class, 'ma_nguoi_bao_cao'); }
 }

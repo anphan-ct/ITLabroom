@@ -11,7 +11,7 @@ const initialForm = {
   code: "",
   name: "",
   location: "",
-  computers: 30,
+  capacity: 30,
   status: "Sẵn sàng",
 };
 
@@ -32,7 +32,7 @@ export default function RoomFormPage() {
     const { name, value } = event.target;
     setFormData((currentData) => ({
       ...currentData,
-      [name]: name === "computers" ? Number(value) : value,
+      [name]: name === "capacity" ? Number(value) : value,
     }));
   };
 
@@ -106,12 +106,12 @@ export default function RoomFormPage() {
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm font-semibold text-slate-700">Số máy</span>
+            <span className="text-sm font-semibold text-slate-700">Sức chứa</span>
             <input
               type="number"
-              name="computers"
+              name="capacity"
               min="0"
-              value={formData.computers}
+              value={formData.capacity ?? formData.computers ?? 0}
               onChange={handleChange}
               className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
             />

@@ -12,14 +12,10 @@ class Student extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['user_id', 'class_id', 'student_code', 'role', 'course_year'];
+    protected $table = 'sinh_vien';
+    protected $fillable = ['ma_nguoi_dung', 'ma_lop', 'ma_sinh_vien', 'nien_khoa'];
 
-    protected $casts = [
-        'role' => 'integer',
-    ];
-
-    public function user(): BelongsTo { return $this->belongsTo(User::class); }
-    public function class(): BelongsTo { return $this->belongsTo(SchoolClass::class, 'class_id'); }
-    public function attendanceRecords(): HasMany { return $this->hasMany(Attendance::class); }
-    public function loanRequests(): HasMany { return $this->hasMany(LoanRequest::class); }
+    public function user(): BelongsTo { return $this->belongsTo(User::class, 'ma_nguoi_dung'); }
+    public function class(): BelongsTo { return $this->belongsTo(SchoolClass::class, 'ma_lop'); }
+    public function attendanceRecords(): HasMany { return $this->hasMany(Attendance::class, 'ma_sinh_vien'); }
 }

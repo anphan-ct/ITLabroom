@@ -6,12 +6,8 @@ import SectionCard from "../../common/SectionCard";
 import { getClasses } from "../../../data/classesStore";
 import { addUser, getUsers, updateUser } from "../../../data/usersStore";
 
-const faculties = ["Công nghệ thông tin", "Điện tử viễn thông", "Khoa học dữ liệu"];
 const roles = ["Admin", "Giảng viên", "Sinh viên"];
-const studentRoles = [
-  { value: 0, label: "Sinh viên" },
-  { value: 1, label: "Lớp trưởng" },
-];
+const genders = ["Nam", "Nữ", "Khác"];
 const statuses = ["Hoạt động", "Tạm khóa"];
 
 function getInitialUser(role) {
@@ -19,11 +15,13 @@ function getInitialUser(role) {
     code: "",
     name: "",
     email: "",
-    faculty: "",
+    phone: "",
+    gender: "",
+    dateOfBirth: "",
+    department: "",
     classId: "",
     className: "",
     course: "",
-    studentRole: 0,
     role,
     status: "Hoạt động",
   };
@@ -60,6 +58,7 @@ export default function UserFormPage({ defaultRole = "Admin" }) {
   const pageSubtitle = isEditing ? "Cập nhật thông tin tài khoản người dùng" : "Tạo tài khoản người dùng mới";
   const userCodeLabel = formData.role === "Giảng viên" ? "MSGV" : formData.role === "Sinh viên" ? "MSSV" : "Mã người dùng";
   const isStudentRole = formData.role === "Sinh viên";
+  const isTeacherRole = formData.role === "Giảng viên";
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -74,6 +73,16 @@ export default function UserFormPage({ defaultRole = "Admin" }) {
 
     if (!formData.name.trim() || !formData.email.trim()) {
       setError("Vui lòng nhập đầy đủ họ tên và email.");
+      return;
+    }
+
+    if ((isStudentRole || isTeacherRole) && !formData.code.trim()) {
+      setError(`Vui lòng nhập ${userCodeLabel}.`);
+      return;
+    }
+
+    if (isTeacherRole && !formData.department.trim()) {
+      setError("Vui lòng nhập bộ môn cho giảng viên.");
       return;
     }
 
@@ -106,21 +115,34 @@ export default function UserFormPage({ defaultRole = "Admin" }) {
       return;
     }
 
+    const duplicatedCode = users.some((user) => {
+      return user.role === formData.role
+        && user.code?.toLowerCase() === formData.code.trim().toLowerCase()
+        && user.id !== editingUser?.id;
+    });
+
+    if (duplicatedCode) {
+      setError(`${userCodeLabel} đã tồn tại.`);
+      return;
+    }
+
     if (isEditing) {
       updateUser({
         ...formData,
         classId: selectedClass?.id || "",
         className: selectedClass?.code || "",
+        code: isStudentRole || isTeacherRole ? formData.code.trim() : "",
         course: isStudentRole ? formData.course.trim() : "",
-        studentRole: Number(formData.studentRole || 0),
+        department: isTeacherRole ? formData.department.trim() : "",
       });
     } else {
       addUser({
         ...formData,
         classId: selectedClass?.id || "",
         className: selectedClass?.code || "",
+        code: isStudentRole || isTeacherRole ? formData.code.trim() : "",
         course: isStudentRole ? formData.course.trim() : "",
-        studentRole: Number(formData.studentRole || 0),
+        department: isTeacherRole ? formData.department.trim() : "",
       });
     }
 
@@ -136,10 +158,11 @@ export default function UserFormPage({ defaultRole = "Admin" }) {
             <input
               type="text"
               name="code"
+              disabled={!isStudentRole && !isTeacherRole}
               value={formData.code || ""}
               onChange={handleChange}
               placeholder="VD: SV001 hoặc GV001"
-              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white disabled:cursor-not-allowed disabled:text-slate-400"
             />
           </label>
 
@@ -184,20 +207,43 @@ export default function UserFormPage({ defaultRole = "Admin" }) {
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm font-semibold text-slate-700">Khoa</span>
+            <span className="text-sm font-semibold text-slate-700">Số điện thoại</span>
+            <input
+              type="tel"
+              name="phone"
+              value={formData.phone || ""}
+              onChange={handleChange}
+              placeholder="VD: 0900000001"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
+            />
+          </label>
+
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-slate-700">Giới tính</span>
             <select
-              name="faculty"
-              value={formData.faculty || ""}
+              name="gender"
+              value={formData.gender || ""}
               onChange={handleChange}
               className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
             >
-              <option value="">Chọn khoa</option>
-              {faculties.map((faculty) => (
-                <option key={faculty} value={faculty}>
-                  {faculty}
+              <option value="">Chưa cập nhật</option>
+              {genders.map((gender) => (
+                <option key={gender} value={gender}>
+                  {gender}
                 </option>
               ))}
             </select>
+          </label>
+
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-slate-700">Ngày sinh</span>
+            <input
+              type="date"
+              name="dateOfBirth"
+              value={formData.dateOfBirth || ""}
+              onChange={handleChange}
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
+            />
           </label>
 
           <label className="space-y-2">
@@ -216,21 +262,17 @@ export default function UserFormPage({ defaultRole = "Admin" }) {
             </select>
           </label>
 
-          {isStudentRole && (
+          {isTeacherRole && (
             <label className="space-y-2">
-              <span className="text-sm font-semibold text-slate-700">Vai trò trong lớp</span>
-              <select
-                name="studentRole"
-                value={formData.studentRole ?? 0}
+              <span className="text-sm font-semibold text-slate-700">Bộ môn</span>
+              <input
+                type="text"
+                name="department"
+                value={formData.department || ""}
                 onChange={handleChange}
+                placeholder="VD: Công nghệ thông tin"
                 className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
-              >
-                {studentRoles.map((role) => (
-                  <option key={role.value} value={role.value}>
-                    {role.label}
-                  </option>
-                ))}
-              </select>
+              />
             </label>
           )}
 

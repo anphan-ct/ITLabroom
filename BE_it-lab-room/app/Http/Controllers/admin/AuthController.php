@@ -22,15 +22,15 @@ class AuthController extends Controller
 
             // Query user admin kèm role để tránh N+1 và chỉ lấy dữ liệu cần thiết.
             $user = User::query()
-                ->select(['id', 'role_id', 'full_name', 'email', 'password', 'phone', 'gender', 'date_of_birth', 'address', 'status'])
-                ->with(['role:id,role_name,description'])
+                ->select(['id', 'ma_vai_tro', 'ho_ten', 'email', 'mat_khau', 'so_dien_thoai', 'gioi_tinh', 'ngay_sinh', 'trang_thai'])
+                ->with(['role:id,ten_vai_tro,mo_ta'])
                 ->where('email', $request->email)
                 ->whereHas('role', function ($query) {
-                    $query->where('role_name', 'admin');
+                    $query->where('ten_vai_tro', 'admin');
                 })
                 ->first();
 
-            if (! $user || ! Hash::check($request->password, $user->password)) {
+            if (! $user || ! Hash::check($request->password, $user->mat_khau)) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Email hoặc mật khẩu không chính xác',
@@ -39,7 +39,7 @@ class AuthController extends Controller
                 ], 401);
             }
 
-            if ((int) $user->status !== 1) {
+            if ((int) $user->trang_thai !== 1) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Tài khoản admin đã bị khóa',

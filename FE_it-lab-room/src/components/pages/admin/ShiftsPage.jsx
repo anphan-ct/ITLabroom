@@ -4,23 +4,6 @@ import { Plus, Search, Pencil, Trash2 } from "lucide-react";
 import AppShell from "../../common/AppShell";
 import { deleteShift, getShifts } from "../../../data/shiftsStore";
 
-function StatusBadge({ status }) {
-  const styles = {
-    "Hoạt động": "bg-emerald-100 text-emerald-700",
-    "Tạm dừng": "bg-amber-100 text-amber-700",
-  };
-
-  return (
-    <span
-      className={`inline-flex min-w-[96px] justify-center rounded-full px-3 py-1 text-sm font-semibold ${
-        styles[status] || "bg-slate-100 text-slate-700"
-      }`}
-    >
-      {status}
-    </span>
-  );
-}
-
 export default function ShiftsPage() {
   const [search, setSearch] = useState("");
   const [shifts, setShifts] = useState(() => getShifts());
@@ -29,7 +12,6 @@ export default function ShiftsPage() {
     return shifts.filter((item) => {
       const keyword = search.toLowerCase();
       return (
-        item.code.toLowerCase().includes(keyword) ||
         item.name.toLowerCase().includes(keyword) ||
         item.start_time.toLowerCase().includes(keyword) ||
         item.end_time.toLowerCase().includes(keyword)
@@ -38,12 +20,6 @@ export default function ShiftsPage() {
   }, [search, shifts]);
 
   const totalShifts = shifts.length;
-  const activeShifts = shifts.filter(
-    (item) => item.status === "Hoạt động"
-  ).length;
-  const pausedShifts = shifts.filter(
-    (item) => item.status === "Tạm dừng"
-  ).length;
 
   const handleDelete = (shift) => {
     const accepted = window.confirm(`Xóa ca học ${shift.name}?`);
@@ -57,33 +33,33 @@ export default function ShiftsPage() {
     <AppShell
       role="admin"
       title="Quản lý ca học"
-      subtitle="Theo dõi khung giờ học và trạng thái hoạt động của từng ca"
+      subtitle="Theo dõi tên ca học, giờ bắt đầu và giờ kết thúc"
     >
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-sm text-slate-500">Tổng số ca học</p>
             <h3 className="mt-2 text-3xl font-bold text-slate-800">
               {totalShifts}
             </h3>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-sm text-slate-500">Đang hoạt động</p>
+          <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm text-slate-500">Ca bắt đầu sớm nhất</p>
             <h3 className="mt-2 text-3xl font-bold text-emerald-600">
-              {activeShifts}
+              {shifts[0]?.start_time || "-"}
             </h3>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-sm text-slate-500">Tạm dừng</p>
+          <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm text-slate-500">Ca kết thúc muộn nhất</p>
             <h3 className="mt-2 text-3xl font-bold text-amber-600">
-              {pausedShifts}
+              {shifts.at(-1)?.end_time || "-"}
             </h3>
           </div>
         </div>
 
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <h2 className="text-xl font-bold text-slate-800">
               Danh sách ca học
@@ -97,7 +73,7 @@ export default function ShiftsPage() {
                 />
                 <input
                   type="text"
-                  placeholder="Tìm mã ca, tên ca..."
+                  placeholder="Tìm tên ca, giờ học..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
@@ -114,13 +90,11 @@ export default function ShiftsPage() {
             </div>
           </div>
 
-          <div className="hidden overflow-hidden rounded-2xl border border-slate-100 lg:block">
-            <div className="grid grid-cols-6 bg-slate-50 px-5 py-4 text-sm font-semibold text-slate-500">
-              <div>Mã ca</div>
+          <div className="hidden overflow-hidden rounded-lg border border-slate-100 lg:block">
+            <div className="grid grid-cols-4 bg-slate-50 px-5 py-4 text-sm font-semibold text-slate-500">
               <div>Tên ca</div>
               <div>Giờ bắt đầu</div>
               <div>Giờ kết thúc</div>
-              <div>Trạng thái</div>
               <div className="text-center">Thao tác</div>
             </div>
 
@@ -128,15 +102,11 @@ export default function ShiftsPage() {
               {filteredShifts.map((item) => (
                 <div
                   key={item.id}
-                  className="grid grid-cols-6 items-center px-5 py-4 text-sm text-slate-700 hover:bg-slate-50"
+                  className="grid grid-cols-4 items-center px-5 py-4 text-sm text-slate-700 hover:bg-slate-50"
                 >
-                  <div className="font-semibold">{item.code}</div>
-                  <div>{item.name}</div>
+                  <div className="font-semibold">{item.name}</div>
                   <div>{item.start_time}</div>
                   <div>{item.end_time}</div>
-                  <div>
-                    <StatusBadge status={item.status} />
-                  </div>
                   <div className="flex items-center justify-center gap-2">
                     <Link
                       to={`/admin/shifts/${item.id}/edit`}
@@ -161,14 +131,13 @@ export default function ShiftsPage() {
             {filteredShifts.map((item) => (
               <div
                 key={item.id}
-                className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                className="rounded-lg border border-slate-200 bg-slate-50 p-4"
               >
                 <div className="mb-3 flex items-start justify-between gap-3">
                   <div>
                     <h3 className="font-bold text-slate-800">{item.name}</h3>
-                    <p className="text-sm text-slate-500">{item.code}</p>
+                    <p className="text-sm text-slate-500">{item.start_time} - {item.end_time}</p>
                   </div>
-                  <StatusBadge status={item.status} />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 text-sm text-slate-600">

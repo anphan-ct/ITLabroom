@@ -12,10 +12,10 @@ class Equipment extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['room_id', 'equipment_name', 'quantity', 'unit', 'status', 'note'];
-    protected $casts = ['quantity' => 'integer'];
+    protected $table = 'thiet_bi';
+    protected $fillable = ['ma_phong', 'ten_thiet_bi', 'so_luong', 'don_vi', 'trang_thai', 'ghi_chu'];
+    protected $casts = ['so_luong' => 'integer'];
 
-    public function room(): BelongsTo { return $this->belongsTo(Room::class); }
-    public function incidentReports(): HasMany { return $this->hasMany(IncidentReport::class); }
-    public function loanRequests(): HasMany { return $this->hasMany(LoanRequest::class); }
+    public function room(): BelongsTo { return $this->belongsTo(Room::class, 'ma_phong'); }
+    public function incidentReports(): HasMany { return $this->hasMany(IncidentReport::class, 'ma_thiet_bi'); }
 }

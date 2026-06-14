@@ -1,17 +1,27 @@
 import { Link, Navigate, useParams } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Clock3, MonitorCheck, Users } from "lucide-react";
 import AppShell from "../../common/AppShell";
 import SectionCard from "../../common/SectionCard";
+import StatusBadge from "../../common/StatusBadge";
 
 const attendanceSessions = [
   {
     id: 1,
-    title: "Điểm danh buổi thực hành",
+    title: "Điểm danh thực hành Lập trình web",
     className: "CNTT01",
     subject: "Lập trình web",
     day: "Thứ 2",
     time: "07:00 - 09:00",
     room: "PM01",
+  },
+  {
+    id: 2,
+    title: "Điểm danh thực hành Cơ sở dữ liệu",
+    className: "CNTT02",
+    subject: "Cơ sở dữ liệu",
+    day: "Thứ 3",
+    time: "12:30 - 17:30",
+    room: "PM02",
   },
 ];
 
@@ -21,36 +31,62 @@ const studentAttendanceResults = [
     sessionId: 1,
     studentId: "SV001",
     studentName: "Nguyễn Văn Nam",
-    className: "CNTT01",
     checkedInAt: "07:05",
     attendanceStatus: "Có mặt",
     computerCode: "PC001",
-    computerStatus: "Hoạt động bình thường",
+    computerName: "Máy 01",
   },
   {
     id: 2,
     sessionId: 1,
     studentId: "SV002",
     studentName: "Trần Thị Lan",
-    className: "CNTT01",
     checkedInAt: "07:15",
     attendanceStatus: "Đi trễ",
     computerCode: "PC002",
-    computerStatus: "Lỗi nhẹ",
+    computerName: "Máy 02",
+  },
+  {
+    id: 3,
+    sessionId: 1,
+    studentId: "SV003",
+    studentName: "Lê Quốc Huy",
+    checkedInAt: "",
+    attendanceStatus: "Chưa điểm danh",
+    computerCode: "",
+    computerName: "",
+  },
+  {
+    id: 4,
+    sessionId: 1,
+    studentId: "SV004",
+    studentName: "Phạm Minh Đức",
+    checkedInAt: "",
+    attendanceStatus: "Chưa điểm danh",
+    computerCode: "",
+    computerName: "",
+  },
+  {
+    id: 5,
+    sessionId: 2,
+    studentId: "SV005",
+    studentName: "Hoàng Minh Quân",
+    checkedInAt: "13:04",
+    attendanceStatus: "Có mặt",
+    computerCode: "PC015",
+    computerName: "Máy 15",
+  },
+  {
+    id: 6,
+    sessionId: 2,
+    studentId: "SV006",
+    studentName: "Ngô Thảo Vy",
+    checkedInAt: "",
+    attendanceStatus: "Chưa điểm danh",
+    computerCode: "",
+    computerName: "",
   },
 ];
-
-const attendanceStatusStyles = {
-  "Có mặt": "border-emerald-200 bg-emerald-50 text-emerald-700",
-  "Đi trễ": "border-amber-200 bg-amber-50 text-amber-700",
-  "Vắng": "border-rose-200 bg-rose-50 text-rose-700",
-};
-
-const computerStatusStyles = {
-  "Hoạt động bình thường": "border-emerald-200 bg-emerald-50 text-emerald-700",
-  "Lỗi nhẹ": "border-amber-200 bg-amber-50 text-amber-700",
-  "Hỏng": "border-rose-200 bg-rose-50 text-rose-700",
-};
 
 export default function TeacherAttendanceSessionStatusPage() {
   const { sessionId } = useParams();
@@ -63,12 +99,15 @@ export default function TeacherAttendanceSessionStatusPage() {
   const studentResults = studentAttendanceResults.filter(
     (result) => String(result.sessionId) === sessionId,
   );
+  const checkedInStudents = studentResults.filter((item) => item.checkedInAt);
+  const absentStudents = studentResults.filter((item) => !item.checkedInAt);
+  const dataStatus = checkedInStudents.length > 0 ? "Có dữ liệu" : "Chưa có dữ liệu";
 
   return (
     <AppShell
       role="teacher"
-      title="Trạng thái sinh viên"
-      subtitle="Xem trạng thái sinh viên theo phiên điểm danh"
+      title="Theo dõi điểm danh"
+      subtitle="Danh sách sinh viên được cập nhật khi mobile quét QR máy"
     >
       <SectionCard
         title={session.title}
@@ -103,62 +142,87 @@ export default function TeacherAttendanceSessionStatusPage() {
           </div>
         </div>
 
+        <div className="mb-5 grid gap-4 md:grid-cols-4">
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="flex items-center gap-3">
+              <Users className="text-blue-700" size={20} />
+              <div>
+                <p className="text-xs font-semibold uppercase text-slate-500">Sĩ số</p>
+                <p className="text-xl font-bold text-slate-900">{studentResults.length}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="text-emerald-700" size={20} />
+              <div>
+                <p className="text-xs font-semibold uppercase text-slate-500">Đã điểm danh</p>
+                <p className="text-xl font-bold text-slate-900">{checkedInStudents.length}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="flex items-center gap-3">
+              <Clock3 className="text-amber-700" size={20} />
+              <div>
+                <p className="text-xs font-semibold uppercase text-slate-500">Chưa quét</p>
+                <p className="text-xl font-bold text-slate-900">{absentStudents.length}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="flex items-center gap-3">
+              <MonitorCheck className="text-indigo-700" size={20} />
+              <div>
+                <p className="text-xs font-semibold uppercase text-slate-500">Máy đã gán</p>
+                <p className="text-xl font-bold text-slate-900">{checkedInStudents.length}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-3 flex items-center justify-between gap-3 border-b border-slate-200 pb-3">
+          <h3 className="text-sm font-bold text-slate-900">Danh sách sinh viên điểm danh</h3>
+          <StatusBadge value={dataStatus} />
+        </div>
+
         <div className="overflow-x-auto rounded-lg border border-slate-200">
           <table className="min-w-full text-sm">
             <thead className="bg-slate-50 text-xs font-bold uppercase text-slate-500">
               <tr>
                 <th className="px-4 py-3 text-left">Mã SV</th>
                 <th className="px-4 py-3 text-left">Họ tên</th>
-                <th className="px-4 py-3 text-left">Lớp</th>
                 <th className="px-4 py-3 text-left">Check-in</th>
-                <th className="px-4 py-3 text-left">Điểm danh</th>
-                <th className="px-4 py-3 text-left">Máy</th>
-                <th className="px-4 py-3 text-left">Tình trạng máy</th>
+                <th className="px-4 py-3 text-left">Trạng thái</th>
+                <th className="px-4 py-3 text-left">Máy quét</th>
+                <th className="px-4 py-3 text-left">Tên máy</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-100 bg-white">
               {studentResults.map((result) => (
-                <tr
-                  key={result.id}
-                  className="border-t border-slate-100 hover:bg-slate-50"
-                >
+                <tr key={result.id} className="hover:bg-slate-50">
                   <td className="whitespace-nowrap px-4 py-3 font-semibold text-slate-900">
                     {result.studentId}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-slate-700">
                     <Link
-                      to={`/teacher/attendance/students/${result.studentId}`}
+                      to={`/teacher/attendance/sessions/${sessionId}/students/${result.studentId}`}
                       className="font-semibold text-blue-700 hover:text-blue-800"
                     >
                       {result.studentName}
                     </Link>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-slate-700">
-                    {result.className}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-slate-700">
-                    {result.checkedInAt}
+                    {result.checkedInAt || "-"}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3">
-                    <span
-                      className={`inline-flex rounded-full border px-3 py-1 text-xs font-bold ${
-                        attendanceStatusStyles[result.attendanceStatus]
-                      }`}
-                    >
-                      {result.attendanceStatus}
-                    </span>
+                    <StatusBadge value={result.attendanceStatus} />
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 font-semibold text-blue-700">
-                    {result.computerCode}
+                    {result.computerCode || "-"}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3">
-                    <span
-                      className={`inline-flex rounded-full border px-3 py-1 text-xs font-bold ${
-                        computerStatusStyles[result.computerStatus]
-                      }`}
-                    >
-                      {result.computerStatus}
-                    </span>
+                  <td className="whitespace-nowrap px-4 py-3 text-slate-700">
+                    {result.computerName || "-"}
                   </td>
                 </tr>
               ))}

@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import AppShell from "../../common/AppShell";
 import SectionCard from "../../common/SectionCard";
 import { attendanceHistories, classes } from "../../../data/mockData";
+import { getCurrentStudentClassCode } from "../../../helpers/student-class.helper";
 
 const statusStyles = {
   "Có mặt": "border-emerald-200 bg-emerald-50 text-emerald-700",
@@ -12,6 +13,12 @@ const statusStyles = {
 
 export default function StudentAttendanceClassHistoryPage() {
   const { classCode } = useParams();
+  const studentClassCode = getCurrentStudentClassCode();
+
+  if (!studentClassCode || classCode !== studentClassCode) {
+    return <Navigate to="/student/attendance" replace />;
+  }
+
   const classInfo = classes.find((item) => item.code === classCode);
 
   if (!classInfo) {

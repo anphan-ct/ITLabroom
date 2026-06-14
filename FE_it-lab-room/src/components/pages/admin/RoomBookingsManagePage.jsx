@@ -4,44 +4,87 @@ import AppShell from "../../common/AppShell";
 import DataTable from "../../common/DataTable";
 import SectionCard from "../../common/SectionCard";
 import StatCard from "../../common/StatCard";
+import StatusBadge from "../../common/StatusBadge";
 
 const roomBookings = [
   {
     id: 1,
+    teacherId: 2,
     teacher: "Trần Thị B",
+    roomId: 1,
     room: "PM01",
-    date: "12/05/2026",
-    day: "Thứ 2",
-    shift: "Ca sáng",
-    time: "06:30 - 11:25",
+    subjectId: 1,
     subject: "Lập trình web",
-    status: "Chờ duyệt",
+    timeSettingId: 1,
+    timeSetting: "Học kỳ 2 - 2025/2026",
+    bookingDate: "2026-05-12",
+    shiftId: 1,
+    shift: "Ca sáng",
+    lessonStart: 1,
+    lessonEnd: 5,
+    purpose: "Dạy thực hành lập trình web",
+    approvalStatus: "pending",
   },
   {
     id: 2,
+    teacherId: 1,
     teacher: "Nguyễn Văn A",
+    roomId: 2,
     room: "PM02",
-    date: "13/05/2026",
-    day: "Thứ 3",
-    shift: "Ca chiều",
-    time: "12:30 - 17:30",
+    subjectId: 2,
     subject: "Cơ sở dữ liệu",
-    status: "Đã duyệt",
+    timeSettingId: 1,
+    timeSetting: "Học kỳ 2 - 2025/2026",
+    bookingDate: "2026-05-13",
+    shiftId: 2,
+    shift: "Ca chiều",
+    lessonStart: 6,
+    lessonEnd: 10,
+    purpose: "Thực hành truy vấn SQL",
+    approvalStatus: "approved",
   },
   {
     id: 3,
+    teacherId: 3,
     teacher: "Hoàng Minh Khang",
+    roomId: 3,
     room: "PM03",
-    date: "14/05/2026",
-    day: "Thứ 4",
-    shift: "Ca sáng",
-    time: "06:30 - 11:25",
+    subjectId: 3,
     subject: "Mạng máy tính",
-    status: "Từ chối",
+    timeSettingId: 1,
+    timeSetting: "Học kỳ 2 - 2025/2026",
+    bookingDate: "2026-05-14",
+    shiftId: 1,
+    shift: "Ca sáng",
+    lessonStart: 1,
+    lessonEnd: 4,
+    purpose: "Thực hành cấu hình mạng",
+    approvalStatus: "rejected",
   },
 ];
 
-const bookingStatusOptions = ["Chờ duyệt", "Đã duyệt", "Từ chối"];
+const bookingStatusOptions = [
+  { value: "pending", label: "Chờ duyệt" },
+  { value: "approved", label: "Đã duyệt" },
+  { value: "rejected", label: "Từ chối" },
+];
+
+const bookingStatusLabels = bookingStatusOptions.reduce((labels, status) => {
+  labels[status.value] = status.label;
+  return labels;
+}, {});
+
+const formatDate = (date) => {
+  return new Intl.DateTimeFormat("vi-VN").format(new Date(date));
+};
+
+const renderLessonRange = (booking) => {
+  if (!booking.lessonStart || !booking.lessonEnd) {
+    return "-";
+  }
+
+  return `Tiết ${booking.lessonStart} - ${booking.lessonEnd}`;
+};
 
 export default function RoomBookingsManagePage() {
   const [bookings, setBookings] = useState(roomBookings);
@@ -50,13 +93,13 @@ export default function RoomBookingsManagePage() {
   const filteredBookings = useMemo(() => {
     return statusFilter === "all"
       ? bookings
-      : bookings.filter((booking) => booking.status === statusFilter);
+      : bookings.filter((booking) => booking.approvalStatus === statusFilter);
   }, [bookings, statusFilter]);
 
-  const updateBookingStatus = (bookingId, status) => {
+  const updateBookingStatus = (bookingId, approvalStatus) => {
     setBookings((currentBookings) =>
       currentBookings.map((booking) =>
-        booking.id === bookingId ? { ...booking, status } : booking,
+        booking.id === bookingId ? { ...booking, approvalStatus } : booking,
       ),
     );
   };
@@ -65,8 +108,8 @@ export default function RoomBookingsManagePage() {
     <AppShell role="admin" title="Quản lý đăng ký phòng" subtitle="Duyệt và theo dõi yêu cầu đăng ký sử dụng phòng máy">
       <div className="grid gap-4 md:grid-cols-3">
         <StatCard title="Tổng yêu cầu" value={bookings.length.toString().padStart(2, "0")} desc="Yêu cầu đăng ký phòng" icon={<ClipboardList size={22} />} />
-        <StatCard title="Chờ duyệt" value={bookings.filter((item) => item.status === "Chờ duyệt").length.toString().padStart(2, "0")} desc="Cần admin xử lý" icon={<CalendarCheck size={22} />} />
-        <StatCard title="Đã duyệt" value={bookings.filter((item) => item.status === "Đã duyệt").length.toString().padStart(2, "0")} desc="Đã xếp lịch phòng" icon={<CheckCircle2 size={22} />} />
+        <StatCard title="Chờ duyệt" value={bookings.filter((item) => item.approvalStatus === "pending").length.toString().padStart(2, "0")} desc="Cần admin xử lý" icon={<CalendarCheck size={22} />} />
+        <StatCard title="Đã duyệt" value={bookings.filter((item) => item.approvalStatus === "approved").length.toString().padStart(2, "0")} desc="Đã xếp lịch phòng" icon={<CheckCircle2 size={22} />} />
       </div>
 
       <div className="mt-6">
@@ -79,43 +122,39 @@ export default function RoomBookingsManagePage() {
               className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none"
             >
               <option value="all">Tất cả trạng thái</option>
-              <option value="Chờ duyệt">Chờ duyệt</option>
-              <option value="Đã duyệt">Đã duyệt</option>
-              <option value="Từ chối">Từ chối</option>
+              {bookingStatusOptions.map((status) => (
+                <option key={status.value} value={status.value}>
+                  {status.label}
+                </option>
+              ))}
             </select>
           }
         >
           <DataTable
             columns={[
+              { key: "id", title: "ID", render: (value) => `#${value}` },
               { key: "teacher", title: "Giảng viên" },
               { key: "room", title: "Phòng" },
-              { key: "date", title: "Ngày" },
-              { key: "day", title: "Thứ" },
-              { key: "shift", title: "Ca" },
-              { key: "time", title: "Thời gian" },
               { key: "subject", title: "Môn học" },
-              { key: "status", title: "Trạng thái", isStatus: true },
+              { key: "timeSetting", title: "Cài đặt thời gian" },
+              { key: "bookingDate", title: "Ngày đặt", render: formatDate },
+              { key: "shift", title: "Ca" },
+              { key: "lessonRange", title: "Tiết", render: (_, booking) => renderLessonRange(booking) },
+              { key: "purpose", title: "Mục đích" },
+              {
+                key: "approvalStatus",
+                title: "Trạng thái",
+                render: (value) => <StatusBadge value={bookingStatusLabels[value] || value} />,
+              },
               {
                 key: "actions",
                 title: "Thao tác",
                 render: (_, booking) => (
                   <div className="flex gap-2">
-                    <select
-                      value={booking.status}
-                      onChange={(event) => updateBookingStatus(booking.id, event.target.value)}
-                      className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm text-slate-700 outline-none"
-                      aria-label="Cập nhật trạng thái đăng ký phòng"
-                    >
-                      {bookingStatusOptions.map((status) => (
-                        <option key={status} value={status}>
-                          {status}
-                        </option>
-                      ))}
-                    </select>
                     <button
                       type="button"
-                      disabled={booking.status === "Đã duyệt"}
-                      onClick={() => updateBookingStatus(booking.id, "Đã duyệt")}
+                      disabled={booking.approvalStatus === "approved"}
+                      onClick={() => updateBookingStatus(booking.id, "approved")}
                       className="inline-flex items-center gap-1 rounded-lg bg-emerald-100 px-3 py-1 text-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <CheckCircle2 size={15} />
@@ -123,8 +162,8 @@ export default function RoomBookingsManagePage() {
                     </button>
                     <button
                       type="button"
-                      disabled={booking.status === "Từ chối"}
-                      onClick={() => updateBookingStatus(booking.id, "Từ chối")}
+                      disabled={booking.approvalStatus === "rejected"}
+                      onClick={() => updateBookingStatus(booking.id, "rejected")}
                       className="inline-flex items-center gap-1 rounded-lg bg-rose-100 px-3 py-1 text-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <XCircle size={15} />

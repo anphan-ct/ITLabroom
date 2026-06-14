@@ -11,13 +11,12 @@ class Room extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['room_code', 'room_name', 'capacity', 'status', 'description'];
-    protected $casts = ['capacity' => 'integer'];
+    protected $table = 'phong_may';
+    protected $fillable = ['ma_phong', 'ten_phong', 'vi_tri', 'suc_chua', 'trang_thai', 'mo_ta'];
+    protected $casts = ['suc_chua' => 'integer'];
 
-    public function computers(): HasMany { return $this->hasMany(Computer::class); }
-    public function equipments(): HasMany { return $this->hasMany(Equipment::class); }
-    public function schedules(): HasMany { return $this->hasMany(Schedule::class); }
-    public function roomBookingRequests(): HasMany { return $this->hasMany(RoomBookingRequest::class); }
-    public function incidentReports(): HasMany { return $this->hasMany(IncidentReport::class); }
-    public function loanRequests(): HasMany { return $this->hasMany(LoanRequest::class); }
+    public function computers(): HasMany { return $this->hasMany(Computer::class, 'ma_phong'); }
+    public function equipments(): HasMany { return $this->hasMany(Equipment::class, 'ma_phong'); }
+    public function roomUsageHistories(): HasMany { return $this->hasMany(RoomUsageHistory::class, 'ma_phong'); }
+    public function roomBookingRequests(): HasMany { return $this->hasMany(RoomBookingRequest::class, 'ma_phong'); }
 }

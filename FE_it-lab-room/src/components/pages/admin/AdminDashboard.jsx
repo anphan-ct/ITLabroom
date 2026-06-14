@@ -3,7 +3,7 @@ import AppShell from "../../common/AppShell";
 import StatCard from "../../common/StatCard";
 import SectionCard from "../../common/SectionCard";
 import CalendarTable from "../../common/CalendarTable";
-import { dashboardStats, maintenanceTickets, schedules } from "../../../data/mockData";
+import { dashboardStats, incidentReports, schedules } from "../../../data/mockData";
 import DataTable from "../../common/DataTable";
 
 export default function AdminDashboard() {
@@ -24,14 +24,14 @@ export default function AdminDashboard() {
         </div>
 
         <div>
-          <SectionCard title="Phiếu bảo trì mới">
+          <SectionCard title="Báo cáo sự cố mới">
             <DataTable
               columns={[
-                { key: "computer", title: "Máy" },
-                { key: "issue", title: "Lỗi" },
+                { key: "target", title: "Đối tượng" },
+                { key: "title", title: "Lỗi" },
                 { key: "status", title: "Trạng thái", isStatus: true },
               ]}
-              data={maintenanceTickets}
+              data={incidentReports}
             />
           </SectionCard>
         </div>

@@ -1,7 +1,24 @@
-import { NavLink } from "react-router-dom";
+import { useLayoutEffect, useRef } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 import { roleMenus } from "./navigation.jsx";
 
 export default function Sidebar({ role = "admin", open = false, onClose }) {
+  const location = useLocation();
+  const navRef = useRef(null);
+  const scrollStorageKey = `it-lab-room-sidebar-scroll-${role}`;
+
+  useLayoutEffect(() => {
+    const savedScrollTop = Number(sessionStorage.getItem(scrollStorageKey) || 0);
+
+    if (navRef.current) {
+      navRef.current.scrollTop = savedScrollTop;
+    }
+  }, [location.pathname, scrollStorageKey]);
+
+  const handleNavScroll = (event) => {
+    sessionStorage.setItem(scrollStorageKey, String(event.currentTarget.scrollTop));
+  };
+
   const linkClassName = ({ isActive }) =>
     `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
       isActive
@@ -23,11 +40,17 @@ export default function Sidebar({ role = "admin", open = false, onClose }) {
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+        <nav
+          ref={navRef}
+          onScroll={handleNavScroll}
+          className="flex-1 space-y-1 overflow-y-auto px-3 py-4"
+        >
           {(roleMenus[role] || []).map((item) => {
             const Icon = item.icon;
 
             if (item.children?.length) {
+              const hasActiveChild = item.children.some((child) => child.to === location.pathname);
+
               return (
                 <div key={item.to} className="group space-y-1">
                   <NavLink
@@ -39,7 +62,7 @@ export default function Sidebar({ role = "admin", open = false, onClose }) {
                     <span>{item.label}</span>
                   </NavLink>
 
-                  <div className="ml-4 hidden space-y-1 border-l border-slate-800 pl-3 group-hover:block group-focus-within:block">
+                  <div className={`ml-4 space-y-1 border-l border-slate-800 pl-3 group-hover:block group-focus-within:block ${hasActiveChild ? "block" : "hidden"}`}>
                     {item.children.map((child) => {
                       const ChildIcon = child.icon;
 

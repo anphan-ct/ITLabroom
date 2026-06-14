@@ -9,6 +9,8 @@ import { addSchedulesForShifts, getSchedules, upsertSchedule } from "../../../da
 const days = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
 
 const initialForm = {
+  studyDate: "2026-06-08",
+  weekNumber: 1,
   day: "Thứ 2",
   shift: "Ca sáng",
   time: "06:30 - 11:25",
@@ -16,15 +18,19 @@ const initialForm = {
   subject: "Lập trình web",
   className: "CNTT01",
   teacher: "Trần Thị B",
-  weekNumber: 1,
   lessonStart: 1,
   lessonEnd: 3,
+  scheduleType: "ChinhThuc",
+  status: "scheduled",
+  note: "",
 };
 
 const lessonRanges = {
   "Ca sáng": { min: 1, max: 6 },
   "Ca chiều": { min: 7, max: 12 },
 };
+const scheduleTypes = ["ChinhThuc", "DatPhong", "BoSung"];
+const scheduleStatuses = ["scheduled", "completed", "cancelled"];
 
 function hasLessonOverlap(firstSchedule, secondSchedule) {
   return Number(firstSchedule.lessonStart) <= Number(secondSchedule.lessonEnd)
@@ -74,7 +80,7 @@ export default function ScheduleFormPage() {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    if (!formData.day || selectedShifts.length === 0 || !formData.room || !formData.subject || !formData.className || !formData.teacher || !formData.lessonStart || !formData.lessonEnd) {
+    if (!formData.studyDate || !formData.day || selectedShifts.length === 0 || !formData.room || !formData.subject || !formData.className || !formData.teacher || !formData.lessonStart || !formData.lessonEnd) {
       setError("Vui lòng nhập đầy đủ thông tin lịch phòng máy.");
       return;
     }
@@ -97,15 +103,14 @@ export default function ScheduleFormPage() {
 
     const duplicatedRoomSchedule = schedules.some((schedule) => {
       return schedule.id !== editingSchedule?.id
-        && schedule.day === formData.day
+        && schedule.studyDate === formData.studyDate
         && selectedShifts.includes(schedule.shift)
         && schedule.room === formData.room
-        && schedule.weekNumber === Number(formData.weekNumber)
         && hasLessonOverlap(schedule, formData);
     });
 
     if (duplicatedRoomSchedule) {
-      setError("Phòng máy đã có lịch trùng thứ, ca học, tuần và khoảng tiết.");
+      setError("Phòng máy đã có lịch trùng ngày học, ca học và khoảng tiết.");
       return;
     }
 
@@ -132,6 +137,17 @@ export default function ScheduleFormPage() {
     >
       <SectionCard title="Thông tin lịch phòng máy">
         <form onSubmit={handleSubmit} className="grid gap-5 lg:grid-cols-2">
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-slate-700">Ngày học cụ thể</span>
+            <input
+              type="date"
+              name="studyDate"
+              value={formData.studyDate}
+              onChange={handleChange}
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
+            />
+          </label>
+
           <label className="space-y-2">
             <span className="text-sm font-semibold text-slate-700">Thứ</span>
             <select
@@ -246,6 +262,38 @@ export default function ScheduleFormPage() {
             />
           </label>
 
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-slate-700">Loại lịch</span>
+            <select
+              name="scheduleType"
+              value={formData.scheduleType}
+              onChange={handleChange}
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
+            >
+              {scheduleTypes.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-slate-700">Trạng thái</span>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
+            >
+              {scheduleStatuses.map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </select>
+          </label>
+
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="space-y-2">
               <span className="text-sm font-semibold text-slate-700">Tiết bắt đầu</span>
@@ -273,6 +321,18 @@ export default function ScheduleFormPage() {
               />
             </label>
           </div>
+
+          <label className="space-y-2 lg:col-span-2">
+            <span className="text-sm font-semibold text-slate-700">Ghi chú</span>
+            <input
+              type="text"
+              name="note"
+              value={formData.note}
+              onChange={handleChange}
+              placeholder="Ghi chú lịch phòng máy"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
+            />
+          </label>
 
           {error && (
             <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 lg:col-span-2">

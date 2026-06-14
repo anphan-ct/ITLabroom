@@ -22,20 +22,21 @@ class AuthController extends Controller
 
             // Query student kèm role và hồ sơ sinh viên để tránh N+1 khi trả response.
             $user = User::query()
-                ->select(['id', 'role_id', 'full_name', 'email', 'password', 'phone', 'gender', 'date_of_birth', 'address', 'status'])
+                ->select(['id', 'ma_vai_tro', 'ho_ten', 'email', 'mat_khau', 'so_dien_thoai', 'gioi_tinh', 'ngay_sinh', 'trang_thai'])
                 ->with([
-                    'role:id,role_name,description',
+                    'role:id,ten_vai_tro,mo_ta',
                     // Load hồ sơ sinh viên để response không phát sinh N+1.
-                    'student:id,user_id,class_id,student_code,role,course_year',
+                    'student:id,ma_nguoi_dung,ma_lop,ma_sinh_vien,nien_khoa',
+                    'student.class:id,ma_lop',
                 ])
                 ->where('email', $request->email)
                 ->whereHas('role', function ($query) {
-                    $query->where('role_name', 'student');
+                    $query->where('ten_vai_tro', 'student');
                 })
                 ->whereHas('student')
                 ->first();
 
-            if (! $user || ! Hash::check($request->password, $user->password)) {
+            if (! $user || ! Hash::check($request->password, $user->mat_khau)) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Email hoặc mật khẩu không chính xác',
@@ -44,7 +45,7 @@ class AuthController extends Controller
                 ], 401);
             }
 
-            if ((int) $user->status !== 1) {
+            if ((int) $user->trang_thai !== 1) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Tài khoản sinh viên đã bị khóa',
@@ -94,19 +95,19 @@ class AuthController extends Controller
 
             // Query teacher kèm role và hồ sơ giảng viên để response không phát sinh N+1.
             $user = User::query()
-                ->select(['id', 'role_id', 'full_name', 'email', 'password', 'phone', 'gender', 'date_of_birth', 'address', 'status'])
+                ->select(['id', 'ma_vai_tro', 'ho_ten', 'email', 'mat_khau', 'so_dien_thoai', 'gioi_tinh', 'ngay_sinh', 'trang_thai'])
                 ->with([
-                    'role:id,role_name,description',
-                    'teacher:id,user_id,teacher_code,department',
+                    'role:id,ten_vai_tro,mo_ta',
+                    'teacher:id,ma_nguoi_dung,ma_giang_vien',
                 ])
                 ->where('email', $request->email)
                 ->whereHas('role', function ($query) {
-                    $query->where('role_name', 'teacher');
+                    $query->where('ten_vai_tro', 'teacher');
                 })
                 ->whereHas('teacher')
                 ->first();
 
-            if (! $user || ! Hash::check($request->password, $user->password)) {
+            if (! $user || ! Hash::check($request->password, $user->mat_khau)) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Email hoặc mật khẩu không chính xác',
@@ -115,7 +116,7 @@ class AuthController extends Controller
                 ], 401);
             }
 
-            if ((int) $user->status !== 1) {
+            if ((int) $user->trang_thai !== 1) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Tài khoản giảng viên đã bị khóa',

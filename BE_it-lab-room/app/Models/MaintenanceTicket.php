@@ -10,9 +10,9 @@ class MaintenanceTicket extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['incident_report_id', 'assigned_to', 'maintenance_type', 'start_date', 'end_date', 'solution', 'cost', 'status'];
-    protected $casts = ['start_date' => 'date', 'end_date' => 'date', 'cost' => 'decimal:2'];
+    protected $table = 'phieu_bao_tri';
+    protected $fillable = ['ma_bao_cao_su_co', 'loai_bao_tri', 'ngay_bat_dau', 'ngay_ket_thuc', 'cach_xu_ly', 'chi_phi', 'trang_thai'];
+    protected $casts = ['ngay_bat_dau' => 'date', 'ngay_ket_thuc' => 'date', 'chi_phi' => 'decimal:2'];
 
-    public function incidentReport(): BelongsTo { return $this->belongsTo(IncidentReport::class); }
-    public function assignee(): BelongsTo { return $this->belongsTo(User::class, 'assigned_to'); }
+    public function incidentReport(): BelongsTo { return $this->belongsTo(IncidentReport::class, 'ma_bao_cao_su_co'); }
 }

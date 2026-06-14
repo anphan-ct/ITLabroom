@@ -10,9 +10,32 @@ class Semester extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['semester_name', 'start_date', 'end_date'];
-    protected $casts = ['start_date' => 'date', 'end_date' => 'date'];
+    protected $table = 'nam_hoc';
 
-    public function schedules(): HasMany { return $this->hasMany(Schedule::class); }
-    public function assignments(): HasMany { return $this->hasMany(TeacherAssignment::class); }
+    protected $fillable = [
+        'ten_nam_hoc',
+        'ngay_bat_dau',
+        'ngay_ket_thuc',
+        'trang_thai',
+    ];
+
+    protected $casts = [
+        'ngay_bat_dau' => 'date',
+        'ngay_ket_thuc' => 'date',
+    ];
+
+    public function weeks(): HasMany
+    {
+        return $this->hasMany(Week::class, 'ma_nam_hoc');
+    }
+
+    public function courseSections(): HasMany
+    {
+        return $this->hasMany(CourseSection::class, 'ma_nam_hoc');
+    }
+
+    public function roomBookingRequests(): HasMany
+    {
+        return $this->hasMany(RoomBookingRequest::class, 'ma_nam_hoc');
+    }
 }

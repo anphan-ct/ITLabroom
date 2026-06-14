@@ -10,11 +10,11 @@ class Attendance extends Model
 {
     use HasFactory;
 
-    protected $table = 'attendance';
-    protected $fillable = ['schedule_id', 'student_id', 'computer_id', 'check_in_time', 'status', 'note'];
-    protected $casts = ['check_in_time' => 'datetime'];
+    protected $table = 'diem_danh';
+    protected $fillable = ['ma_lich_su_dung', 'ma_sinh_vien', 'ma_may_tinh', 'thoi_gian_check_in', 'trang_thai', 'ghi_chu'];
+    protected $casts = ['thoi_gian_check_in' => 'datetime'];
 
-    public function schedule(): BelongsTo { return $this->belongsTo(Schedule::class); }
-    public function student(): BelongsTo { return $this->belongsTo(Student::class); }
-    public function computer(): BelongsTo { return $this->belongsTo(Computer::class); }
+    public function roomUsageHistory(): BelongsTo { return $this->belongsTo(RoomUsageHistory::class, 'ma_lich_su_dung'); }
+    public function student(): BelongsTo { return $this->belongsTo(Student::class, 'ma_sinh_vien'); }
+    public function computer(): BelongsTo { return $this->belongsTo(Computer::class, 'ma_may_tinh'); }
 }

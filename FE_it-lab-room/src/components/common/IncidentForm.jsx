@@ -25,7 +25,7 @@ export default function IncidentForm({
       ...roomComputers.map((computer) => ({
         type: "computer",
         code: computer.code,
-        label: `${computer.code} - ${computer.name} - ${computer.status}`,
+        label: `${computer.code} - ${computer.status}`,
         data: computer,
       })),
       ...roomEquipments.map((equipment) => ({
@@ -125,18 +125,6 @@ export default function IncidentForm({
               <span className="text-slate-500">Mã máy</span>
               <span className="font-semibold text-slate-900">
                 {selectedEquipment.data.code}
-              </span>
-            </div>
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <span className="text-slate-500">Tên máy</span>
-              <span className="font-semibold text-slate-900">
-                {selectedEquipment.data.name}
-              </span>
-            </div>
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <span className="text-slate-500">IP</span>
-              <span className="font-semibold text-slate-900">
-                {selectedEquipment.data.ip}
               </span>
             </div>
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">

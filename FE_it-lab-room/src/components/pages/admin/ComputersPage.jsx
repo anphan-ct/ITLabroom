@@ -4,7 +4,6 @@ import { Edit, Plus, Trash2 } from "lucide-react";
 import AppShell from "../../common/AppShell";
 import SectionCard from "../../common/SectionCard";
 import DataTable from "../../common/DataTable";
-import { computerConfigs, getComputerConfig } from "../../../data/computerConfigs";
 import { deleteComputer, getComputers } from "../../../data/computersStore";
 
 export default function ComputersPage() {
@@ -25,11 +24,8 @@ export default function ComputersPage() {
     }
   };
 
-  const getConfigCode = (computer) => {
-    const config = computerConfigs.find((item) => item.id === Number(computer.configId))
-      || getComputerConfig(computer);
-
-    return config?.code || "Chưa chọn";
+  const getConfigLabel = (computer) => {
+    return [computer.cpu, computer.ram, computer.hdd, computer.ssd].filter(Boolean).join(" / ") || "Chưa nhập";
   };
 
   return (
@@ -64,13 +60,12 @@ export default function ComputersPage() {
               { key: "code", title: "Mã máy" },
               { key: "name", title: "Tên máy" },
               { key: "room", title: "Phòng" },
+              { key: "position", title: "Vị trí" },
               {
-                key: "configId",
+                key: "config",
                 title: "Cấu hình",
-                render: (_, computer) => getConfigCode(computer),
+                render: (_, computer) => getConfigLabel(computer),
               },
-              { key: "ip", title: "IP" },
-              { key: "mac", title: "MAC" },
               { key: "status", title: "Trạng thái", isStatus: true },
               {
                 key: "actions",

@@ -16,34 +16,32 @@ class AuthUserResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'full_name' => $this->full_name,
+            'full_name' => $this->ho_ten,
             'email' => $this->email,
-            'phone' => $this->phone,
-            'gender' => $this->gender,
-            'date_of_birth' => $this->date_of_birth?->format('Y-m-d'),
-            'address' => $this->address,
-            'status' => $this->status,
+            'phone' => $this->so_dien_thoai,
+            'gender' => $this->gioi_tinh,
+            'date_of_birth' => $this->ngay_sinh?->format('Y-m-d'),
+            'status' => $this->trang_thai,
             'role' => $this->whenLoaded('role', function () {
                 return [
                     'id' => $this->role->id,
-                    'role_name' => $this->role->role_name,
-                    'description' => $this->role->description,
+                    'role_name' => $this->role->ten_vai_tro,
+                    'description' => $this->role->mo_ta,
                 ];
             }),
             'student' => $this->whenLoaded('student', function () {
                 return $this->student ? [
                     'id' => $this->student->id,
-                    'student_code' => $this->student->student_code,
-                    'role' => $this->student->role,
-                    'class_id' => $this->student->class_id,
-                    'course_year' => $this->student->course_year,
+                    'student_code' => $this->student->ma_sinh_vien,
+                    'class_id' => $this->student->ma_lop,
+                    'class_code' => $this->student->class?->ma_lop,
+                    'course_year' => $this->student->nien_khoa,
                 ] : null;
             }),
             'teacher' => $this->whenLoaded('teacher', function () {
                 return $this->teacher ? [
                     'id' => $this->teacher->id,
-                    'teacher_code' => $this->teacher->teacher_code,
-                    'department' => $this->teacher->department,
+                    'teacher_code' => $this->teacher->ma_giang_vien,
                 ] : null;
             }),
         ];

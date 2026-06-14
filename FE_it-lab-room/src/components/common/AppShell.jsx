@@ -4,7 +4,7 @@ import Sidebar from "./Sidebar.jsx";
 import TopNav from "./TopNav.jsx";
 import Header from "../layout/Header.jsx";
 import Footer from "../layout/Footer.jsx";
-import { clearAuthSession } from "../../services/authService.js";
+import { clearAuthSession } from "../../services/authService.jsx";
 
 const roleLabels = {
   admin: "Quản trị hệ thống",
@@ -29,7 +29,7 @@ export default function AppShell({ role, title, subtitle, children }) {
   };
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-slate-100 text-slate-900">
+    <div className="flex h-screen min-h-screen flex-col overflow-hidden bg-slate-100 text-slate-900">
       <Header
         onMenuToggle={() => setOpen(true)}
         onLogout={handleLogout}
@@ -43,23 +43,23 @@ export default function AppShell({ role, title, subtitle, children }) {
 
       <div
         className={`flex min-h-0 flex-1 ${
-          isAdmin ? "gap-5 px-4 py-4" : "px-4 py-5"
+          isAdmin ? "gap-4 px-3 py-3 md:gap-5 md:px-4 md:py-4" : "px-3 py-4 sm:px-4 sm:py-5"
         }`}
       >
         {isAdmin && (
           <Sidebar role={role} open={open} onClose={() => setOpen(false)} />
         )}
 
-        <main className="min-w-0 flex-1 overflow-y-auto pr-1">
-          <div className="mx-auto max-w-[1440px] space-y-5">
+        <main className="min-w-0 flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-[1440px] space-y-4 pb-3 md:space-y-5 md:pb-4">
             {(title || subtitle) && (
-              <div className="rounded-lg border border-slate-200 bg-white px-5 py-4 shadow-sm">
-                <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+              <div className="rounded-lg border border-slate-200 bg-white px-4 py-4 shadow-sm sm:px-5">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
                       {roleLabels[role] || "IT Lab Room"}
                     </p>
-                    <h1 className="mt-1 text-2xl font-bold text-slate-900">
+                    <h1 className="mt-1 text-xl font-bold text-slate-900 sm:text-2xl">
                       {title}
                     </h1>
                     {subtitle && (

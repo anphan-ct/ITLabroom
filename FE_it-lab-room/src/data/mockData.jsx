@@ -30,10 +30,10 @@ export const rooms = [
 ];
 
 export const computers = [
-  { id: 1, code: "PC001", name: "Máy 01", room: "PM01", ip: "192.168.10.11", mac: "A0-B1-C2-D3-E4-01", cpu: "Core i5", ram: "8GB", storage: "256GB SSD", status: "Hoạt động" },
-  { id: 2, code: "PC002", name: "Máy 02", room: "PM01", ip: "192.168.10.12", mac: "A0-B1-C2-D3-E4-02", cpu: "Core i5", ram: "8GB", storage: "256GB SSD", status: "Hỏng" },
-  { id: 3, code: "PC015", name: "Máy 15", room: "PM02", ip: "192.168.20.25", mac: "A0-B1-C2-D3-E4-15", cpu: "Core i7", ram: "16GB", storage: "512GB SSD", status: "Hoạt động" },
-  { id: 4, code: "PC021", name: "Máy 21", room: "PM03", ip: "192.168.30.31", mac: "A0-B1-C2-D3-E4-21", cpu: "Ryzen 5", ram: "8GB", storage: "256GB SSD", status: "Bảo trì" },
+  { id: 1, code: "PC001", name: "Máy 01", room: "PM01", position: "Dãy A - 01", cpu: "Core i5", ram: "8GB", gpu: "Intel UHD", mainboard: "H510M", monitor: "21.5 inch", keyboard: "Logitech K120", mouse: "Logitech B100", hdd: "", ssd: "256GB", status: "Hoạt động" },
+  { id: 2, code: "PC002", name: "Máy 02", room: "PM01", position: "Dãy A - 02", cpu: "Core i5", ram: "8GB", gpu: "Intel UHD", mainboard: "H510M", monitor: "21.5 inch", keyboard: "Logitech K120", mouse: "Logitech B100", hdd: "", ssd: "256GB", status: "Hỏng" },
+  { id: 3, code: "PC015", name: "Máy 15", room: "PM02", position: "Dãy B - 05", cpu: "Core i7", ram: "16GB", gpu: "GTX 1650", mainboard: "B560M", monitor: "24 inch", keyboard: "Logitech K120", mouse: "Logitech B100", hdd: "1TB", ssd: "512GB", status: "Hoạt động" },
+  { id: 4, code: "PC021", name: "Máy 21", room: "PM03", position: "Dãy C - 01", cpu: "Ryzen 5", ram: "8GB", gpu: "Radeon Vega", mainboard: "A520M", monitor: "21.5 inch", keyboard: "Dell KB216", mouse: "Dell MS116", hdd: "", ssd: "256GB", status: "Bảo trì" },
 ];
 
 export const equipments = [
@@ -43,11 +43,11 @@ export const equipments = [
   { id: 4, code: "TB004", name: "Máy chiếu Sony VPL-DX221", room: "PM03", quantity: 1, unit: "Cái", status: "Đang bảo trì", note: "Đang kiểm tra bóng đèn" },
 ];
 
-export const maintenanceTickets = [
-  { id: 1, reporter: "GV Trần Thị B", targetType: "Máy tính", target: "PC002", room: "PM01", issue: "Không khởi động được", date: "2026-04-20", status: "Chờ xử lý" },
-  { id: 2, reporter: "SV Lê Văn C", targetType: "Máy tính", target: "PC021", room: "PM03", issue: "Màn hình bị nhấp nháy", date: "2026-04-21", status: "Đang sửa" },
-  { id: 3, reporter: "Admin", targetType: "Máy tính", target: "PC010", room: "PM01", issue: "Bàn phím hỏng", date: "2026-04-22", status: "Hoàn thành" },
-  { id: 4, reporter: "GV Hoàng Minh Khang", targetType: "Thiết bị", target: "Máy chiếu Sony VPL-DX221", room: "PM03", issue: "Hình chiếu mờ, quạt kêu lớn", date: "2026-04-23", status: "Chờ xử lý" },
+export const incidentReports = [
+  { id: 1, code: "SC-0001", reporter: "GV Trần Thị B", targetType: "Máy tính", target: "PC002", issueType: "Phần cứng", title: "Máy không khởi động", description: "Bật nguồn không lên, đèn nguồn chớp liên tục.", severity: "Cao", date: "2026-04-20", status: "Đã tiếp nhận" },
+  { id: 2, code: "SC-0002", reporter: "SV Lê Văn C", targetType: "Máy tính", target: "PC021", issueType: "Màn hình", title: "Màn hình nhấp nháy", description: "Màn hình chớp khi mở phần mềm đồ họa.", severity: "Trung bình", date: "2026-04-21", status: "Đang xử lý" },
+  { id: 3, code: "SC-0003", reporter: "Admin", targetType: "Máy tính", target: "PC010", issueType: "Ngoại vi", title: "Bàn phím hỏng", description: "Một số phím không nhận.", severity: "Thấp", date: "2026-04-22", status: "Đã xử lý" },
+  { id: 4, code: "SC-0004", reporter: "GV Hoàng Minh Khang", targetType: "Thiết bị", target: "Máy chiếu Sony VPL-DX221", issueType: "Thiết bị phòng", title: "Máy chiếu hình mờ", description: "Hình chiếu mờ, quạt phát tiếng ồn lớn.", severity: "Cao", date: "2026-04-23", status: "Chờ tiếp nhận" },
 ];
 
 export const schedules = [
@@ -76,6 +76,32 @@ export const schedules = [
     weekNumber: 2,
     lessonStart: 7,
     lessonEnd: 9,
+  },
+  {
+    id: 3,
+    day: "Thứ 2",
+    shift: "Ca sáng",
+    time: "09:15 - 10:00",
+    room: "PM01",
+    subject: "Mạng máy tính",
+    className: "CNTT01",
+    teacher: "Hoàng Minh Khang",
+    weekNumber: 1,
+    lessonStart: 4,
+    lessonEnd: 4,
+  },
+  {
+    id: 4,
+    day: "Thứ 4",
+    shift: "Ca sáng",
+    time: "09:15 - 11:25",
+    room: "PM03",
+    subject: "Mạng máy tính",
+    className: "CNTT01",
+    teacher: "Giảng viên IT Lab",
+    weekNumber: 1,
+    lessonStart: 4,
+    lessonEnd: 6,
   },
 ];
 
@@ -129,28 +155,28 @@ export const loanRequests = [
   {
     id: 1,
     code: "PM-0001",
-    borrower: "Phạm Minh D",
-    className: "CNTT01",
-    item: "Laptop thực hành",
-    room: "PM01",
-    quantity: 1,
+    teacherId: 2,
+    teacherName: "Trần Thị B",
+    departmentId: 1,
+    departmentName: "Công nghệ thông tin",
+    roomId: 1,
+    roomCode: "PM01",
     borrowedAt: "2026-05-04 07:00",
-    expectedReturnAt: "2026-05-04 11:00",
-    purpose: "Hỗ trợ nhóm làm bài thực hành mạng máy tính",
-    status: "Đang mượn",
+    quantity: 5,
+    purpose: "Mượn máy phục vụ buổi thực hành mạng máy tính",
   },
   {
     id: 2,
     code: "PM-0002",
-    borrower: "Lê Văn C",
-    className: "CNTT02",
-    item: "Máy chiếu",
-    room: "PM02",
-    quantity: 1,
+    teacherId: 5,
+    teacherName: "Hoàng Minh Khang",
+    departmentId: 2,
+    departmentName: "Điện tử viễn thông",
+    roomId: 2,
+    roomCode: "PM02",
     borrowedAt: "2026-05-03 13:00",
-    expectedReturnAt: "2026-05-03 17:00",
-    purpose: "Trình bày báo cáo môn Cơ sở dữ liệu",
-    status: "Đã trả",
+    quantity: 3,
+    purpose: "Mượn máy phục vụ báo cáo môn Cơ sở dữ liệu",
   },
 ];
 

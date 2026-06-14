@@ -12,11 +12,13 @@ class Teacher extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['user_id', 'teacher_code', 'department'];
+    protected $table = 'giang_vien';
+    protected $fillable = ['ma_nguoi_dung', 'ma_giang_vien'];
 
-    public function user(): BelongsTo { return $this->belongsTo(User::class); }
-    public function classes(): HasMany { return $this->hasMany(SchoolClass::class, 'teacher_id'); }
-    public function assignments(): HasMany { return $this->hasMany(TeacherAssignment::class); }
-    public function schedules(): HasMany { return $this->hasMany(Schedule::class); }
-    public function roomBookingRequests(): HasMany { return $this->hasMany(RoomBookingRequest::class); }
+    public function user(): BelongsTo { return $this->belongsTo(User::class, 'ma_nguoi_dung'); }
+    public function classes(): HasMany { return $this->hasMany(SchoolClass::class, 'ma_giang_vien'); }
+    public function assignments(): HasMany { return $this->hasMany(TeacherAssignment::class, 'ma_giang_vien'); }
+    public function roomUsageHistories(): HasMany { return $this->hasMany(RoomUsageHistory::class, 'ma_giang_vien'); }
+    public function roomBookingRequests(): HasMany { return $this->hasMany(RoomBookingRequest::class, 'ma_giang_vien'); }
+    public function loanRequests(): HasMany { return $this->hasMany(LoanRequest::class, 'ma_giang_vien'); }
 }

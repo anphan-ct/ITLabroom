@@ -5,14 +5,10 @@ import AppShell from "../../common/AppShell";
 import SectionCard from "../../common/SectionCard";
 import { getShifts, upsertShift } from "../../../data/shiftsStore";
 
-const statuses = ["Hoạt động", "Tạm dừng"];
-
 const initialForm = {
-  code: "",
   name: "",
   start_time: "06:30",
   end_time: "07:15",
-  status: "Hoạt động",
 };
 
 export default function ShiftFormPage() {
@@ -39,8 +35,8 @@ export default function ShiftFormPage() {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    if (!formData.code.trim() || !formData.name.trim() || !formData.start_time || !formData.end_time) {
-      setError("Vui lòng nhập đầy đủ mã ca, tên ca và khung giờ.");
+    if (!formData.name.trim() || !formData.start_time || !formData.end_time) {
+      setError("Vui lòng nhập đầy đủ tên ca và khung giờ.");
       return;
     }
 
@@ -49,13 +45,13 @@ export default function ShiftFormPage() {
       return;
     }
 
-    const duplicatedCode = shifts.some((shift) => {
-      return shift.code.toUpperCase() === formData.code.trim().toUpperCase()
+    const duplicatedName = shifts.some((shift) => {
+      return shift.name.toLowerCase() === formData.name.trim().toLowerCase()
         && shift.id !== editingShift?.id;
     });
 
-    if (duplicatedCode) {
-      setError("Mã ca đã tồn tại.");
+    if (duplicatedName) {
+      setError("Tên ca đã tồn tại.");
       return;
     }
 
@@ -74,18 +70,6 @@ export default function ShiftFormPage() {
     >
       <SectionCard title="Thông tin ca học">
         <form onSubmit={handleSubmit} className="grid gap-5 lg:grid-cols-2">
-          <label className="space-y-2">
-            <span className="text-sm font-semibold text-slate-700">Mã ca</span>
-            <input
-              type="text"
-              name="code"
-              value={formData.code}
-              onChange={handleChange}
-              placeholder="VD: CA07"
-              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm uppercase outline-none transition focus:border-blue-500 focus:bg-white"
-            />
-          </label>
-
           <label className="space-y-2">
             <span className="text-sm font-semibold text-slate-700">Tên ca</span>
             <input
@@ -118,22 +102,6 @@ export default function ShiftFormPage() {
               onChange={handleChange}
               className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
             />
-          </label>
-
-          <label className="space-y-2">
-            <span className="text-sm font-semibold text-slate-700">Trạng thái</span>
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
-            >
-              {statuses.map((status) => (
-                <option key={status} value={status}>
-                  {status}
-                </option>
-              ))}
-            </select>
           </label>
 
           {error && (

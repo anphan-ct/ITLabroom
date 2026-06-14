@@ -17,4 +17,3 @@ Route::prefix('auth')->group(function () {
 Route::prefix('admin/classes')->group(function () {
     Route::get('/{class}/students', [ClassStudentController::class, 'index']);
 });
-

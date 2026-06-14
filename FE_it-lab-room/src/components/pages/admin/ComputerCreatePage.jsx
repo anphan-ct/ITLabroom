@@ -4,7 +4,6 @@ import { ArrowLeft, Save } from "lucide-react";
 import AppShell from "../../common/AppShell";
 import SectionCard from "../../common/SectionCard";
 import { getComputers, upsertComputer } from "../../../data/computersStore";
-import { computerConfigs, getComputerConfig } from "../../../data/computerConfigs";
 import { getRooms } from "../../../data/roomsStore";
 
 const statuses = ["Hoạt động", "Hỏng", "Bảo trì"];
@@ -13,10 +12,17 @@ const initialForm = {
   code: "",
   name: "",
   room: "",
-  configId: "",
+  position: "",
+  cpu: "",
+  ram: "",
+  gpu: "",
+  mainboard: "",
+  monitor: "",
+  keyboard: "",
+  mouse: "",
+  hdd: "",
+  ssd: "",
   status: "Hoạt động",
-  ip: "",
-  mac: "",
 };
 
 function getInitialForm(computer) {
@@ -26,7 +32,16 @@ function getInitialForm(computer) {
 
   return {
     ...computer,
-    configId: computer.configId || getComputerConfig(computer)?.id || "",
+    position: computer.position || "",
+    cpu: computer.cpu || "",
+    ram: computer.ram || "",
+    gpu: computer.gpu || "",
+    mainboard: computer.mainboard || "",
+    monitor: computer.monitor || "",
+    keyboard: computer.keyboard || "",
+    mouse: computer.mouse || "",
+    hdd: computer.hdd || "",
+    ssd: computer.ssd || "",
   };
 }
 
@@ -50,18 +65,17 @@ export default function ComputerCreatePage() {
     const { name, value } = event.target;
     setFormData((currentData) => ({
       ...currentData,
-      [name]: name === "configId" ? Number(value) : value,
+      [name]: value,
     }));
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    if (!formData.code.trim() || !formData.name.trim() || !formData.room || !formData.configId) {
-      setError("Vui lòng nhập đầy đủ mã máy, tên máy, phòng và cấu hình máy.");
+    if (!formData.code.trim() || !formData.name.trim() || !formData.room) {
+      setError("Vui lòng nhập đầy đủ mã máy, tên máy và phòng.");
       return;
     }
-
     const duplicatedCode = computers.some((computer) => {
       return computer.code.toUpperCase() === formData.code.trim().toUpperCase()
         && computer.id !== editingComputer?.id;
@@ -69,6 +83,17 @@ export default function ComputerCreatePage() {
 
     if (duplicatedCode) {
       setError("Mã máy đã tồn tại.");
+      return;
+    }
+
+    const duplicatedNameInRoom = computers.some((computer) => {
+      return computer.name?.trim().toUpperCase() === formData.name.trim().toUpperCase()
+        && computer.room === formData.room
+        && computer.id !== editingComputer?.id;
+    });
+
+    if (duplicatedNameInRoom) {
+      setError("Tên máy đã tồn tại trong phòng này.");
       return;
     }
 
@@ -83,7 +108,7 @@ export default function ComputerCreatePage() {
     <AppShell
       role="admin"
       title={isEditing ? "Sửa máy tính" : "Thêm máy tính"}
-      subtitle={isEditing ? "Cập nhật thông tin định danh và trạng thái máy tính" : "Tạo thông tin định danh và trạng thái máy tính"}
+      subtitle={isEditing ? "Cập nhật thông tin định danh, cấu hình và trạng thái máy tính" : "Tạo thông tin định danh, cấu hình và trạng thái máy tính"}
     >
       <SectionCard
         title="Thông tin máy tính"
@@ -140,6 +165,18 @@ export default function ComputerCreatePage() {
           </label>
 
           <label className="space-y-2">
+            <span className="text-sm font-semibold text-slate-700">Vị trí</span>
+            <input
+              type="text"
+              name="position"
+              value={formData.position}
+              onChange={handleChange}
+              placeholder="VD: Dãy A - Máy 01"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
+            />
+          </label>
+
+          <label className="space-y-2">
             <span className="text-sm font-semibold text-slate-700">Trạng thái</span>
             <select
               name="status"
@@ -155,44 +192,111 @@ export default function ComputerCreatePage() {
             </select>
           </label>
 
-          <label className="space-y-2 lg:col-span-2">
-            <span className="text-sm font-semibold text-slate-700">Cấu hình máy</span>
-            <select
-              name="configId"
-              value={formData.configId}
-              onChange={handleChange}
-              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
-            >
-              <option value="">Chọn cấu hình máy</option>
-              {computerConfigs.map((config) => (
-                <option key={config.id} value={config.id}>
-                  {config.code} - {config.cpu} - {config.ram} - {config.storage}
-                </option>
-              ))}
-            </select>
-          </label>
-
           <label className="space-y-2">
-            <span className="text-sm font-semibold text-slate-700">IP</span>
+            <span className="text-sm font-semibold text-slate-700">CPU</span>
             <input
               type="text"
-              name="ip"
-              value={formData.ip}
+              name="cpu"
+              value={formData.cpu}
               onChange={handleChange}
-              placeholder="VD: 192.168.10.22"
+              placeholder="VD: Intel Core i5"
               className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
             />
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm font-semibold text-slate-700">MAC</span>
+            <span className="text-sm font-semibold text-slate-700">RAM</span>
             <input
               type="text"
-              name="mac"
-              value={formData.mac}
+              name="ram"
+              value={formData.ram}
               onChange={handleChange}
-              placeholder="VD: A0-B1-C2-D3-E4-22"
-              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm uppercase outline-none transition focus:border-blue-500 focus:bg-white"
+              placeholder="VD: 8GB"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
+            />
+          </label>
+
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-slate-700">VGA</span>
+            <input
+              type="text"
+              name="gpu"
+              value={formData.gpu}
+              onChange={handleChange}
+              placeholder="VD: Intel UHD Graphics"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
+            />
+          </label>
+
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-slate-700">Main / Bo mạch chủ</span>
+            <input
+              type="text"
+              name="mainboard"
+              value={formData.mainboard}
+              onChange={handleChange}
+              placeholder="VD: H610M"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
+            />
+          </label>
+
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-slate-700">Màn hình</span>
+            <input
+              type="text"
+              name="monitor"
+              value={formData.monitor}
+              onChange={handleChange}
+              placeholder="VD: 21.5 inch"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
+            />
+          </label>
+
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-slate-700">Bàn phím</span>
+            <input
+              type="text"
+              name="keyboard"
+              value={formData.keyboard}
+              onChange={handleChange}
+              placeholder="VD: Logitech K120"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
+            />
+          </label>
+
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-slate-700">Chuột</span>
+            <input
+              type="text"
+              name="mouse"
+              value={formData.mouse}
+              onChange={handleChange}
+              placeholder="VD: Logitech B100"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
+            />
+          </label>
+
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-slate-700">HDD</span>
+            <input
+              type="text"
+              name="hdd"
+              value={formData.hdd}
+              onChange={handleChange}
+              placeholder="VD: 1TB"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
+            />
+          </label>
+
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-slate-700">SSD</span>
+            <input
+              type="text"
+              name="ssd"
+              value={formData.ssd}
+              onChange={handleChange}
+              placeholder="VD: 256GB"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
             />
           </label>
 

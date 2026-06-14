@@ -22,11 +22,10 @@ export default function ComputerLookupPage() {
           item.code,
           item.name,
           item.room,
-          item.ip,
-          item.mac,
           item.cpu,
           item.ram,
-          item.storage,
+          item.hdd,
+          item.ssd,
           item.status,
         ]
           .join(" ")
@@ -68,7 +67,7 @@ export default function ComputerLookupPage() {
               <input
                 className="h-11 w-full pl-10 pr-3"
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="Tìm mã máy, IP, cấu hình..."
+                placeholder="Tìm mã máy, phòng, cấu hình..."
                 value={search}
               />
             </div>
@@ -80,12 +79,11 @@ export default function ComputerLookupPage() {
             <thead className="bg-slate-50 text-xs font-bold uppercase tracking-wide text-slate-500">
               <tr>
                 <th className="px-4 py-3 text-left">Mã máy</th>
-                <th className="px-4 py-3 text-left">Tên máy</th>
                 <th className="px-4 py-3 text-left">Phòng</th>
-                <th className="px-4 py-3 text-left">IP</th>
                 <th className="px-4 py-3 text-left">CPU</th>
                 <th className="px-4 py-3 text-left">RAM</th>
-                <th className="px-4 py-3 text-left">Ổ cứng</th>
+                <th className="px-4 py-3 text-left">HDD</th>
+                <th className="px-4 py-3 text-left">SSD</th>
                 <th className="px-4 py-3 text-left">Trạng thái</th>
                 <th className="px-4 py-3 text-left">Thao tác</th>
               </tr>
@@ -96,14 +94,8 @@ export default function ComputerLookupPage() {
                   <td className="whitespace-nowrap px-4 py-3 font-semibold text-slate-900">
                     {item.code}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-slate-700">
-                    {item.name}
-                  </td>
                   <td className="whitespace-nowrap px-4 py-3 font-semibold text-blue-700">
                     {item.room}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-slate-700">
-                    {item.ip}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-slate-700">
                     {item.cpu}
@@ -112,7 +104,10 @@ export default function ComputerLookupPage() {
                     {item.ram}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-slate-700">
-                    {item.storage}
+                    {item.hdd || "-"}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-slate-700">
+                    {item.ssd || "-"}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3">
                     <StatusBadge value={item.status} />

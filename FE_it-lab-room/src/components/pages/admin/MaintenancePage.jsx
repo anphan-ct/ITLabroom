@@ -1,74 +1,76 @@
 import { useState } from "react";
+import { ClipboardList, Wrench, XCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 import AppShell from "../../common/AppShell";
 import SectionCard from "../../common/SectionCard";
 import DataTable from "../../common/DataTable";
-import { maintenanceTickets } from "../../../data/mockData";
-
-const maintenanceStatusOptions = ["Chờ xử lý", "Đã duyệt", "Đang sửa", "Hoàn thành", "Từ chối"];
+import { incidentReports } from "../../../data/mockData";
 
 export default function MaintenancePage() {
-  const [tickets, setTickets] = useState(maintenanceTickets);
+  const [reports, setReports] = useState(incidentReports);
 
-  const updateTicketStatus = (ticketId, status) => {
-    setTickets((currentTickets) =>
-      currentTickets.map((ticket) =>
-        ticket.id === ticketId ? { ...ticket, status } : ticket,
+  const updateReportStatus = (reportId, status) => {
+    setReports((currentReports) =>
+      currentReports.map((report) =>
+        report.id === reportId ? { ...report, status } : report,
       ),
     );
   };
 
   return (
-    <AppShell role="admin" title="Quản lý bảo trì" subtitle="Theo dõi sự cố và tiến độ xử lý">
-      <SectionCard title="Phiếu sửa chữa / bảo trì">
-        <DataTable
-          columns={[
-            { key: "reporter", title: "Người báo" },
-            { key: "targetType", title: "Loại" },
-            { key: "target", title: "Đối tượng" },
-            { key: "room", title: "Phòng" },
-            { key: "issue", title: "Mô tả lỗi" },
-            { key: "date", title: "Ngày báo" },
-            { key: "status", title: "Trạng thái", isStatus: true },
-            {
-              key: "actions",
-              title: "Thao tác",
-              render: (_, ticket) => (
-                <div className="flex gap-2">
-                  <select
-                    value={ticket.status}
-                    onChange={(event) => updateTicketStatus(ticket.id, event.target.value)}
-                    className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm text-slate-700 outline-none"
-                    aria-label="Cập nhật trạng thái bảo trì"
-                  >
-                    {maintenanceStatusOptions.map((status) => (
-                      <option key={status} value={status}>
-                        {status}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    disabled={ticket.status === "Đã duyệt"}
-                    onClick={() => updateTicketStatus(ticket.id, "Đã duyệt")}
-                    className="rounded-lg bg-blue-100 px-3 py-1 text-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    Duyệt
-                  </button>
-                  <button
-                    type="button"
-                    disabled={ticket.status === "Từ chối"}
-                    onClick={() => updateTicketStatus(ticket.id, "Từ chối")}
-                    className="rounded-lg bg-rose-100 px-3 py-1 text-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    Từ chối
-                  </button>
-                </div>
-              ),
-            },
-          ]}
-          data={tickets}
-        />
-      </SectionCard>
+    <AppShell role="admin" title="Báo cáo sự cố" subtitle="Tiếp nhận báo cáo sự cố và chuyển sang phiếu bảo trì khi cần xử lý">
+      <div className="space-y-6">
+        <SectionCard title="Danh sách báo cáo sự cố">
+          <DataTable
+            columns={[
+              { key: "id", title: "ID" },
+              { key: "reporter", title: "Người báo" },
+              { key: "targetType", title: "Loại" },
+              { key: "target", title: "Đối tượng" },
+              { key: "room", title: "Phòng" },
+              { key: "issueType", title: "Loại sự cố" },
+              { key: "title", title: "Tiêu đề" },
+              { key: "severity", title: "Mức độ", isStatus: true },
+              { key: "status", title: "Trạng thái", isStatus: true },
+              {
+                key: "actions",
+                title: "Thao tác",
+                render: (_, report) => (
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      disabled={report.status === "Đã tiếp nhận"}
+                      onClick={() => updateReportStatus(report.id, "Đã tiếp nhận")}
+                      className="inline-flex h-9 items-center gap-1 rounded-lg bg-blue-100 px-3 text-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <ClipboardList size={15} />
+                      Tiếp nhận
+                    </button>
+                    <Link
+                      to="/admin/maintenance-tickets"
+                      onClick={() => updateReportStatus(report.id, "Đang xử lý")}
+                      className="inline-flex h-9 items-center gap-1 rounded-lg bg-emerald-100 px-3 text-emerald-700"
+                    >
+                      <Wrench size={15} />
+                      Lập phiếu
+                    </Link>
+                    <button
+                      type="button"
+                      disabled={report.status === "Từ chối"}
+                      onClick={() => updateReportStatus(report.id, "Từ chối")}
+                      className="inline-flex h-9 items-center gap-1 rounded-lg bg-rose-100 px-3 text-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <XCircle size={15} />
+                      Từ chối
+                    </button>
+                  </div>
+                ),
+              },
+            ]}
+            data={reports}
+          />
+        </SectionCard>
+      </div>
     </AppShell>
   );
 }

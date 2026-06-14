@@ -11,11 +11,11 @@ class IncidentReport extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['reported_by_user_id', 'room_id', 'computer_id', 'equipment_id', 'incident_type', 'title', 'description', 'severity_level', 'status'];
+    protected $table = 'bao_cao_su_co';
+    protected $fillable = ['ma_nguoi_bao_cao', 'ma_may_tinh', 'ma_thiet_bi', 'loai_su_co', 'tieu_de', 'mo_ta', 'muc_do', 'trang_thai'];
 
-    public function reporter(): BelongsTo { return $this->belongsTo(User::class, 'reported_by_user_id'); }
-    public function room(): BelongsTo { return $this->belongsTo(Room::class); }
-    public function computer(): BelongsTo { return $this->belongsTo(Computer::class); }
-    public function equipment(): BelongsTo { return $this->belongsTo(Equipment::class); }
-    public function maintenanceTickets(): HasMany { return $this->hasMany(MaintenanceTicket::class); }
+    public function reporter(): BelongsTo { return $this->belongsTo(User::class, 'ma_nguoi_bao_cao'); }
+    public function computer(): BelongsTo { return $this->belongsTo(Computer::class, 'ma_may_tinh'); }
+    public function equipment(): BelongsTo { return $this->belongsTo(Equipment::class, 'ma_thiet_bi'); }
+    public function maintenanceTickets(): HasMany { return $this->hasMany(MaintenanceTicket::class, 'ma_bao_cao_su_co'); }
 }

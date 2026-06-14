@@ -10,10 +10,14 @@ class TeacherAssignment extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['teacher_id', 'class_id', 'subject_id', 'semester_id'];
+    protected $table = 'phan_cong_giang_vien';
+    protected $fillable = [
+        'ma_giang_vien',
+        'ma_lop_hoc_phan',
+        'trang_thai',
+        'ghi_chu',
+    ];
 
-    public function teacher(): BelongsTo { return $this->belongsTo(Teacher::class); }
-    public function class(): BelongsTo { return $this->belongsTo(SchoolClass::class, 'class_id'); }
-    public function subject(): BelongsTo { return $this->belongsTo(Subject::class); }
-    public function semester(): BelongsTo { return $this->belongsTo(Semester::class); }
+    public function teacher(): BelongsTo { return $this->belongsTo(Teacher::class, 'ma_giang_vien'); }
+    public function courseSection(): BelongsTo { return $this->belongsTo(CourseSection::class, 'ma_lop_hoc_phan'); }
 }

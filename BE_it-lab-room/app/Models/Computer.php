@@ -12,12 +12,27 @@ class Computer extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['room_id', 'config_id', 'computer_code', 'computer_name', 'qr_token', 'ip_address', 'mac_address', 'status', 'note'];
+    protected $table = 'may_tinh';
+    protected $fillable = [
+        'ma_phong',
+        'ma_may',
+        'ten_may',
+        'vi_tri',
+        'ma_qr',
+        'bo_xu_ly',
+        'ram',
+        'card_do_hoa',
+        'bo_mach_chu',
+        'man_hinh',
+        'ban_phim',
+        'chuot',
+        'hdd',
+        'ssd',
+        'trang_thai',
+        'ghi_chu',
+    ];
 
-    public function room(): BelongsTo { return $this->belongsTo(Room::class); }
-    public function config(): BelongsTo { return $this->belongsTo(ComputerConfig::class, 'config_id'); }
-    public function incidentReports(): HasMany { return $this->hasMany(IncidentReport::class); }
-    public function loanRequests(): HasMany { return $this->hasMany(LoanRequest::class); }
-    public function statusLogs(): HasMany { return $this->hasMany(ComputerStatusLog::class); }
-    public function attendanceRecords(): HasMany { return $this->hasMany(Attendance::class); }
+    public function room(): BelongsTo { return $this->belongsTo(Room::class, 'ma_phong'); }
+    public function incidentReports(): HasMany { return $this->hasMany(IncidentReport::class, 'ma_may_tinh'); }
+    public function attendanceRecords(): HasMany { return $this->hasMany(Attendance::class, 'ma_may_tinh'); }
 }

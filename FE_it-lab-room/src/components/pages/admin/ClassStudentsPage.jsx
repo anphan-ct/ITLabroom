@@ -85,11 +85,6 @@ export default function ClassStudentsPage() {
             { key: "code", title: "MSSV" },
             { key: "name", title: "Họ tên" },
             { key: "email", title: "Email" },
-            {
-              key: "studentRole",
-              title: "Vai trò",
-              render: (value) => (Number(value) === 1 ? "Lớp trưởng" : "Sinh viên"),
-            },
             { key: "course", title: "Niên khóa" },
             { key: "status", title: "Trạng thái", isStatus: true },
             {

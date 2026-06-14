@@ -34,7 +34,7 @@ export default function DataTable({ columns, data, getRowLink }) {
               className={`hover:bg-slate-50 ${getRowLink ? "cursor-pointer" : ""}`}
             >
               {columns.map((col) => (
-                <td key={col.key} className="whitespace-nowrap px-4 py-3 text-slate-700">
+                <td key={col.key} className="max-w-[280px] px-4 py-3 align-top text-slate-700">
                   {col.render ? col.render(row[col.key], row) : col.isStatus ? <StatusBadge value={row[col.key]} /> : row[col.key]}
                 </td>
               ))}

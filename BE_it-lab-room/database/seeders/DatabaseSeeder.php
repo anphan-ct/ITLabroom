@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Role;
 use App\Models\SchoolClass;
-use App\Models\Shift;
 use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\User;
@@ -23,128 +22,105 @@ class DatabaseSeeder extends Seeder
     {
         $password = Hash::make('Password@123');
 
-        // Tạo danh sách ca học theo buổi để lịch phòng máy dễ quản lý.
-        $shifts = [
-            ['shift_name' => 'Ca sáng', 'start_time' => '06:30:00', 'end_time' => '11:25:00'],
-            ['shift_name' => 'Ca chiều', 'start_time' => '12:30:00', 'end_time' => '17:30:00'],
-        ];
-
-        foreach ($shifts as $shift) {
-            Shift::query()->updateOrCreate(
-                ['shift_name' => $shift['shift_name']],
-                [
-                    'start_time' => $shift['start_time'],
-                    'end_time' => $shift['end_time'],
-                ]
-            );
-        }
-
         // Tạo role trước để user đăng nhập đúng luồng auth theo từng quyền.
         $adminRole = Role::query()->updateOrCreate(
-            ['role_name' => 'admin'],
-            ['description' => 'Quản trị viên hệ thống']
+            ['ten_vai_tro' => 'admin'],
+            ['mo_ta' => 'Quản trị viên hệ thống']
         );
 
         $studentRole = Role::query()->updateOrCreate(
-            ['role_name' => 'student'],
-            ['description' => 'Sinh viên']
+            ['ten_vai_tro' => 'student'],
+            ['mo_ta' => 'Sinh viên']
         );
 
         $teacherRole = Role::query()->updateOrCreate(
-            ['role_name' => 'teacher'],
-            ['description' => 'Giảng viên']
+            ['ten_vai_tro' => 'teacher'],
+            ['mo_ta' => 'Giảng viên']
         );
 
         $admin = User::query()->updateOrCreate(
             ['email' => 'admin@itlab.test'],
             [
-                'role_id' => $adminRole->id,
-                'full_name' => 'Admin IT Lab',
-                'password' => $password,
-                'phone' => '0900000001',
-                'gender' => 'Nam',
-                'date_of_birth' => '1990-01-01',
-                'address' => 'Phòng quản trị IT Lab',
-                'status' => 1,
+                'ma_vai_tro' => $adminRole->id,
+                'ho_ten' => 'Admin IT Lab',
+                'mat_khau' => $password,
+                'so_dien_thoai' => '0900000001',
+                'gioi_tinh' => 'Nam',
+                'ngay_sinh' => '1990-01-01',
+                'trang_thai' => 1,
             ]
         );
 
         $teacherUser = User::query()->updateOrCreate(
             ['email' => 'teacher@itlab.test'],
             [
-                'role_id' => $teacherRole->id,
-                'full_name' => 'Giảng viên IT Lab',
-                'password' => $password,
-                'phone' => '0900000002',
-                'gender' => 'Nữ',
-                'date_of_birth' => '1988-05-10',
-                'address' => 'Khoa Công nghệ thông tin',
-                'status' => 1,
+                'ma_vai_tro' => $teacherRole->id,
+                'ho_ten' => 'Giảng viên IT Lab',
+                'mat_khau' => $password,
+                'so_dien_thoai' => '0900000002',
+                'gioi_tinh' => 'Nữ',
+                'ngay_sinh' => '1988-05-10',
+                'trang_thai' => 1,
             ]
         );
 
         $teacher = Teacher::query()->updateOrCreate(
-            ['user_id' => $teacherUser->id],
+            ['ma_nguoi_dung' => $teacherUser->id],
             [
-                'teacher_code' => 'GVTEST001',
-                'department' => 'Công nghệ thông tin',
+                'ma_giang_vien' => 'GVTEST001',
             ]
         );
 
         $class = SchoolClass::query()->updateOrCreate(
-            ['class_code' => 'CTK_TEST_01'],
+            ['ma_lop' => 'CTK_TEST_01'],
             [
-                'course_year' => '2022-2026',
-                'major' => 'Công nghệ thông tin',
-                'teacher_id' => $teacher->id,
+                'nien_khoa' => '2022-2026',
+                'chuyen_nganh' => 'Công nghệ thông tin',
+                'ma_giang_vien' => $teacher->id,
             ]
         );
 
         $studentUser = User::query()->updateOrCreate(
             ['email' => 'student@itlab.test'],
             [
-                'role_id' => $studentRole->id,
-                'full_name' => 'Sinh viên IT Lab',
-                'password' => $password,
-                'phone' => '0900000003',
-                'gender' => 'Nam',
-                'date_of_birth' => '2004-09-15',
-                'address' => 'Ký túc xá sinh viên',
-                'status' => 1,
+                'ma_vai_tro' => $studentRole->id,
+                'ho_ten' => 'Sinh viên IT Lab',
+                'mat_khau' => $password,
+                'so_dien_thoai' => '0900000003',
+                'gioi_tinh' => 'Nam',
+                'ngay_sinh' => '2004-09-15',
+                'trang_thai' => 1,
             ]
         );
 
         Student::query()->updateOrCreate(
-            ['user_id' => $studentUser->id],
+            ['ma_nguoi_dung' => $studentUser->id],
             [
-                'class_id' => $class->id,
-                'student_code' => 'SVTEST001',
-                'role' => 0,
-                'course_year' => '2022-2026',
+                'ma_lop' => $class->id,
+                'ma_sinh_vien' => 'SVTEST001',
+                'nien_khoa' => '2022-2026',
             ]
         );
 
         $classMonitorUser = User::query()->updateOrCreate(
             ['email' => 'monitor@itlab.test'],
             [
-                'role_id' => $studentRole->id,
-                'full_name' => 'Lớp trưởng IT Lab',
-                'password' => $password,
-                'phone' => '0900000004',
-                'gender' => 'Nữ',
-                'date_of_birth' => '2004-10-20',
-                'address' => 'Ký túc xá sinh viên',
-                'status' => 1,
+                'ma_vai_tro' => $studentRole->id,
+                'ho_ten' => 'Lớp trưởng IT Lab',
+                'mat_khau' => $password,
+                'so_dien_thoai' => '0900000004',
+                'gioi_tinh' => 'Nữ',
+                'ngay_sinh' => '2004-10-20',
+                'trang_thai' => 1,
             ]
         );
 
         Student::query()->updateOrCreate(
-            ['user_id' => $classMonitorUser->id],
+            ['ma_nguoi_dung' => $classMonitorUser->id],
             [
-                'class_id' => $class->id,
-                'student_code' => 'SVTEST002',
-                'role' => 1,
-                'course_year' => '2022-2026',
+                'ma_lop' => $class->id,
+                'ma_sinh_vien' => 'SVTEST002',
+                'nien_khoa' => '2022-2026',
             ]
         );
 
