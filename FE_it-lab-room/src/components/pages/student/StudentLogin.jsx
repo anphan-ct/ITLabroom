@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../layout/Header";
 import Footer from "../../layout/Footer";
-import { AUTH_ROLES } from "../../../interfaces/auth";
-import { loginByRole, saveAuthSession } from "../../../services/authService";
+import { AUTH_ROLES } from "../../../interfaces/model/IAuth.interface";
+import { loginByRole, saveAuthSession } from "../../../services/auth.service";
 
 export default function StudentLogin() {
   const navigate = useNavigate();

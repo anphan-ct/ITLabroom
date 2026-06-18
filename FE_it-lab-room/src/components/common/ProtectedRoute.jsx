@@ -1,5 +1,5 @@
 import { Navigate, useLocation } from "react-router-dom";
-import { getAuthSession } from "../../services/authService";
+import { getAuthSession } from "../../services/auth.service";
 
 const loginPaths = {
   admin: "/admin/login",

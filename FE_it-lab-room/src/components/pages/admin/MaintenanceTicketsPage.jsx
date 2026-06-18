@@ -1,9 +1,9 @@
-import { useState } from "react";
-import { Wrench } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Search, Wrench } from "lucide-react";
 import AppShell from "../../common/AppShell";
 import SectionCard from "../../common/SectionCard";
 import DataTable from "../../common/DataTable";
-import { incidentReports, users } from "../../../data/mockData";
+import { incidentReports } from "../../../data/mockData";
 import { appendItem, initialMaintenanceTickets } from "./adminPageData";
 import { Field, SelectInput, TextInput } from "./adminFormControls";
 
@@ -11,9 +11,9 @@ const ticketStatusOptions = ["pending", "processing", "completed", "cancelled"];
 
 export default function MaintenanceTicketsPage() {
   const [tickets, setTickets] = useState(initialMaintenanceTickets);
+  const [searchKeyword, setSearchKeyword] = useState("");
   const [ticketForm, setTicketForm] = useState({
     reportId: incidentReports[0]?.id || "",
-    assignee: users[0]?.name || "",
     maintenanceType: "Sửa phần cứng",
     startDate: "2026-05-30",
     endDate: "",
@@ -44,6 +44,14 @@ export default function MaintenanceTicketsPage() {
 
     return report ? `#${report.id} - ${report.title}` : `#${reportId}`;
   };
+  const filteredTickets = useMemo(() => {
+    const keyword = searchKeyword.trim().toLowerCase();
+
+    return tickets.filter((ticket) => {
+      const searchContent = [ticket.id, getReportLabel(ticket.reportId), ticket.maintenanceType, ticket.startDate, ticket.endDate, ticket.resolution, ticket.cost, ticket.status].join(" ").toLowerCase();
+      return !keyword || searchContent.includes(keyword);
+    });
+  }, [tickets, searchKeyword]);
 
   return (
     <AppShell role="admin" title="Phiếu bảo trì" subtitle="Lập phiếu bảo trì từ báo cáo sự cố và theo dõi xử lý">
@@ -63,7 +71,6 @@ export default function MaintenanceTicketsPage() {
               <div className="font-semibold text-slate-900">{selectedReport?.target || "Chưa chọn báo cáo"}</div>
               <div>{selectedReport?.issueType || "-"}</div>
             </div>
-            <Field label="Người phụ trách"><SelectInput value={ticketForm.assignee} onChange={(assignee) => setTicketForm({ ...ticketForm, assignee })}>{users.map((user) => <option key={user.id} value={user.name}>{user.name}</option>)}</SelectInput></Field>
             <Field label="Loại bảo trì"><TextInput value={ticketForm.maintenanceType} onChange={(maintenanceType) => setTicketForm({ ...ticketForm, maintenanceType })} /></Field>
             <Field label="Ngày bắt đầu"><TextInput type="date" value={ticketForm.startDate} onChange={(startDate) => setTicketForm({ ...ticketForm, startDate })} /></Field>
             <Field label="Ngày kết thúc"><TextInput type="date" value={ticketForm.endDate} onChange={(endDate) => setTicketForm({ ...ticketForm, endDate })} /></Field>
@@ -74,18 +81,31 @@ export default function MaintenanceTicketsPage() {
           </form>
         </SectionCard>
 
-        <SectionCard title="Danh sách phiếu bảo trì">
+        <SectionCard
+          title="Danh sách phiếu bảo trì"
+          rightAction={
+            <div className="relative">
+              <Search size={17} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="search"
+                value={searchKeyword}
+                onChange={(event) => setSearchKeyword(event.target.value)}
+                placeholder="Tìm phiếu bảo trì"
+                className="w-full min-w-[240px] rounded-xl border border-slate-200 py-2 pl-9 pr-3 text-sm outline-none transition focus:border-blue-300 focus:ring-2 focus:ring-blue-100 sm:w-72"
+              />
+            </div>
+          }
+        >
           <DataTable columns={[
             { key: "id", title: "ID phiếu" },
             { key: "reportId", title: "Báo cáo", render: (value) => getReportLabel(value) },
-            { key: "assignee", title: "Người phụ trách" },
             { key: "maintenanceType", title: "Loại bảo trì" },
             { key: "startDate", title: "Bắt đầu" },
             { key: "endDate", title: "Kết thúc" },
             { key: "resolution", title: "Cách xử lý" },
             { key: "cost", title: "Chi phí" },
             { key: "status", title: "Trạng thái", isStatus: true },
-          ]} data={tickets} />
+          ]} data={filteredTickets} />
         </SectionCard>
       </div>
     </AppShell>

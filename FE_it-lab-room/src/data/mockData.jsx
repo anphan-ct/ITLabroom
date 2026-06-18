@@ -8,8 +8,8 @@ export const users = [
 ];
 
 export const classes = [
-  { id: 1, code: "CNTT01", courseYear: "2022-2026", size: 42, advisor: "Trần Thị B" },
-  { id: 2, code: "CNTT02", courseYear: "2023-2027", size: 40, advisor: "Hoàng Minh Khang" },
+  { id: 1, code: "CNTT01", courseYear: "2022-2026", major: "Công nghệ thông tin", advisor: "Trần Thị B" },
+  { id: 2, code: "CNTT02", courseYear: "2023-2027", major: "Công nghệ thông tin", advisor: "Hoàng Minh Khang" },
 ];
 
 export const subjects = [

@@ -8,10 +8,10 @@ function normalizeClassroom(classroom) {
 
   return {
     ...classroomData,
-    code: classroomData.code.trim().toUpperCase(),
+    code: classroomData.code?.trim().toUpperCase() || "",
     courseYear: classroomData.courseYear?.trim() || "Chưa cập nhật",
-    size: Number(classroomData.size),
-    advisor: classroomData.advisor.trim(),
+    major: classroomData.major?.trim() || classroomData.specialization?.trim() || "Chưa cập nhật",
+    advisor: classroomData.advisor?.trim() || "",
   };
 }
 

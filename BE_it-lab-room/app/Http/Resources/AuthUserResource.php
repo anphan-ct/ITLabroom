@@ -42,6 +42,12 @@ class AuthUserResource extends JsonResource
                 return $this->teacher ? [
                     'id' => $this->teacher->id,
                     'teacher_code' => $this->teacher->ma_giang_vien,
+                    'department_id' => $this->teacher->ma_phong_ban,
+                    'department' => $this->teacher->relationLoaded('department') && $this->teacher->department ? [
+                        'id' => $this->teacher->department->id,
+                        'department_code' => $this->teacher->department->ma_phong_ban,
+                        'department_name' => $this->teacher->department->ten_phong_ban,
+                    ] : null,
                 ] : null;
             }),
         ];

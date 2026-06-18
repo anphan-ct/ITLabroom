@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ShieldCheck } from "lucide-react";
-import { AUTH_ROLES } from "../../../interfaces/auth";
-import { loginByRole, saveAuthSession } from "../../../services/authService";
+import { AUTH_ROLES } from "../../../interfaces/model/IAuth.interface";
+import { loginByRole, saveAuthSession } from "../../../services/auth.service";
 
 export default function AdminLogin() {
   const navigate = useNavigate();

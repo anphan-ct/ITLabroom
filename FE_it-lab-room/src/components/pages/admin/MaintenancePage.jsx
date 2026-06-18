@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { ClipboardList, Wrench, XCircle } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ClipboardList, Search, Wrench, XCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import AppShell from "../../common/AppShell";
 import SectionCard from "../../common/SectionCard";
@@ -8,6 +8,15 @@ import { incidentReports } from "../../../data/mockData";
 
 export default function MaintenancePage() {
   const [reports, setReports] = useState(incidentReports);
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const filteredReports = useMemo(() => {
+    const keyword = searchKeyword.trim().toLowerCase();
+
+    return reports.filter((report) => {
+      const searchContent = [report.id, report.reporter, report.targetType, report.target, report.room, report.issueType, report.title, report.severity, report.status].join(" ").toLowerCase();
+      return !keyword || searchContent.includes(keyword);
+    });
+  }, [reports, searchKeyword]);
 
   const updateReportStatus = (reportId, status) => {
     setReports((currentReports) =>
@@ -20,7 +29,21 @@ export default function MaintenancePage() {
   return (
     <AppShell role="admin" title="Báo cáo sự cố" subtitle="Tiếp nhận báo cáo sự cố và chuyển sang phiếu bảo trì khi cần xử lý">
       <div className="space-y-6">
-        <SectionCard title="Danh sách báo cáo sự cố">
+        <SectionCard
+          title="Danh sách báo cáo sự cố"
+          rightAction={
+            <div className="relative">
+              <Search size={17} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="search"
+                value={searchKeyword}
+                onChange={(event) => setSearchKeyword(event.target.value)}
+                placeholder="Tìm báo cáo"
+                className="w-full min-w-[240px] rounded-xl border border-slate-200 py-2 pl-9 pr-3 text-sm outline-none transition focus:border-blue-300 focus:ring-2 focus:ring-blue-100 sm:w-72"
+              />
+            </div>
+          }
+        >
           <DataTable
             columns={[
               { key: "id", title: "ID" },
@@ -67,7 +90,7 @@ export default function MaintenancePage() {
                 ),
               },
             ]}
-            data={reports}
+            data={filteredReports}
           />
         </SectionCard>
       </div>

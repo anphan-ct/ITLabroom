@@ -3,25 +3,24 @@ import {
   GraduationCap,
   LogOut,
   Menu,
-  ShieldCheck,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Header({
   onMenuToggle,
   onLogout,
-  roleLabel,
   showMenuButton = true,
   showLoginLinks = true,
   showLogout = false,
 }) {
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white">
+    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
       {showMenuButton && (
         <button
           onClick={onMenuToggle}
-          className="absolute left-3 top-3 z-10 rounded-lg border border-slate-200 p-2 text-slate-700 md:hidden"
+          className="absolute left-3 top-4 z-10 rounded-lg border border-slate-200 bg-white p-2 text-slate-700 shadow-sm md:hidden"
           type="button"
+          aria-label="Mở menu"
         >
           <Menu size={20} />
         </button>
@@ -38,24 +37,19 @@ export default function Header({
             alt="Logo Cao Thắng"
             className="h-12 w-12 shrink-0 object-contain"
           />
-          <div className="min-w-0">
-            <h1 className="truncate text-sm font-bold uppercase text-red-600 sm:text-base">
+          <div className="min-w-0 leading-tight">
+            <h1 className="truncate text-sm font-bold uppercase text-blue-700 sm:text-base">
               Trường CĐ Kỹ thuật Cao Thắng
             </h1>
-            <p className="truncate text-xs font-semibold text-slate-600 sm:text-sm">
+            <p className="truncate text-xs font-semibold text-slate-700 sm:text-sm">
               IT Lab Room Management
             </p>
           </div>
         </Link>
 
-        <div className="ml-auto hidden items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-600 lg:flex">
-          <ShieldCheck size={16} className="text-emerald-600" />
-          {roleLabel || "Cổng truy cập"}
-        </div>
-
         {showLogout && (
           <button
-            className="ml-auto inline-flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-100 lg:ml-0"
+            className="ml-auto inline-flex h-10 items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 text-sm font-semibold text-rose-700 hover:bg-rose-100"
             onClick={onLogout}
             type="button"
           >
@@ -65,17 +59,17 @@ export default function Header({
         )}
 
         {showLoginLinks && (
-          <div className="ml-auto flex items-center gap-2 text-sm font-medium text-blue-700 lg:ml-0">
+          <div className="ml-auto flex items-center gap-2 text-sm font-semibold text-blue-700">
             <Link
               to="/teacher/login"
-              className="inline-flex items-center gap-1 whitespace-nowrap rounded-lg px-2 py-2 hover:bg-blue-50"
+              className="inline-flex h-10 items-center gap-1 whitespace-nowrap rounded-lg px-2 hover:bg-blue-50"
             >
               <Briefcase size={16} />
               <span className="hidden sm:inline">Giảng viên</span>
             </Link>
             <Link
               to="/student/login"
-              className="inline-flex items-center gap-1 whitespace-nowrap rounded-lg px-2 py-2 hover:bg-blue-50"
+              className="inline-flex h-10 items-center gap-1 whitespace-nowrap rounded-lg px-2 hover:bg-blue-50"
             >
               <GraduationCap size={18} />
               <span className="hidden sm:inline">Sinh viên</span>

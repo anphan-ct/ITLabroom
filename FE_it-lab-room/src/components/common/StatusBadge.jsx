@@ -5,6 +5,11 @@ const styles = {
   "Bảo trì": "bg-amber-100 text-amber-700",
   "Hỏng": "bg-rose-100 text-rose-700",
   "Chờ xử lý": "bg-amber-100 text-amber-700",
+  "Chờ duyệt": "bg-amber-100 text-amber-700",
+  "Đã duyệt": "bg-emerald-100 text-emerald-700",
+  "Chờ xác nhận": "bg-amber-100 text-amber-700",
+  "Đã xác nhận": "bg-emerald-100 text-emerald-700",
+  "Cần kiểm tra": "bg-amber-100 text-amber-700",
   "Chờ tiếp nhận": "bg-amber-100 text-amber-700",
   "Đã tiếp nhận": "bg-blue-100 text-blue-700",
   "Đang xử lý": "bg-blue-100 text-blue-700",
@@ -35,7 +40,7 @@ const styles = {
 
 export default function StatusBadge({ value }) {
   return (
-    <span className={`inline-flex min-w-[86px] justify-center whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold ${styles[value] || "bg-slate-100 text-slate-700"}`}>
+    <span className={`inline-flex min-w-[86px] justify-center whitespace-nowrap rounded-full border border-current/10 px-3 py-1 text-xs font-semibold ${styles[value] || "bg-slate-100 text-slate-700"}`}>
       {value}
     </span>
   );

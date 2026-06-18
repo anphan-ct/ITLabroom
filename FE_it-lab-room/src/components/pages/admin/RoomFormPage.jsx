@@ -13,6 +13,7 @@ const initialForm = {
   location: "",
   capacity: 30,
   status: "Sẵn sàng",
+  note: "",
 };
 
 export default function RoomFormPage() {
@@ -131,6 +132,18 @@ export default function RoomFormPage() {
                 </option>
               ))}
             </select>
+          </label>
+
+          <label className="space-y-2 lg:col-span-2">
+            <span className="text-sm font-semibold text-slate-700">Mô tả</span>
+            <input
+              type="text"
+              name="note"
+              value={formData.note || ""}
+              onChange={handleChange}
+              placeholder="Mô tả phòng máy"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
+            />
           </label>
 
           {error && (

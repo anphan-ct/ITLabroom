@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Edit, Plus, Trash2 } from "lucide-react";
+import { Edit, Plus, Search, Trash2 } from "lucide-react";
 import AppShell from "../../common/AppShell";
 import SectionCard from "../../common/SectionCard";
 import DataTable from "../../common/DataTable";
@@ -8,6 +8,15 @@ import { deleteSubject, getSubjects } from "../../../data/subjectsStore";
 
 export default function SubjectsPage() {
   const [subjects, setSubjects] = useState(() => getSubjects());
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const filteredSubjects = useMemo(() => {
+    const keyword = searchKeyword.trim().toLowerCase();
+
+    return subjects.filter((subject) => {
+      const searchContent = [subject.code, subject.name, subject.type, subject.credits, subject.note].join(" ").toLowerCase();
+      return !keyword || searchContent.includes(keyword);
+    });
+  }, [subjects, searchKeyword]);
 
   const handleDelete = (subject) => {
     const accepted = window.confirm(`Xóa môn học ${subject.name}?`);
@@ -21,19 +30,32 @@ export default function SubjectsPage() {
     <AppShell role="admin" title="Quản lý môn học" subtitle="Danh mục môn học trong khoa">
       <SectionCard
         rightAction={
-          <Link
-            to="/admin/subjects/create"
-            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
-          >
-            <Plus size={17} />
-            Thêm môn
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative">
+              <Search size={17} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="search"
+                value={searchKeyword}
+                onChange={(event) => setSearchKeyword(event.target.value)}
+                placeholder="Tìm môn học"
+                className="w-full min-w-[240px] rounded-xl border border-slate-200 py-2 pl-9 pr-3 text-sm outline-none transition focus:border-blue-300 focus:ring-2 focus:ring-blue-100 sm:w-72"
+              />
+            </div>
+            <Link
+              to="/admin/subjects/create"
+              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+            >
+              <Plus size={17} />
+              Thêm môn
+            </Link>
+          </div>
         }
         title="Danh sách môn học"
       >
         <DataTable
           columns={[
             { key: "ordinal", title: "TT" },
+            { key: "code", title: "Mã môn" },
             { key: "name", title: "Tên môn" },
             { key: "type", title: "Loại", render: (value) => value || "LT" },
             { key: "credits", title: "ĐVHP" },
@@ -61,7 +83,7 @@ export default function SubjectsPage() {
               ),
             },
           ]}
-          data={subjects.map((subject, index) => ({
+          data={filteredSubjects.map((subject, index) => ({
             ...subject,
             ordinal: index + 1,
           }))}

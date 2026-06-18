@@ -1,4 +1,4 @@
-import { AUTH_ROLES } from "../constants/roles.constant";
+import { AUTH_ROLES } from "../../constants/roles.constant";
 
 /**
  * @typedef {'admin' | 'student' | 'teacher'} AuthRole
@@ -28,10 +28,18 @@ import { AUTH_ROLES } from "../constants/roles.constant";
  */
 
 /**
+ * @typedef {Object} AuthTeacherDepartment
+ * @property {number} id
+ * @property {string} department_code
+ * @property {string} department_name
+ */
+
+/**
  * @typedef {Object} AuthTeacherProfile
  * @property {number} id
  * @property {string} teacher_code
- * @property {string|null} department
+ * @property {number|null} department_id
+ * @property {AuthTeacherDepartment|null} department
  */
 
 /**

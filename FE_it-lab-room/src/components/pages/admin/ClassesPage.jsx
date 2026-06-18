@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Edit, Plus, Trash2 } from "lucide-react";
+import { Edit, Plus, Search, Trash2 } from "lucide-react";
 import AppShell from "../../common/AppShell";
 import SectionCard from "../../common/SectionCard";
 import DataTable from "../../common/DataTable";
@@ -17,6 +17,7 @@ export default function ClassesPage() {
         !keyword ||
         classroom.code.toLowerCase().includes(keyword) ||
         classroom.courseYear.toLowerCase().includes(keyword) ||
+        classroom.major.toLowerCase().includes(keyword) ||
         classroom.advisor.toLowerCase().includes(keyword);
 
       return matchesKeyword;
@@ -35,32 +36,37 @@ export default function ClassesPage() {
     <AppShell role="admin" title="Quản lý lớp học" subtitle="Danh sách lớp đang hoạt động">
       <SectionCard
         rightAction={
-          <Link
-            to="/admin/classes/create"
-            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
-          >
-            <Plus size={17} />
-            Thêm lớp
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative">
+              <Search
+                size={17}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              />
+              <input
+                type="search"
+                value={searchKeyword}
+                onChange={(event) => setSearchKeyword(event.target.value)}
+                placeholder="Tìm mã lớp, niên khóa..."
+                className="w-full min-w-[240px] rounded-xl border border-slate-200 py-2 pl-9 pr-3 text-sm outline-none transition focus:border-blue-300 focus:ring-2 focus:ring-blue-100 sm:w-72"
+              />
+            </div>
+            <Link
+              to="/admin/classes/create"
+              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+            >
+              <Plus size={17} />
+              Thêm lớp
+            </Link>
+          </div>
         }
         title="Danh sách lớp"
       >
-        <div className="mb-5">
-          <input
-            type="search"
-            value={searchKeyword}
-            onChange={(event) => setSearchKeyword(event.target.value)}
-            placeholder="Tìm mã lớp, niên khóa, giảng viên..."
-            className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white md:max-w-md"
-          />
-        </div>
-
         <DataTable
           columns={[
             { key: "code", title: "Mã lớp" },
             { key: "courseYear", title: "Niên khóa" },
-            { key: "size", title: "Sĩ số" },
-            { key: "advisor", title: "Giảng viên" },
+            { key: "major", title: "Chuyên ngành" },
+            { key: "advisor", title: "GVCN" },
             {
               key: "actions",
               title: "Thao tác",

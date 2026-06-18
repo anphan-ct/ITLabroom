@@ -1,58 +1,107 @@
-import { useState } from "react";
-import { ListTree } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { Edit, Plus, Search, Trash2 } from "lucide-react";
 import AppShell from "../../common/AppShell";
 import DataTable from "../../common/DataTable";
 import SectionCard from "../../common/SectionCard";
-import { classes, rooms, subjects, users } from "../../../data/mockData";
-import { Field, SelectInput, TextInput } from "./adminFormControls";
-import { appendItem, initialCourseSections } from "./adminPageData";
-
-const teacherOptions = users.filter((user) => user.role === "Giảng viên");
-const timeSettings = ["2025-2026 HK1", "2025-2026 HK2", "2026-2027 HK1"];
-const sectionStatuses = ["Hoạt động", "Tạm dừng", "Hoàn thành"];
+import { deleteCourseSection, getCourseSections } from "../../../data/courseSectionsStore";
 
 export default function CourseSectionsPage() {
-  const [items, setItems] = useState(initialCourseSections);
-  const [form, setForm] = useState({ code: "", className: classes[0]?.code || "", subject: subjects[0]?.name || "", timeSetting: timeSettings[0], teacher: teacherOptions[0]?.name || "", room: rooms[0]?.code || "", maxStudents: "40", status: "Hoạt động", note: "" });
+  const [items, setItems] = useState(() => getCourseSections());
+  const [searchKeyword, setSearchKeyword] = useState("");
 
-  const submit = (event) => {
-    event.preventDefault();
-    if (!form.code.trim()) return;
-    appendItem(setItems, { ...form, maxStudents: Number(form.maxStudents) });
-    setForm({ ...form, code: "", note: "" });
+  const filteredItems = useMemo(() => {
+    const keyword = searchKeyword.trim().toLowerCase();
+
+    return items.filter((item) => {
+      const searchContent = [
+        item.code,
+        item.subject,
+        item.academicYear,
+        item.teacher,
+        item.room,
+        item.status,
+        item.note,
+      ].join(" ").toLowerCase();
+
+      return !keyword || searchContent.includes(keyword);
+    });
+  }, [items, searchKeyword]);
+
+  const handleDelete = (item) => {
+    const accepted = window.confirm(`Xóa lớp học phần ${item.code}?`);
+
+    if (accepted) {
+      setItems(deleteCourseSection(item.id));
+    }
   };
 
   return (
     <AppShell role="admin" title="Lớp học phần" subtitle="Quản lý lớp học phần và phân công giảng viên">
-      <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
-        <SectionCard title="Tạo lớp học phần">
-          <form onSubmit={submit} className="grid gap-4">
-            <Field label="Mã lớp học phần"><TextInput value={form.code} onChange={(code) => setForm({ ...form, code })} placeholder="VD: LTWEB-03" /></Field>
-            <Field label="Lớp"><SelectInput value={form.className} onChange={(className) => setForm({ ...form, className })}>{classes.map((item) => <option key={item.id} value={item.code}>{item.code}</option>)}</SelectInput></Field>
-            <Field label="Môn học"><SelectInput value={form.subject} onChange={(subject) => setForm({ ...form, subject })}>{subjects.map((item) => <option key={item.id} value={item.name}>{item.name}</option>)}</SelectInput></Field>
-            <Field label="Cấu trúc thời gian"><SelectInput value={form.timeSetting} onChange={(timeSetting) => setForm({ ...form, timeSetting })}>{timeSettings.map((item) => <option key={item} value={item}>{item}</option>)}</SelectInput></Field>
-            <Field label="Giảng viên"><SelectInput value={form.teacher} onChange={(teacher) => setForm({ ...form, teacher })}>{teacherOptions.map((item) => <option key={item.id} value={item.name}>{item.name}</option>)}</SelectInput></Field>
-            <Field label="Phòng"><SelectInput value={form.room} onChange={(room) => setForm({ ...form, room })}>{rooms.map((item) => <option key={item.id} value={item.code}>{item.code}</option>)}</SelectInput></Field>
-            <Field label="Sĩ số tối đa"><TextInput type="number" value={form.maxStudents} onChange={(maxStudents) => setForm({ ...form, maxStudents })} /></Field>
-            <Field label="Trạng thái"><SelectInput value={form.status} onChange={(status) => setForm({ ...form, status })}>{sectionStatuses.map((status) => <option key={status} value={status}>{status}</option>)}</SelectInput></Field>
-            <Field label="Ghi chú"><TextInput value={form.note} onChange={(note) => setForm({ ...form, note })} /></Field>
-            <button className="inline-flex w-fit items-center gap-2 rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white"><ListTree size={16} />Tạo lớp học phần</button>
-          </form>
-        </SectionCard>
-        <SectionCard title="Danh sách lớp học phần">
-          <DataTable columns={[
+      <SectionCard
+        title="Danh sách lớp học phần"
+        rightAction={
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative">
+              <Search
+                size={17}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              />
+              <input
+                type="search"
+                value={searchKeyword}
+                onChange={(event) => setSearchKeyword(event.target.value)}
+                placeholder="Tìm lớp học phần"
+                className="w-full min-w-[240px] rounded-xl border border-slate-200 py-2 pl-9 pr-3 text-sm outline-none transition focus:border-blue-300 focus:ring-2 focus:ring-blue-100 sm:w-72"
+              />
+            </div>
+            <Link
+              to="/admin/course-sections/create"
+              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+            >
+              <Plus size={17} />
+              Thêm lớp học phần
+            </Link>
+          </div>
+        }
+      >
+        <DataTable
+          columns={[
             { key: "code", title: "Mã LHP" },
-            { key: "className", title: "Lớp" },
             { key: "subject", title: "Môn" },
-            { key: "timeSetting", title: "Thời gian" },
+            { key: "academicYear", title: "Năm học" },
             { key: "teacher", title: "Giảng viên" },
             { key: "room", title: "Phòng" },
             { key: "maxStudents", title: "Sĩ số tối đa" },
             { key: "status", title: "Trạng thái", isStatus: true },
             { key: "note", title: "Ghi chú" },
-          ]} data={items} />
-        </SectionCard>
-      </div>
+            {
+              key: "actions",
+              title: "Thao tác",
+              render: (_, item) => (
+                <div className="flex items-center gap-2">
+                  <Link
+                    to={`/admin/course-sections/${item.id}/edit`}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-amber-100 px-3 py-1 text-amber-700 transition hover:bg-amber-200"
+                  >
+                    <Edit size={14} />
+                    Sửa
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(item)}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-rose-100 px-3 py-1 text-rose-700 transition hover:bg-rose-200"
+                  >
+                    <Trash2 size={14} />
+                    Xóa
+                  </button>
+                </div>
+              ),
+            },
+          ]}
+          data={filteredItems}
+        />
+      </SectionCard>
     </AppShell>
   );
 }

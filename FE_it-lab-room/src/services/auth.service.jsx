@@ -14,9 +14,9 @@ const AUTH_ENDPOINTS = {
 /**
  * Gọi API đăng nhập theo từng vai trò.
  *
- * @param {import("../interfaces/auth").AuthRole} role
- * @param {import("../interfaces/auth").LoginPayload} credentials
- * @returns {Promise<import("../interfaces/auth").ApiResponse>}
+ * @param {import("../interfaces/model/IAuth.interface").AuthRole} role
+ * @param {import("../interfaces/model/IAuth.interface").LoginPayload} credentials
+ * @returns {Promise<import("../interfaces/model/IAuth.interface").ApiResponse>}
  */
 export async function loginByRole(role, credentials) {
   const endpoint = AUTH_ENDPOINTS[role];
@@ -37,8 +37,8 @@ export async function loginByRole(role, credentials) {
 /**
  * Lưu phiên đăng nhập Sanctum vào cookie để các màn sau dùng Bearer token.
  *
- * @param {import("../interfaces/auth").AuthRole} role
- * @param {import("../interfaces/auth").AuthData} authData
+ * @param {import("../interfaces/model/IAuth.interface").AuthRole} role
+ * @param {import("../interfaces/model/IAuth.interface").AuthData} authData
  */
 export function saveAuthSession(role, authData) {
   const session = {

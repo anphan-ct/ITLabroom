@@ -13,6 +13,7 @@ const initialForm = {
   name: "",
   room: "",
   position: "",
+  qrCode: "",
   cpu: "",
   ram: "",
   gpu: "",
@@ -23,6 +24,7 @@ const initialForm = {
   hdd: "",
   ssd: "",
   status: "Hoạt động",
+  note: "",
 };
 
 function getInitialForm(computer) {
@@ -33,6 +35,7 @@ function getInitialForm(computer) {
   return {
     ...computer,
     position: computer.position || "",
+    qrCode: computer.qrCode || "",
     cpu: computer.cpu || "",
     ram: computer.ram || "",
     gpu: computer.gpu || "",
@@ -42,6 +45,7 @@ function getInitialForm(computer) {
     mouse: computer.mouse || "",
     hdd: computer.hdd || "",
     ssd: computer.ssd || "",
+    note: computer.note || "",
   };
 }
 
@@ -177,6 +181,18 @@ export default function ComputerCreatePage() {
           </label>
 
           <label className="space-y-2">
+            <span className="text-sm font-semibold text-slate-700">Mã QR</span>
+            <input
+              type="text"
+              name="qrCode"
+              value={formData.qrCode || ""}
+              onChange={handleChange}
+              placeholder="VD: QR-PC022"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm uppercase outline-none transition focus:border-blue-500 focus:bg-white"
+            />
+          </label>
+
+          <label className="space-y-2">
             <span className="text-sm font-semibold text-slate-700">Trạng thái</span>
             <select
               name="status"
@@ -296,6 +312,18 @@ export default function ComputerCreatePage() {
               value={formData.ssd}
               onChange={handleChange}
               placeholder="VD: 256GB"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
+            />
+          </label>
+
+          <label className="space-y-2 lg:col-span-2">
+            <span className="text-sm font-semibold text-slate-700">Ghi chú</span>
+            <input
+              type="text"
+              name="note"
+              value={formData.note || ""}
+              onChange={handleChange}
+              placeholder="Ghi chú máy tính"
               className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
             />
           </label>
