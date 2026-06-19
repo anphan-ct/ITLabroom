@@ -16,7 +16,7 @@ class ComputerImportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ma_phieu_nhap' => 'required|string|max:255|unique:phieu_nhap_may,ma_phieu_nhap',
+            'ma_phieu_nhap' => 'nullable|string|max:255|unique:phieu_nhap_may,ma_phieu_nhap',
             'ngay_nhap' => 'required|date',
             'so_luong' => 'required|integer|min:1|max:200',
             'ma_phong' => 'required|integer|exists:phong_may,id',
@@ -37,7 +37,6 @@ class ComputerImportRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'ma_phieu_nhap.required' => 'Vui lòng nhập mã phiếu nhập.',
             'ma_phieu_nhap.string' => 'Mã phiếu nhập không hợp lệ.',
             'ma_phieu_nhap.max' => 'Mã phiếu nhập không được vượt quá 255 ký tự.',
             'ma_phieu_nhap.unique' => 'Mã phiếu nhập đã tồn tại.',

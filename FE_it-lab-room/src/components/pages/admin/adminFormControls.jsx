@@ -7,14 +7,15 @@ export function Field({ label, children }) {
   );
 }
 
-export function TextInput({ value, onChange, placeholder, type = "text" }) {
+export function TextInput({ value, onChange, placeholder, type = "text", disabled = false }) {
   return (
     <input
       type={type}
       value={value}
       onChange={(event) => onChange(event.target.value)}
       placeholder={placeholder}
-      className="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-blue-500 focus:bg-white"
+      disabled={disabled}
+      className="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-blue-500 focus:bg-white disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
     />
   );
 }

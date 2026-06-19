@@ -25,6 +25,7 @@ Route::prefix('admin/classes')->group(function () {
 // Nhóm API quản trị phòng máy.
 Route::prefix('admin/rooms')->group(function () {
     Route::get('/', [RoomController::class, 'index']);
+    Route::post('/', [RoomController::class, 'store']);
     Route::delete('/{room}', [RoomController::class, 'destroy']);
 });
 
@@ -39,5 +40,6 @@ Route::prefix('admin/computers')->group(function () {
 Route::prefix('admin/computer-imports')->group(function () {
     Route::get('/', [ComputerImportController::class, 'index']);
     Route::post('/', [ComputerImportController::class, 'store']);
+    Route::get('/code', [ComputerImportController::class, 'generateCode']);
     Route::get('/{computerImport}', [ComputerImportController::class, 'show']);
 });

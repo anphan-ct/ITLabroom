@@ -50,23 +50,27 @@ class ComputerImportController extends Controller
 
             $phieuNhap = DB::transaction(function () use ($data) {
                 $phieuNhap = ComputerImport::create([
-                    'ma_phieu_nhap' => $data['ma_phieu_nhap'],
+                    'ma_phieu_nhap' => $data['ma_phieu_nhap'] ?? $this->generateImportCode(),
                     'ngay_nhap' => $data['ngay_nhap'],
                     'so_luong' => $data['so_luong'],
                     'nha_cung_cap' => $data['nha_cung_cap'] ?? null,
                     'ghi_chu' => $data['ghi_chu'] ?? null,
                 ]);
 
-                $tongMayHienTai = Computer::query()
+                $soTenMayLonNhatTrongPhong = Computer::query()
                     ->where('ma_phong', $data['ma_phong'])
-                    ->lockForUpdate()
-                    ->count();
+                    ->pluck('ten_may')
+                    ->map(function ($tenMay) {
+                        return (int) str_replace('Máy ', '', $tenMay);
+                    })
+                    ->max() ?? 0;
+
+                $maPhieuNhapNumber = str_replace('PN-', '', $phieuNhap->ma_phieu_nhap);
 
                 for ($i = 1; $i <= (int) $data['so_luong']; $i++) {
-                    $number = $tongMayHienTai + $i;
-
-                    $maMay = 'PC' . $number;
-                    $tenMay = 'Máy ' . $number;
+                    $soThuTuMay = str_pad((string) $i, 3, '0', STR_PAD_LEFT);
+                    $maMay = 'PC-' . $maPhieuNhapNumber . '-' . $soThuTuMay;
+                    $tenMay = 'Máy ' . ($soTenMayLonNhatTrongPhong + $i);
 
                     if (Computer::where('ma_may', $maMay)->exists()) {
                         throw ValidationException::withMessages([
@@ -137,10 +141,46 @@ class ComputerImportController extends Controller
         }
     }
 
+    public function generateCode()
+    {
+        try {
+            return response()->json([
+                'status' => true,
+                'message' => 'Tạo mã phiếu nhập thành công',
+                'error_code' => 200,
+                'data' => [
+                    'ma_phieu_nhap' => $this->generateImportCode(),
+                ],
+            ], 200);
+        } catch (Throwable $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Hiện tại tôi không thể xử lí yêu cầu của bạn',
+                'error_code' => 500,
+                'data' => '',
+            ], 500);
+        }
+    }
+
+    private function generateImportCode(): string
+    {
+        for ($attempt = 1; $attempt <= 50; $attempt++) {
+            $code = 'PN-' . str_pad((string) random_int(0, 9999), 4, '0', STR_PAD_LEFT);
+
+            if (! ComputerImport::where('ma_phieu_nhap', $code)->exists()) {
+                return $code;
+            }
+        }
+
+        throw ValidationException::withMessages([
+            'ma_phieu_nhap' => ['Không thể tạo mã phiếu nhập, vui lòng thử lại.'],
+        ]);
+    }
+
     public function show(ComputerImport $computerImport)
     {
         try {
-            // Load chi tiết máy của phiếu nhập được chọn để màn chi tiết dùng dữ liệu DB thật.
+           
             $computerImport->load([
                 'details:id,ma_phieu_nhap,ma_may_tinh,ghi_chu',
                 'details.computer:id,ma_phong,ma_may,ten_may,vi_tri,ma_qr,bo_xu_ly,ram,card_do_hoa,bo_mach_chu,man_hinh,ban_phim,chuot,hdd,ssd,trang_thai,ghi_chu',
