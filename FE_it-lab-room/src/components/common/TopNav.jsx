@@ -5,8 +5,8 @@ export default function TopNav({ role }) {
   const menus = roleMenus[role] || [];
 
   return (
-    <nav className="shrink-0 border-b border-blue-700 bg-blue-600 shadow-sm">
-      <div className="flex min-h-[56px] items-center gap-1 overflow-x-auto px-3 sm:px-4">
+    <nav className="shrink-0 border-b border-slate-200 bg-white shadow-sm">
+      <div className="app-scrollbar flex min-h-[56px] items-center gap-2 overflow-x-auto px-3 sm:px-5">
         {menus.map((item) => {
           const Icon = item.icon;
 
@@ -16,8 +16,10 @@ export default function TopNav({ role }) {
               to={item.to}
               end={item.to === `/${role}`}
               className={({ isActive }) =>
-                `inline-flex h-11 shrink-0 items-center gap-2 rounded-md px-3 text-sm font-semibold text-white transition hover:bg-blue-700 sm:px-4 ${
-                  isActive ? "bg-blue-800 shadow-inner" : ""
+                `inline-flex h-10 shrink-0 items-center gap-2 rounded-lg border px-3 text-sm font-semibold transition sm:px-4 ${
+                  isActive
+                    ? "border-blue-600 bg-blue-600 text-white shadow-sm"
+                    : "border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-950"
                 }`
               }
             >

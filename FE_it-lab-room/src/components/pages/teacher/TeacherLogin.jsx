@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../layout/Header";
 import Footer from "../../layout/Footer";
-import { AUTH_ROLES } from "../../../interfaces/auth";
-import { loginByRole, saveAuthSession } from "../../../services/authService";
+import { AUTH_ROLES } from "../../../interfaces/model/IAuth.interface";
+import { loginByRole, saveAuthSession, loginWithGoogleAPI } from "../../../services/auth.service";
+import { GoogleLogin } from "@react-oauth/google";
 
 export default function TeacherLogin() {
   const navigate = useNavigate();
@@ -30,6 +31,22 @@ export default function TeacherLogin() {
       setErrorMessage(error.message || "Đăng nhập giảng viên thất bại");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Hàm xử lý khi Google trả về token thành công cho Giảng viên
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setErrorMessage('');
+      const res = await loginWithGoogleAPI(credentialResponse.credential, 'teacher');
+
+      if (res.status) {
+        // Response đã chuẩn hóa: res.data chứa { token_type, access_token, user }
+        saveAuthSession(AUTH_ROLES.TEACHER, res.data);
+        navigate('/teacher', { replace: true });
+      }
+    } catch (error) {
+      setErrorMessage(error.message || 'Đăng nhập Google giảng viên thất bại.');
     }
   };
 
@@ -93,6 +110,24 @@ export default function TeacherLogin() {
                 {isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
               </button>
             </form>
+
+            {/* Ngăn cách */}
+            <div className="flex items-center my-4">
+              <div className="flex-grow border-t border-gray-300"></div>
+              <span className="px-3 text-gray-500">Hoặc</span>
+              <div className="flex-grow border-t border-gray-300"></div>
+            </div>
+
+            {/* NÚT ĐĂNG NHẬP GOOGLE CHO GIẢNG VIÊN */}
+            <div className="flex justify-center">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => setErrorMessage('Đăng nhập Google thất bại. Vui lòng thử lại.')}
+                useOneTap
+                shape="rectangular"
+                theme="outline"
+              />
+            </div>
 
           </div>
         </div>

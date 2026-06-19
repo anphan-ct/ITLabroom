@@ -58,26 +58,26 @@ export default function SchedulesPage() {
             </h2>
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <div className="relative w-full sm:w-[440px]">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative">
               <Search
-                size={20}
-                className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-slate-400"
+                size={17}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
               />
               <input
-                type="text"
-                placeholder="Tìm ngày, phòng, môn, lớp, giảng viên..."
+                type="search"
+                placeholder="Tìm lịch phòng"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="h-14 w-full rounded-xl border border-slate-200 bg-slate-50 pl-14 pr-5 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
+                className="w-full min-w-[240px] rounded-xl border border-slate-200 py-2 pl-9 pr-3 text-sm outline-none transition focus:border-blue-300 focus:ring-2 focus:ring-blue-100 sm:w-72"
               />
             </div>
 
             <Link
               to="/admin/schedules/create"
-              className="inline-flex h-14 items-center justify-center gap-2 rounded-xl bg-blue-600 px-8 text-sm font-semibold text-white transition hover:bg-blue-700"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
             >
-              <Plus size={20} />
+              <Plus size={17} />
               Thêm lịch
             </Link>
           </div>

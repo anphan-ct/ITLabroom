@@ -61,9 +61,4 @@ class RoomBookingRequest extends Model
         return $this->belongsTo(Week::class, 'ma_tuan');
     }
 
-    public function timeSetting(): BelongsTo
-    {
-        return $this->belongsTo(Semester::class, 'ma_nam_hoc');
-    }
-
 }

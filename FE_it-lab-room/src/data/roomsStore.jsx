@@ -25,6 +25,7 @@ function normalizeRoomShape(room) {
   return {
     ...room,
     capacity: Number(room.capacity ?? room.computers ?? 0),
+    note: room.note?.trim() || "",
   };
 }
 
@@ -36,6 +37,7 @@ export function upsertRoom(room) {
     location: room.location.trim(),
     capacity: Number(room.capacity ?? room.computers ?? 0),
     status: room.status,
+    note: room.note?.trim() || "",
   };
   const currentRooms = getRooms();
   const existedRoom = currentRooms.find((item) => item.id === normalizedRoom.id);

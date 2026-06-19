@@ -9,7 +9,7 @@ import { getUsers } from "../../../data/usersStore";
 const initialForm = {
   code: "",
   courseYear: "",
-  size: 40,
+  major: "",
   advisor: "",
 };
 
@@ -31,27 +31,15 @@ export default function ClassFormPage() {
     const { name, value } = event.target;
     setFormData((currentData) => ({
       ...currentData,
-      [name]: name === "size" ? Number(value) : value,
+      [name]: value,
     }));
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    if (!formData.code.trim() || !formData.courseYear.trim() || !formData.advisor.trim()) {
-      setError("Vui lòng nhập đầy đủ mã lớp, niên khóa và giảng viên.");
-      return;
-    }
-
-    const validTeacher = teachers.some((teacher) => teacher.name === formData.advisor);
-
-    if (!validTeacher) {
-      setError("Vui lòng chọn giảng viên từ danh sách giảng viên.");
-      return;
-    }
-
-    if (Number(formData.size) < 0) {
-      setError("Sĩ số không được nhỏ hơn 0.");
+    if (!formData.code.trim() || !formData.courseYear.trim() || !formData.major.trim()) {
+      setError("Vui lòng nhập đầy đủ mã lớp, niên khóa và chuyên ngành.");
       return;
     }
 
@@ -68,6 +56,7 @@ export default function ClassFormPage() {
     upsertClass({
       ...formData,
       courseYear: formData.courseYear.trim(),
+      major: formData.major.trim(),
       id: editingClass?.id,
     });
     navigate("/admin/classes");
@@ -94,13 +83,13 @@ export default function ClassFormPage() {
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm font-semibold text-slate-700">Sĩ số</span>
+            <span className="text-sm font-semibold text-slate-700">Chuyên ngành</span>
             <input
-              type="number"
-              name="size"
-              min="0"
-              value={formData.size}
+              type="text"
+              name="major"
+              value={formData.major || ""}
               onChange={handleChange}
+              placeholder="VD: Công nghệ thông tin"
               className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
             />
           </label>
@@ -118,14 +107,14 @@ export default function ClassFormPage() {
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm font-semibold text-slate-700">Giảng viên</span>
+            <span className="text-sm font-semibold text-slate-700">Giảng viên chủ nhiệm</span>
             <select
               name="advisor"
               value={formData.advisor}
               onChange={handleChange}
               className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
             >
-              <option value="">Chọn giảng viên</option>
+              <option value="">Không chọn</option>
               {teachers.map((teacher) => (
                 <option key={teacher.id} value={teacher.name}>
                   {teacher.code ? `${teacher.code} - ${teacher.name}` : teacher.name}

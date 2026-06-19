@@ -7,6 +7,7 @@ function normalizeComputer(computer) {
     ...computer,
     name: computer.name || computer.code,
     position: computer.position || "",
+    qrCode: computer.qrCode || "",
     cpu: computer.cpu || "",
     ram: computer.ram || "",
     gpu: computer.gpu || "",
@@ -16,6 +17,7 @@ function normalizeComputer(computer) {
     mouse: computer.mouse || "",
     hdd: computer.hdd || "",
     ssd: computer.ssd || "",
+    note: computer.note || "",
   };
 }
 
@@ -45,6 +47,7 @@ export function upsertComputer(computer) {
     name: computer.name.trim(),
     room: computer.room,
     position: computer.position?.trim() || "",
+    qrCode: computer.qrCode?.trim() || "",
     cpu: computer.cpu?.trim() || "",
     ram: computer.ram?.trim() || "",
     gpu: computer.gpu?.trim() || "",
@@ -55,6 +58,7 @@ export function upsertComputer(computer) {
     hdd: computer.hdd?.trim() || "",
     ssd: computer.ssd?.trim() || "",
     status: computer.status,
+    note: computer.note?.trim() || "",
   };
   const currentComputers = getComputers();
   const existedComputer = currentComputers.find((item) => item.id === normalizedComputer.id);

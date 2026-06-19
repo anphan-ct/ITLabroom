@@ -6,11 +6,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CourseSection extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $table = 'lop_hoc_phan';
 
@@ -36,11 +35,6 @@ class CourseSection extends Model
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class, 'ma_nam_hoc');
-    }
-
-    public function semester(): BelongsTo
-    {
-        return $this->belongsTo(Semester::class, 'ma_nam_hoc');
     }
 
     public function room(): BelongsTo

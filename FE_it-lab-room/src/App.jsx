@@ -13,21 +13,26 @@ import SubjectsPage from "./components/pages/admin/SubjectsPage.jsx";
 import SubjectFormPage from "./components/pages/admin/SubjectFormPage.jsx";
 import RoomsPage from "./components/pages/admin/RoomsPage.jsx";
 import RoomFormPage from "./components/pages/admin/RoomFormPage.jsx";
+import ComputerDetailPage from "./components/pages/admin/ComputerDetailPage.jsx";
 import ComputersPage from "./components/pages/admin/ComputersPage.jsx";
 import ComputerCreatePage from "./components/pages/admin/ComputerCreatePage.jsx";
 import MaintenancePage from "./components/pages/admin/MaintenancePage.jsx";
 import MaintenanceTicketsPage from "./components/pages/admin/MaintenanceTicketsPage.jsx";
 import SchedulesPage from "./components/pages/admin/SchedulesPage.jsx";
 import ScheduleFormPage from "./components/pages/admin/ScheduleFormPage.jsx";
-import LoanRequestsManagePage from "./components/pages/admin/LoanRequestsManagePage.jsx";
+import LoanRequestsManagePage from "./components/pages/teacher/LoanRequestsManagePage.jsx";
+import LoanApprovalPage from "./components/pages/admin/LoanApprovalPage.jsx";
+import ReturnApprovalPage from "./components/pages/admin/ReturnApprovalPage.jsx";
 import RoomBookingsManagePage from "./components/pages/admin/RoomBookingsManagePage.jsx";
-import ShiftFormPage from "./components/pages/admin/ShiftFormPage.jsx";
+import ComputerImportDetailPage from "./components/pages/admin/ComputerImportDetailPage.jsx";
 import ComputerImportsPage from "./components/pages/admin/ComputerImportsPage.jsx";
 import ComputerReturnDetailsPage from "./components/pages/admin/ComputerReturnDetailsPage.jsx";
-import ComputerReturnsPage from "./components/pages/admin/ComputerReturnsPage.jsx";
+import ComputerReturnsPage from "./components/pages/teacher/ComputerReturnsPage.jsx";
 import ComputerTransfersPage from "./components/pages/admin/ComputerTransfersPage.jsx";
 import CourseSectionsPage from "./components/pages/admin/CourseSectionsPage.jsx";
 import DepartmentsPage from "./components/pages/admin/DepartmentsPage.jsx";
+import CourseSectionFormPage from "./components/pages/admin/CourseSectionFormPage.jsx";
+import DepartmentFormPage from "./components/pages/admin/DepartmentFormPage.jsx";
 import LoanDetailsPage from "./components/pages/admin/LoanDetailsPage.jsx";
 import RepairLogsPage from "./components/pages/admin/RepairLogsPage.jsx";
 
@@ -46,7 +51,6 @@ import StudentIncidentPage from "./components/pages/student/StudentIncidentPage.
 import StudentAttendancePage from "./components/pages/student/StudentAttendancePage.jsx";
 import StudentAttendanceDetailPage from "./components/pages/student/StudentAttendanceDetailPage.jsx";
 import StudentAttendanceClassHistoryPage from "./components/pages/student/StudentAttendanceClassHistoryPage.jsx";
-import ShiftsPage from "./components/pages/admin/ShiftsPage.jsx";
 export default function App() {
   return (
     <Routes>
@@ -75,6 +79,7 @@ export default function App() {
       <Route path="/admin/rooms/create" element={<ProtectedRoute role="admin"><RoomFormPage /></ProtectedRoute>} />
       <Route path="/admin/rooms/:roomId/edit" element={<ProtectedRoute role="admin"><RoomFormPage /></ProtectedRoute>} />
       <Route path="/admin/computers" element={<ProtectedRoute role="admin"><ComputersPage /></ProtectedRoute>} />
+      <Route path="/admin/computers/:computerId" element={<ProtectedRoute role="admin"><ComputerDetailPage /></ProtectedRoute>} />
       <Route path="/admin/computers/create" element={<ProtectedRoute role="admin"><ComputerCreatePage /></ProtectedRoute>} />
       <Route path="/admin/computers/:computerId/edit" element={<ProtectedRoute role="admin"><ComputerCreatePage /></ProtectedRoute>} />
       <Route path="/admin/maintenance" element={<ProtectedRoute role="admin"><MaintenancePage /></ProtectedRoute>} />
@@ -82,22 +87,26 @@ export default function App() {
       <Route path="/admin/schedules" element={<ProtectedRoute role="admin"><SchedulesPage /></ProtectedRoute>} />
       <Route path="/admin/schedules/create" element={<ProtectedRoute role="admin"><ScheduleFormPage /></ProtectedRoute>} />
       <Route path="/admin/schedules/:scheduleId/edit" element={<ProtectedRoute role="admin"><ScheduleFormPage /></ProtectedRoute>} />
-      <Route path="/admin/loan-requests" element={<ProtectedRoute role="admin"><LoanRequestsManagePage /></ProtectedRoute>} />
-      <Route path="/admin/loan-details" element={<ProtectedRoute role="admin"><LoanDetailsPage /></ProtectedRoute>} />
       <Route path="/admin/computer-imports" element={<ProtectedRoute role="admin"><ComputerImportsPage /></ProtectedRoute>} />
-      <Route path="/admin/computer-returns" element={<ProtectedRoute role="admin"><ComputerReturnsPage /></ProtectedRoute>} />
-      <Route path="/admin/computer-return-details" element={<ProtectedRoute role="admin"><ComputerReturnDetailsPage /></ProtectedRoute>} />
+      <Route path="/admin/computer-imports/:importId" element={<ProtectedRoute role="admin"><ComputerImportDetailPage /></ProtectedRoute>} />
+      <Route path="/admin/loan-approvals" element={<ProtectedRoute role="admin"><LoanApprovalPage /></ProtectedRoute>} />
+      <Route path="/admin/return-approvals" element={<ProtectedRoute role="admin"><ReturnApprovalPage /></ProtectedRoute>} />
       <Route path="/admin/room-bookings" element={<ProtectedRoute role="admin"><RoomBookingsManagePage /></ProtectedRoute>} />
-      <Route path="/admin/shifts" element={<ProtectedRoute role="admin"><ShiftsPage /></ProtectedRoute>} />
-      <Route path="/admin/shifts/create" element={<ProtectedRoute role="admin"><ShiftFormPage /></ProtectedRoute>} />
-      <Route path="/admin/shifts/:shiftId/edit" element={<ProtectedRoute role="admin"><ShiftFormPage /></ProtectedRoute>} />
       <Route path="/admin/departments" element={<ProtectedRoute role="admin"><DepartmentsPage /></ProtectedRoute>} />
+      <Route path="/admin/departments/create" element={<ProtectedRoute role="admin"><DepartmentFormPage /></ProtectedRoute>} />
+      <Route path="/admin/departments/:departmentId/edit" element={<ProtectedRoute role="admin"><DepartmentFormPage /></ProtectedRoute>} />
       <Route path="/admin/course-sections" element={<ProtectedRoute role="admin"><CourseSectionsPage /></ProtectedRoute>} />
+      <Route path="/admin/course-sections/create" element={<ProtectedRoute role="admin"><CourseSectionFormPage /></ProtectedRoute>} />
+      <Route path="/admin/course-sections/:courseSectionId/edit" element={<ProtectedRoute role="admin"><CourseSectionFormPage /></ProtectedRoute>} />
       <Route path="/admin/repair-logs" element={<ProtectedRoute role="admin"><RepairLogsPage /></ProtectedRoute>} />
       <Route path="/admin/computer-transfers" element={<ProtectedRoute role="admin"><ComputerTransfersPage /></ProtectedRoute>} />
       <Route path="/teacher" element={<ProtectedRoute role="teacher"><TeacherDashboard /></ProtectedRoute>} />
       <Route path="/teacher/schedules" element={<ProtectedRoute role="teacher"><TeacherSchedulePage /></ProtectedRoute>} />
       <Route path="/teacher/attendance" element={<ProtectedRoute role="teacher"><AttendancePage /></ProtectedRoute>} />
+      <Route path="/teacher/loan-requests" element={<ProtectedRoute role="teacher"><LoanRequestsManagePage /></ProtectedRoute>} />
+      <Route path="/teacher/loan-details" element={<ProtectedRoute role="teacher"><LoanDetailsPage /></ProtectedRoute>} />
+      <Route path="/teacher/computer-returns" element={<ProtectedRoute role="teacher"><ComputerReturnsPage /></ProtectedRoute>} />
+      <Route path="/teacher/computer-return-details" element={<ProtectedRoute role="teacher"><ComputerReturnDetailsPage /></ProtectedRoute>} />
       <Route path="/teacher/attendance/sessions/:sessionId" element={<ProtectedRoute role="teacher"><TeacherAttendanceSessionStatusPage /></ProtectedRoute>} />
       <Route path="/teacher/attendance/sessions/:sessionId/students/:studentId" element={<ProtectedRoute role="teacher"><TeacherStudentAttendanceDetailPage /></ProtectedRoute>} />
       <Route path="/teacher/attendance/students/:studentId" element={<ProtectedRoute role="teacher"><TeacherStudentAttendanceDetailPage /></ProtectedRoute>} />

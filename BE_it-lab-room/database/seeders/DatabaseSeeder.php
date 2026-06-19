@@ -7,6 +7,7 @@ use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\User;
+use App\Models\Department;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -64,10 +65,20 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        $department = Department::query()->updateOrCreate(
+            ['ma_phong_ban' => 'CNTT'],
+            [
+                'ten_phong_ban' => 'Khoa Công nghệ thông tin',
+                'trang_thai' => 'active',
+                'mo_ta' => 'Đơn vị công tác của giảng viên test',
+            ]
+        );
+
         $teacher = Teacher::query()->updateOrCreate(
             ['ma_nguoi_dung' => $teacherUser->id],
             [
                 'ma_giang_vien' => 'GVTEST001',
+                'ma_phong_ban' => $department->id,
             ]
         );
 

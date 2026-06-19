@@ -14,9 +14,9 @@ const AUTH_ENDPOINTS = {
 /**
  * Gọi API đăng nhập theo từng vai trò.
  *
- * @param {import("../interfaces/auth").AuthRole} role
- * @param {import("../interfaces/auth").LoginPayload} credentials
- * @returns {Promise<import("../interfaces/auth").ApiResponse>}
+ * @param {import("../interfaces/model/IAuth.interface").AuthRole} role
+ * @param {import("../interfaces/model/IAuth.interface").LoginPayload} credentials
+ * @returns {Promise<import("../interfaces/model/IAuth.interface").ApiResponse>}
  */
 export async function loginByRole(role, credentials) {
   const endpoint = AUTH_ENDPOINTS[role];
@@ -37,8 +37,8 @@ export async function loginByRole(role, credentials) {
 /**
  * Lưu phiên đăng nhập Sanctum vào cookie để các màn sau dùng Bearer token.
  *
- * @param {import("../interfaces/auth").AuthRole} role
- * @param {import("../interfaces/auth").AuthData} authData
+ * @param {import("../interfaces/model/IAuth.interface").AuthRole} role
+ * @param {import("../interfaces/model/IAuth.interface").AuthData} authData
  */
 export function saveAuthSession(role, authData) {
   const session = {
@@ -75,3 +75,22 @@ export function getAuthToken() {
 }
 
 export { AUTH_COOKIE_KEY };
+
+export async function loginWithGoogleAPI(credential, role = AUTH_ROLES.STUDENT) {
+  const GOOGLE_LOGIN_ENDPOINTS = {
+    [AUTH_ROLES.STUDENT]: '/api/auth/students/google-login',
+    [AUTH_ROLES.TEACHER]: '/api/auth/teachers/google-login',
+    [AUTH_ROLES.ADMIN]: '/api/auth/admin/google-login',
+  };
+
+  const endpoint = GOOGLE_LOGIN_ENDPOINTS[role];
+
+  if (!endpoint) {
+    throw new Error('Vai trò không hợp lệ cho Google Login');
+  }
+
+  return fetcher(endpoint, {
+    method: CONST_METHODS.POST,
+    body: { credential },
+  });
+}

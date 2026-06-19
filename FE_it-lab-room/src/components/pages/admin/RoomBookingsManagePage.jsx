@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { CalendarCheck, CheckCircle2, ClipboardList, XCircle } from "lucide-react";
+import { CalendarCheck, CheckCircle2, ClipboardList, Search, XCircle } from "lucide-react";
 import AppShell from "../../common/AppShell";
 import DataTable from "../../common/DataTable";
 import SectionCard from "../../common/SectionCard";
@@ -89,12 +89,30 @@ const renderLessonRange = (booking) => {
 export default function RoomBookingsManagePage() {
   const [bookings, setBookings] = useState(roomBookings);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [searchKeyword, setSearchKeyword] = useState("");
 
   const filteredBookings = useMemo(() => {
-    return statusFilter === "all"
-      ? bookings
-      : bookings.filter((booking) => booking.approvalStatus === statusFilter);
-  }, [bookings, statusFilter]);
+    const keyword = searchKeyword.trim().toLowerCase();
+
+    return bookings.filter((booking) => {
+      const matchesStatus = statusFilter === "all" || booking.approvalStatus === statusFilter;
+      const searchContent = [
+        booking.id,
+        booking.teacher,
+        booking.room,
+        booking.subject,
+        booking.timeSetting,
+        booking.bookingDate,
+        booking.shift,
+        renderLessonRange(booking),
+        booking.purpose,
+        bookingStatusLabels[booking.approvalStatus],
+      ].join(" ").toLowerCase();
+      const matchesKeyword = !keyword || searchContent.includes(keyword);
+
+      return matchesStatus && matchesKeyword;
+    });
+  }, [bookings, searchKeyword, statusFilter]);
 
   const updateBookingStatus = (bookingId, approvalStatus) => {
     setBookings((currentBookings) =>
@@ -116,18 +134,30 @@ export default function RoomBookingsManagePage() {
         <SectionCard
           title="Danh sách đăng ký phòng"
           rightAction={
-            <select
-              value={statusFilter}
-              onChange={(event) => setStatusFilter(event.target.value)}
-              className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none"
-            >
-              <option value="all">Tất cả trạng thái</option>
-              {bookingStatusOptions.map((status) => (
-                <option key={status.value} value={status.value}>
-                  {status.label}
-                </option>
-              ))}
-            </select>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative">
+                <Search size={17} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="search"
+                  value={searchKeyword}
+                  onChange={(event) => setSearchKeyword(event.target.value)}
+                  placeholder="Tìm đăng ký phòng"
+                  className="w-full min-w-[240px] rounded-xl border border-slate-200 py-2 pl-9 pr-3 text-sm outline-none transition focus:border-blue-300 focus:ring-2 focus:ring-blue-100 sm:w-72"
+                />
+              </div>
+              <select
+                value={statusFilter}
+                onChange={(event) => setStatusFilter(event.target.value)}
+                className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none"
+              >
+                <option value="all">Tất cả trạng thái</option>
+                {bookingStatusOptions.map((status) => (
+                  <option key={status.value} value={status.value}>
+                    {status.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           }
         >
           <DataTable

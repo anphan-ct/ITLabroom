@@ -8,8 +8,8 @@ export const initialImportReceipts = [
 ];
 
 export const initialImportDetails = [
-  { id: 1, importCode: "PN-0001", computerCode: "PC001", note: "Máy 01" },
-  { id: 2, importCode: "PN-0001", computerCode: "PC002", note: "Máy 02" },
+  { id: 1, importCode: "PN-0001", computerCode: "PC001", computerName: "Máy 01", room: "PM01", note: "Máy thực hành web" },
+  { id: 2, importCode: "PN-0001", computerCode: "PC002", computerName: "Máy 02", room: "PM01", note: "Máy thực hành web" },
 ];
 
 export const initialLoanDetails = [
@@ -25,8 +25,8 @@ export const initialReturnDetails = [
 ];
 
 export const initialCourseSections = [
-  { id: 1, code: "LTWEB-01", className: "CNTT01", subject: "Lập trình web", timeSetting: "2025-2026 HK1", teacher: "Trần Thị B", room: "PM01", maxStudents: 40, status: "Hoạt động", note: "Lớp thực hành web" },
-  { id: 2, code: "CSDL-02", className: "CNTT02", subject: "Cơ sở dữ liệu", timeSetting: "2025-2026 HK1", teacher: "Hoàng Minh Khang", room: "PM02", maxStudents: 38, status: "Hoạt động", note: "Lớp thực hành cơ sở dữ liệu" },
+  { id: 1, code: "LTWEB-01", subject: "Lập trình web", academicYear: "2025-2026", teacher: "Trần Thị B", room: "PM01", maxStudents: 40, status: "Hoạt động", note: "Lớp thực hành web" },
+  { id: 2, code: "CSDL-02", subject: "Cơ sở dữ liệu", academicYear: "2025-2026", teacher: "Hoàng Minh Khang", room: "PM02", maxStudents: 38, status: "Hoạt động", note: "Lớp thực hành cơ sở dữ liệu" },
 ];
 
 export const initialRepairLogs = [

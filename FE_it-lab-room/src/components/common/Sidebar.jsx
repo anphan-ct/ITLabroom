@@ -20,10 +20,10 @@ export default function Sidebar({ role = "admin", open = false, onClose }) {
   };
 
   const linkClassName = ({ isActive }) =>
-    `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
+    `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition ${
       isActive
-        ? "bg-blue-600 text-white shadow"
-        : "text-slate-300 hover:bg-white/10 hover:text-white"
+        ? "bg-blue-600 text-white shadow-sm"
+        : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
     }`;
 
   return (
@@ -36,14 +36,18 @@ export default function Sidebar({ role = "admin", open = false, onClose }) {
       />
 
       <aside
-        className={`fixed left-0 top-0 z-40 flex h-screen w-72 flex-col bg-slate-950 pt-20 text-white shadow-xl transition-transform md:static md:z-auto md:h-full md:shrink-0 md:translate-x-0 md:rounded-lg md:border md:border-slate-800 md:pt-0 md:shadow-sm ${
+        className={`fixed left-0 top-0 z-40 flex h-screen w-72 flex-col border-r border-slate-200 bg-white pt-20 shadow-xl transition-transform md:static md:z-auto md:h-full md:shrink-0 md:translate-x-0 md:rounded-lg md:border md:pt-0 md:shadow-sm ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
+        <div className="hidden border-b border-slate-200 px-4 py-4 md:block">
+          <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Điều hướng</p>
+          <p className="mt-1 text-sm font-semibold text-slate-900">Quản trị phòng máy</p>
+        </div>
         <nav
           ref={navRef}
           onScroll={handleNavScroll}
-          className="flex-1 space-y-1 overflow-y-auto px-3 py-4"
+          className="app-scrollbar flex-1 space-y-1 overflow-y-auto px-3 py-4"
         >
           {(roleMenus[role] || []).map((item) => {
             const Icon = item.icon;
@@ -62,7 +66,7 @@ export default function Sidebar({ role = "admin", open = false, onClose }) {
                     <span>{item.label}</span>
                   </NavLink>
 
-                  <div className={`ml-4 space-y-1 border-l border-slate-800 pl-3 group-hover:block group-focus-within:block ${hasActiveChild ? "block" : "hidden"}`}>
+                  <div className={`ml-4 space-y-1 border-l border-slate-200 pl-3 group-hover:block group-focus-within:block ${hasActiveChild ? "block" : "hidden"}`}>
                     {item.children.map((child) => {
                       const ChildIcon = child.icon;
 
@@ -74,8 +78,8 @@ export default function Sidebar({ role = "admin", open = false, onClose }) {
                           className={({ isActive }) =>
                             `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
                               isActive
-                                ? "bg-blue-600 text-white shadow"
-                                : "text-slate-400 hover:bg-white/10 hover:text-white"
+                                ? "bg-blue-600 text-white shadow-sm"
+                                : "text-slate-500 hover:bg-slate-100 hover:text-slate-950"
                             }`
                           }
                         >

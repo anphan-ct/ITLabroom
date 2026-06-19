@@ -1,25 +1,9 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { rooms, users } from "../../data/mockData";
-
-const teacherOptions = users.filter((user) => user.role === "Giảng viên");
-const departmentOptions = Array.from(
-  new Map(
-    users
-      .filter((user) => user.faculty)
-      .map((user, index) => [
-        user.faculty,
-        {
-          id: index + 1,
-          name: user.faculty,
-        },
-      ]),
-  ).values(),
-);
+import { rooms } from "../../data/mockData";
+import { getAuthSession } from "../../services/auth.service";
 
 const initialFormData = {
-  teacherId: "",
-  departmentId: "",
   roomId: "",
   borrowedAt: "",
   quantity: "1",
@@ -29,6 +13,9 @@ const initialFormData = {
 export default function LoanRequestForm({
   onCreate,
 }) {
+  const currentUser = getAuthSession()?.user;
+  const teacherProfile = currentUser?.teacher;
+  const teacherDepartment = teacherProfile?.department;
   const [formData, setFormData] = useState(initialFormData);
   const [formError, setFormError] = useState("");
 
@@ -43,8 +30,8 @@ export default function LoanRequestForm({
     event.preventDefault();
 
     if (
-      !formData.teacherId
-      || !formData.departmentId
+      !teacherProfile?.id
+      || !teacherDepartment?.id
       || !formData.roomId
       || !formData.borrowedAt
       || Number(formData.quantity) <= 0
@@ -54,15 +41,13 @@ export default function LoanRequestForm({
       return;
     }
 
-    const selectedTeacher = teacherOptions.find((teacher) => teacher.id === Number(formData.teacherId));
-    const selectedDepartment = departmentOptions.find((department) => department.id === Number(formData.departmentId));
     const selectedRoom = rooms.find((room) => room.id === Number(formData.roomId));
 
     onCreate({
-      teacherId: selectedTeacher.id,
-      teacher: selectedTeacher.name,
-      departmentId: selectedDepartment.id,
-      department: selectedDepartment.name,
+      teacherId: teacherProfile.id,
+      teacher: currentUser.full_name,
+      departmentId: teacherDepartment.id,
+      department: teacherDepartment.department_name,
       roomId: selectedRoom.id,
       room: selectedRoom.code,
       borrowedAt: formData.borrowedAt.replace("T", " "),
@@ -76,30 +61,12 @@ export default function LoanRequestForm({
 
   return (
     <form className="grid gap-4" onSubmit={handleSubmit}>
-      <select
-        value={formData.teacherId}
-        onChange={(event) => updateFormField("teacherId", event.target.value)}
-        className="rounded-lg border border-slate-200 px-4 py-3 outline-none focus:border-blue-500"
-      >
-        <option value="">Chọn giảng viên mượn</option>
-        {teacherOptions.map((teacher) => (
-          <option key={teacher.id} value={teacher.id}>
-            {teacher.name}
-          </option>
-        ))}
-      </select>
-      <select
-        value={formData.departmentId}
-        onChange={(event) => updateFormField("departmentId", event.target.value)}
-        className="rounded-lg border border-slate-200 px-4 py-3 outline-none focus:border-blue-500"
-      >
-        <option value="">Chọn phòng ban mượn</option>
-        {departmentOptions.map((department) => (
-          <option key={department.id} value={department.id}>
-            {department.name}
-          </option>
-        ))}
-      </select>
+      <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+        <div className="font-semibold text-slate-900">{currentUser?.full_name || "Chưa xác định giảng viên"}</div>
+        <div className="mt-1">
+          {teacherDepartment?.department_name || "Tài khoản giảng viên chưa có phòng ban"}
+        </div>
+      </div>
       <select
         value={formData.roomId}
         onChange={(event) => updateFormField("roomId", event.target.value)}

@@ -4,13 +4,14 @@ const STORAGE_KEY = "it_lab_room_subjects";
 
 function normalizeSubject(subject) {
   const subjectData = { ...subject };
-  delete subjectData.code;
 
   return {
     ...subjectData,
+    code: subjectData.code?.trim().toUpperCase() || "",
     name: subjectData.name.trim(),
     type: subjectData.type || "LT",
     credits: Number(subjectData.credits),
+    note: subjectData.note?.trim() || "",
   };
 }
 

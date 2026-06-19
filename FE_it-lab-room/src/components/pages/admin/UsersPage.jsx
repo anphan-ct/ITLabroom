@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Edit } from "lucide-react";
+import { Edit, Search } from "lucide-react";
 import AppShell from "../../common/AppShell";
 import DataTable from "../../common/DataTable";
 import SectionCard from "../../common/SectionCard";
@@ -38,7 +38,6 @@ const userPageConfig = {
 };
 
 export default function UsersPage({ type = "all" }) {
-  const [departmentFilter, setDepartmentFilter] = useState("all");
   const [courseYearFilter, setCourseYearFilter] = useState("all");
   const [searchKeyword, setSearchKeyword] = useState("");
   const [users] = useState(() => getUsers());
@@ -48,10 +47,6 @@ export default function UsersPage({ type = "all" }) {
     () => (config.roles ? users.filter((user) => config.roles.includes(user.role)) : users),
     [config.roles, users],
   );
-  const departmentOptions = useMemo(
-    () => Array.from(new Set(baseUsers.map((user) => user.department).filter(Boolean))),
-    [baseUsers],
-  );
   const courseYearOptions = useMemo(
     () => Array.from(new Set(baseUsers.map((user) => user.course).filter(Boolean))),
     [baseUsers],
@@ -60,7 +55,6 @@ export default function UsersPage({ type = "all" }) {
     const keyword = searchKeyword.trim().toLowerCase();
 
     return baseUsers.filter((user) => {
-      const matchesDepartment = type !== "teachers" || departmentFilter === "all" || user.department === departmentFilter;
       const matchesCourseYear = type !== "students" || courseYearFilter === "all" || user.course === courseYearFilter;
       const matchesKeyword =
         !keyword ||
@@ -69,16 +63,15 @@ export default function UsersPage({ type = "all" }) {
         (user.code || "").toLowerCase().includes(keyword) ||
         (user.phone || "").toLowerCase().includes(keyword);
 
-      return matchesDepartment && matchesCourseYear && matchesKeyword;
+      return matchesCourseYear && matchesKeyword;
     });
-  }, [baseUsers, courseYearFilter, departmentFilter, searchKeyword, type]);
+  }, [baseUsers, courseYearFilter, searchKeyword, type]);
   const columns = [
     ...(hasAdvancedFilters ? [{ key: "code", title: config.codeTitle }] : []),
     { key: "name", title: "Họ tên" },
     { key: "email", title: "Email" },
     { key: "phone", title: "Số điện thoại", render: (value) => value || "-" },
     { key: "role", title: "Vai trò" },
-    ...(type === "teachers" ? [{ key: "department", title: "Bộ môn" }] : []),
     ...(type === "students" ? [{ key: "className", title: "Lớp" }] : []),
     ...(type === "students" ? [{ key: "course", title: "Niên khóa" }] : []),
     { key: "status", title: "Trạng thái", isStatus: true },
@@ -110,29 +103,25 @@ export default function UsersPage({ type = "all" }) {
       <SectionCard
         title={config.sectionTitle}
         rightAction={
-          <Link
-            to={config.addPath}
-            className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
-          >
-            {config.addLabel}
-          </Link>
-        }
-      >
-        {hasAdvancedFilters && (
-          <div className={`mb-5 grid gap-3 ${type === "students" ? "md:grid-cols-[minmax(0,1fr)_220px]" : "md:grid-cols-[minmax(0,1fr)_240px]"}`}>
-            <input
-              type="search"
-              value={searchKeyword}
-              onChange={(event) => setSearchKeyword(event.target.value)}
-              placeholder={config.searchPlaceholder}
-              className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
-            />
-
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative">
+              <Search
+                size={17}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              />
+              <input
+                type="search"
+                value={searchKeyword}
+                onChange={(event) => setSearchKeyword(event.target.value)}
+                placeholder={config.searchPlaceholder || "Tìm người dùng"}
+                className="w-full min-w-[240px] rounded-xl border border-slate-200 py-2 pl-9 pr-3 text-sm outline-none transition focus:border-blue-300 focus:ring-2 focus:ring-blue-100 sm:w-72"
+              />
+            </div>
             {type === "students" && (
               <select
                 value={courseYearFilter}
                 onChange={(event) => setCourseYearFilter(event.target.value)}
-                className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
+                className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none"
               >
                 <option value="all">Tất cả niên khóa</option>
                 {courseYearOptions.map((courseYear) => (
@@ -142,24 +131,15 @@ export default function UsersPage({ type = "all" }) {
                 ))}
               </select>
             )}
-
-            {type === "teachers" && (
-              <select
-                value={departmentFilter}
-                onChange={(event) => setDepartmentFilter(event.target.value)}
-                className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
-              >
-                <option value="all">Tất cả bộ môn</option>
-                {departmentOptions.map((department) => (
-                  <option key={department} value={department}>
-                    {department}
-                  </option>
-                ))}
-              </select>
-            )}
+            <Link
+              to={config.addPath}
+              className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+            >
+              {config.addLabel}
+            </Link>
           </div>
-        )}
-
+        }
+      >
         <DataTable
           columns={columns}
           data={filteredUsers}

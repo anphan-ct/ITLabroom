@@ -15,10 +15,10 @@ function getInitialUser(role) {
     code: "",
     name: "",
     email: "",
+    password: "",
     phone: "",
     gender: "",
     dateOfBirth: "",
-    department: "",
     classId: "",
     className: "",
     course: "",
@@ -81,8 +81,8 @@ export default function UserFormPage({ defaultRole = "Admin" }) {
       return;
     }
 
-    if (isTeacherRole && !formData.department.trim()) {
-      setError("Vui lòng nhập bộ môn cho giảng viên.");
+    if (!isEditing && !formData.password.trim()) {
+      setError("Vui lòng nhập mật khẩu.");
       return;
     }
 
@@ -133,7 +133,6 @@ export default function UserFormPage({ defaultRole = "Admin" }) {
         className: selectedClass?.code || "",
         code: isStudentRole || isTeacherRole ? formData.code.trim() : "",
         course: isStudentRole ? formData.course.trim() : "",
-        department: isTeacherRole ? formData.department.trim() : "",
       });
     } else {
       addUser({
@@ -142,7 +141,7 @@ export default function UserFormPage({ defaultRole = "Admin" }) {
         className: selectedClass?.code || "",
         code: isStudentRole || isTeacherRole ? formData.code.trim() : "",
         course: isStudentRole ? formData.course.trim() : "",
-        department: isTeacherRole ? formData.department.trim() : "",
+        password: formData.password.trim(),
       });
     }
 
@@ -189,6 +188,20 @@ export default function UserFormPage({ defaultRole = "Admin" }) {
               className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
             />
           </label>
+
+          {!isEditing && (
+            <label className="space-y-2">
+              <span className="text-sm font-semibold text-slate-700">Mật khẩu</span>
+              <input
+                type="password"
+                name="password"
+                value={formData.password || ""}
+                onChange={handleChange}
+                placeholder="Nhập mật khẩu"
+                className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
+              />
+            </label>
+          )}
 
           <label className="space-y-2">
             <span className="text-sm font-semibold text-slate-700">Vai trò</span>
@@ -261,20 +274,6 @@ export default function UserFormPage({ defaultRole = "Admin" }) {
               ))}
             </select>
           </label>
-
-          {isTeacherRole && (
-            <label className="space-y-2">
-              <span className="text-sm font-semibold text-slate-700">Bộ môn</span>
-              <input
-                type="text"
-                name="department"
-                value={formData.department || ""}
-                onChange={handleChange}
-                placeholder="VD: Công nghệ thông tin"
-                className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
-              />
-            </label>
-          )}
 
           {isStudentRole && (
             <label className="space-y-2">

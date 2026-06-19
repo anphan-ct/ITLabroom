@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Wrench } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Search, Wrench } from "lucide-react";
 import AppShell from "../../common/AppShell";
 import DataTable from "../../common/DataTable";
 import SectionCard from "../../common/SectionCard";
@@ -19,6 +19,7 @@ export default function RepairLogsPage() {
     result: log.processingStatus,
   }));
   const [items, setItems] = useState(normalizedInitialLogs);
+  const [searchKeyword, setSearchKeyword] = useState("");
   const [tickets] = useState(initialMaintenanceTickets);
   const [form, setForm] = useState({ maintenanceTicketId: tickets[0]?.id || "", repairTime: "2026-05-30T08:00", repairContent: "", result: "Đang xử lý", cost: "0" });
   const selectedTicket = tickets.find((ticket) => Number(ticket.id) === Number(form.maintenanceTicketId)) || tickets[0];
@@ -39,6 +40,14 @@ export default function RepairLogsPage() {
     });
     setForm({ ...form, repairContent: "", cost: "0" });
   };
+  const filteredItems = useMemo(() => {
+    const keyword = searchKeyword.trim().toLowerCase();
+
+    return items.filter((item) => {
+      const searchContent = [item.maintenanceTicketId, item.reportId, item.target, item.repairTime, item.repairContent, item.result, item.cost].join(" ").toLowerCase();
+      return !keyword || searchContent.includes(keyword);
+    });
+  }, [items, searchKeyword]);
 
   return (
     <AppShell role="admin" title="Nhật ký sửa chữa" subtitle="Ghi nhận từng lần sửa chữa máy tính và thiết bị">
@@ -71,7 +80,21 @@ export default function RepairLogsPage() {
             <button className="inline-flex w-fit items-center gap-2 rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white"><Wrench size={16} />Lưu nhật ký</button>
           </form>
         </SectionCard>
-        <SectionCard title="Danh sách nhật ký sửa chữa">
+        <SectionCard
+          title="Danh sách nhật ký sửa chữa"
+          rightAction={
+            <div className="relative">
+              <Search size={17} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="search"
+                value={searchKeyword}
+                onChange={(event) => setSearchKeyword(event.target.value)}
+                placeholder="Tìm nhật ký"
+                className="w-full min-w-[240px] rounded-xl border border-slate-200 py-2 pl-9 pr-3 text-sm outline-none transition focus:border-blue-300 focus:ring-2 focus:ring-blue-100 sm:w-72"
+              />
+            </div>
+          }
+        >
           <DataTable columns={[
             { key: "maintenanceTicketId", title: "ID phiếu bảo trì", render: (value) => `#${value}` },
             { key: "reportId", title: "ID báo cáo", render: (value) => value ? `#${value}` : "-" },
@@ -80,7 +103,7 @@ export default function RepairLogsPage() {
             { key: "repairContent", title: "Nội dung sửa" },
             { key: "result", title: "Kết quả", isStatus: true },
             { key: "cost", title: "Chi phí" },
-          ]} data={items} />
+          ]} data={filteredItems} />
         </SectionCard>
       </div>
     </AppShell>

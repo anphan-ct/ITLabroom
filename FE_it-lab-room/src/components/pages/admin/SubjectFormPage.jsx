@@ -6,9 +6,11 @@ import SectionCard from "../../common/SectionCard";
 import { getSubjects, upsertSubject } from "../../../data/subjectsStore";
 
 const initialForm = {
+  code: "",
   name: "",
   type: "LT",
   credits: 3,
+  note: "",
 };
 
 const subjectTypes = ["LT", "TH"];
@@ -61,6 +63,16 @@ export default function SubjectFormPage() {
         && subject.id !== editingSubject?.id;
     });
 
+    const duplicatedCode = formData.code?.trim() && subjects.some((subject) => {
+      return subject.code?.toLowerCase() === formData.code.trim().toLowerCase()
+        && subject.id !== editingSubject?.id;
+    });
+
+    if (duplicatedCode) {
+      setError("Mã môn học đã tồn tại.");
+      return;
+    }
+
     if (duplicatedName) {
       setError("Tên môn đã tồn tại.");
       return;
@@ -81,6 +93,18 @@ export default function SubjectFormPage() {
     >
       <SectionCard title="Thông tin môn học">
         <form onSubmit={handleSubmit} className="grid gap-5 lg:grid-cols-2">
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-slate-700">Mã môn học</span>
+            <input
+              type="text"
+              name="code"
+              value={formData.code || ""}
+              onChange={handleChange}
+              placeholder="VD: LTWEB"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm uppercase outline-none transition focus:border-blue-500 focus:bg-white"
+            />
+          </label>
+
           <label className="space-y-2">
             <span className="text-sm font-semibold text-slate-700">Tên môn</span>
             <input
@@ -118,6 +142,18 @@ export default function SubjectFormPage() {
               max="10"
               value={formData.credits}
               onChange={handleChange}
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
+            />
+          </label>
+
+          <label className="space-y-2 lg:col-span-2">
+            <span className="text-sm font-semibold text-slate-700">Mô tả</span>
+            <input
+              type="text"
+              name="note"
+              value={formData.note || ""}
+              onChange={handleChange}
+              placeholder="Mô tả môn học"
               className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
             />
           </label>
