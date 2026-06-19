@@ -25,20 +25,34 @@ export const roleMenus = {
     { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
     {
       to: "/admin/users",
-      label: "Người dùng",
+      label: "Quản lý Tài khoản",
       icon: Users,
       children: [
         { to: "/admin/users/students", label: "Sinh viên", icon: UserRound },
         { to: "/admin/users/teachers", label: "Giảng viên", icon: Presentation },
       ],
     },
-    { to: "/admin/classes", label: "Lớp học", icon: GraduationCap },
-    { to: "/admin/course-sections", label: "Lớp học phần", icon: ListTree },
-    { to: "/admin/subjects", label: "Môn học", icon: BookOpen },
-    { to: "/admin/departments", label: "Phòng ban", icon: Building2 },
+    {
+      to: "/admin/classes",
+      label: "Quản lý Học vụ",
+      icon: GraduationCap,
+      children: [
+        { to: "/admin/classes", label: "Lớp học", icon: GraduationCap },
+        { to: "/admin/course-sections", label: "Lớp học phần", icon: ListTree },
+        { to: "/admin/subjects", label: "Môn học", icon: BookOpen },
+        { to: "/admin/departments", label: "Phòng ban", icon: Building2 },
+      ],
+    },
     { to: "/admin/schedules", label: "Lịch phòng máy", icon: CalendarDays },
-    { to: "/admin/rooms", label: "Phòng máy", icon: Monitor },
-    { to: "/admin/computers", label: "Máy tính", icon: Monitor },
+    {
+      to: "/admin/rooms",
+      label: "Quản lý Phòng máy",
+      icon: Monitor,
+      children: [
+        { to: "/admin/rooms", label: "Phòng máy", icon: Monitor },
+        { to: "/admin/computers", label: "Máy tính", icon: Monitor },
+      ],
+    },
     { to: "/admin/computer-imports", label: "Phiếu nhập máy", icon: PackagePlus },
     { to: "/admin/computer-transfers", label: "Điều chuyển máy", icon: ArrowRightLeft },
     {

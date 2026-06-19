@@ -11,13 +11,6 @@ const AUTH_ENDPOINTS = {
   [AUTH_ROLES.TEACHER]: CONST_APIS.AUTH.TEACHER_LOGIN,
 };
 
-/**
- * Gọi API đăng nhập theo từng vai trò.
- *
- * @param {import("../interfaces/model/IAuth.interface").AuthRole} role
- * @param {import("../interfaces/model/IAuth.interface").LoginPayload} credentials
- * @returns {Promise<import("../interfaces/model/IAuth.interface").ApiResponse>}
- */
 export async function loginByRole(role, credentials) {
   const endpoint = AUTH_ENDPOINTS[role];
 
@@ -34,12 +27,6 @@ export async function loginByRole(role, credentials) {
   });
 }
 
-/**
- * Lưu phiên đăng nhập Sanctum vào cookie để các màn sau dùng Bearer token.
- *
- * @param {import("../interfaces/model/IAuth.interface").AuthRole} role
- * @param {import("../interfaces/model/IAuth.interface").AuthData} authData
- */
 export function saveAuthSession(role, authData) {
   const session = {
     role,

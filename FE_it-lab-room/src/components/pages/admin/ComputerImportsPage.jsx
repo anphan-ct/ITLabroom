@@ -4,7 +4,7 @@ import AppShell from "../../common/AppShell";
 import DataTable from "../../common/DataTable";
 import SectionCard from "../../common/SectionCard";
 import { Field, SelectInput, TextInput } from "./adminFormControls";
-import { createComputerImport, getComputerImports } from "../../../services/computerImport.service";
+import { createComputerImport, generateComputerImportCode, getComputerImports } from "../../../services/computerImport.service";
 import { getRoomsFromApi } from "../../../services/room.service";
 
 const defaultForm = {
@@ -66,16 +66,6 @@ function mapImportReceipts(imports) {
   return imports.map(mapImportReceipt);
 }
 
-function getNextImportCode(receipts) {
-  const maxNumber = receipts.reduce((maxValue, receipt) => {
-    const matchedCode = receipt.code?.match(/^PN-?(\d+)$/i);
-
-    return matchedCode ? Math.max(maxValue, Number(matchedCode[1])) : maxValue;
-  }, 0);
-
-  return `PN${String(maxNumber + 1)}`;
-}
-
 function cleanText(value) {
   return value.trim() || null;
 }
@@ -91,8 +81,8 @@ export default function ComputerImportsPage() {
   useEffect(() => {
     let isMounted = true;
 
-    Promise.all([getRoomsFromApi(), getComputerImports()])
-      .then(([roomsResponse, importsResponse]) => {
+    Promise.all([getRoomsFromApi(), getComputerImports(), generateComputerImportCode()])
+      .then(([roomsResponse, importsResponse, codeResponse]) => {
         if (!isMounted) {
           return;
         }
@@ -104,7 +94,7 @@ export default function ComputerImportsPage() {
         setReceipts(nextReceipts);
         setForm((currentForm) => ({
           ...currentForm,
-          ma_phieu_nhap: getNextImportCode(nextReceipts),
+          ma_phieu_nhap: codeResponse.data?.ma_phieu_nhap || "",
           ma_phong: currentForm.ma_phong || nextRooms[0]?.id?.toString() || "",
         }));
       })
@@ -122,7 +112,7 @@ export default function ComputerImportsPage() {
   const handleChange = (name, value) => {
     setForm((currentForm) => ({
       ...currentForm,
-      [name]: name === "ma_phieu_nhap" ? value.toUpperCase() : value,
+      [name]: value,
     }));
   };
 
@@ -168,11 +158,12 @@ export default function ComputerImportsPage() {
     try {
       const response = await createComputerImport(buildPayload());
       const newReceipt = mapImportReceipt(response.data);
+      const nextCodeResponse = await generateComputerImportCode();
 
       setReceipts((currentReceipts) => [newReceipt, ...currentReceipts]);
       setForm((currentForm) => ({
         ...defaultForm,
-        ma_phieu_nhap: getNextImportCode([newReceipt, ...receipts]),
+        ma_phieu_nhap: nextCodeResponse.data?.ma_phieu_nhap || "",
         ngay_nhap: currentForm.ngay_nhap,
         ma_phong: currentForm.ma_phong,
       }));
@@ -213,6 +204,7 @@ export default function ComputerImportsPage() {
                 <TextInput
                   value={form.ma_phieu_nhap}
                   onChange={(value) => handleChange("ma_phieu_nhap", value)}
+                  disabled
                 />
               </Field>
 

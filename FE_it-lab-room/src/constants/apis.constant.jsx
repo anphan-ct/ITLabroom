@@ -7,10 +7,12 @@ export const CONST_APIS = {
   COMPUTER_IMPORTS: {
     INDEX: "/api/admin/computer-imports",
     STORE: "/api/admin/computer-imports",
+    CODE: "/api/admin/computer-imports/code",
     SHOW: (id) => `/api/admin/computer-imports/${id}`,
   },
   ROOMS: {
     INDEX: "/api/admin/rooms",
+    STORE: "/api/admin/rooms",
     DESTROY: (id) => `/api/admin/rooms/${id}`,
   },
   COMPUTERS: {

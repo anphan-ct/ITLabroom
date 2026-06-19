@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../layout/Header";
 import Footer from "../../layout/Footer";
-import { AUTH_ROLES } from "../../../interfaces/model/IAuth.interface";
+import { AUTH_ROLES } from "../../../constants/roles.constant";
 import { loginByRole, saveAuthSession, loginWithGoogleAPI } from "../../../services/auth.service";
 import { GoogleLogin } from "@react-oauth/google";
 

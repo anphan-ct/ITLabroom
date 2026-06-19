@@ -8,6 +8,13 @@ export function getRoomsFromApi() {
   });
 }
 
+export function createRoomFromApi(payload) {
+  return fetcher(CONST_APIS.ROOMS.STORE, {
+    method: CONST_METHODS.POST,
+    body: payload,
+  });
+}
+
 export function deleteRoomFromApi(id) {
   return fetcher(CONST_APIS.ROOMS.DESTROY(id), {
     method: CONST_METHODS.DELETE,
