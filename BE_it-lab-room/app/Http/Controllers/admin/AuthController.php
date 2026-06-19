@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Throwable;
+use Google_Client;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -76,6 +78,63 @@ class AuthController extends Controller
                 'error_code' => 500,
                 'data' => '',
             ], 500);
+        }
+    }
+
+
+    // Đăng nhập bằng Google cho phân hệ: admin.
+    // Xác thực token Google, kiểm tra domain, role, trạng thái tài khoản.
+    public function googleLogin(Request $request)
+    {
+        $request->validate([
+            'credential' => 'required|string',
+        ]);
+
+        try {
+            $client = new Google_Client(['client_id' => env('GOOGLE_CLIENT_ID')]);
+            $payload = $client->verifyIdToken($request->credential);
+
+            if (!$payload) {
+                return response()->json(['status' => false, 'message' => 'Token Google không hợp lệ.', 'error_code' => 401], 401);
+            }
+
+            $email = $payload['email'];
+
+            // Query kiểm tra trực tiếp Admin
+            $user = User::query()
+                ->select(['id', 'ma_vai_tro', 'ho_ten', 'email', 'mat_khau', 'so_dien_thoai', 'gioi_tinh', 'ngay_sinh', 'trang_thai'])
+                ->with(['role:id,ten_vai_tro,mo_ta'])
+                ->where('email', $email)
+                ->whereHas('role', function ($query) {
+                    $query->where('ten_vai_tro', 'admin');
+                })
+                ->first();
+
+            if (!$user) {
+                return response()->json(['status' => false, 'message' => 'Email này không thuộc quyền Quản trị viên!', 'error_code' => 403], 403);
+            }
+
+            if ((int) $user->trang_thai !== 1) {
+                return response()->json(['status' => false, 'message' => 'Tài khoản admin đã bị khóa', 'error_code' => 403], 403);
+            }
+
+            // Xóa token Google cũ và cấp token mới
+            $user->tokens()->where('name', 'admin_google_login_token')->delete();
+            $token = $user->createToken('admin_google_login_token', ['admin'])->plainTextToken;
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Đăng nhập Google Admin thành công.',
+                'error_code' => 200,
+                'data' => [
+                    'token_type' => 'Bearer',
+                    'access_token' => $token,
+                    'user' => new AuthUserResource($user),
+                ],
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Admin Google Login Error: ' . $e->getMessage());
+            return response()->json(['status' => false, 'message' => 'Lỗi máy chủ.', 'error_code' => 500], 500);
         }
     }
 }
