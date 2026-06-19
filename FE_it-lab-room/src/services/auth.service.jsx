@@ -62,3 +62,22 @@ export function getAuthToken() {
 }
 
 export { AUTH_COOKIE_KEY };
+
+export async function loginWithGoogleAPI(credential, role = AUTH_ROLES.STUDENT) {
+  const GOOGLE_LOGIN_ENDPOINTS = {
+    [AUTH_ROLES.STUDENT]: '/api/auth/students/google-login',
+    [AUTH_ROLES.TEACHER]: '/api/auth/teachers/google-login',
+    [AUTH_ROLES.ADMIN]: '/api/auth/admin/google-login',
+  };
+
+  const endpoint = GOOGLE_LOGIN_ENDPOINTS[role];
+
+  if (!endpoint) {
+    throw new Error('Vai trò không hợp lệ cho Google Login');
+  }
+
+  return fetcher(endpoint, {
+    method: CONST_METHODS.POST,
+    body: { credential },
+  });
+}

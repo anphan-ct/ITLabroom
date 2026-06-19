@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ShieldCheck } from "lucide-react";
 import { AUTH_ROLES } from "../../../constants/roles.constant";
-import { loginByRole, saveAuthSession } from "../../../services/auth.service";
+import { loginByRole, saveAuthSession, loginWithGoogleAPI } from "../../../services/auth.service";
+import { GoogleLogin } from "@react-oauth/google";
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -29,6 +30,22 @@ export default function AdminLogin() {
       setErrorMessage(error.message || "Đăng nhập admin thất bại");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Hàm xử lý khi Google trả về token thành công cho Admin
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setErrorMessage('');
+      const res = await loginWithGoogleAPI(credentialResponse.credential, 'admin');
+
+      if (res.status) {
+        // Response đã chuẩn hóa: res.data chứa { token_type, access_token, user }
+        saveAuthSession(AUTH_ROLES.ADMIN, res.data);
+        navigate('/admin', { replace: true });
+      }
+    } catch (error) {
+      setErrorMessage(error.message || 'Đăng nhập Google admin thất bại.');
     }
   };
 
@@ -96,6 +113,26 @@ export default function AdminLogin() {
                 {isSubmitting ? "Đang đăng nhập..." : "Đăng nhập vào Admin Portal"}
               </button>
             </form>
+
+
+            {/* Ngăn cách */}
+            <div className="flex items-center my-4">
+              <div className="flex-grow border-t border-gray-300"></div>
+              <span className="px-3 text-gray-500">Hoặc</span>
+              <div className="flex-grow border-t border-gray-300"></div>
+            </div>
+
+            {/* NÚT ĐĂNG NHẬP GOOGLE CHO ADMIN */}
+            <div className="flex justify-center">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => setErrorMessage('Đăng nhập Google thất bại. Vui lòng thử lại.')}
+                useOneTap
+                shape="rectangular"
+                theme="outline"
+              />
+            </div>
+
           </div>
         </div>
       </main>

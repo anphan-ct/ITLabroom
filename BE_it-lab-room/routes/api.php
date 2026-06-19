@@ -15,6 +15,10 @@ Route::prefix('auth')->group(function () {
     Route::post('/admin/login', [AdminAuthController::class, 'login']);
     Route::post('/students/login', [StudentAuthController::class, 'login']);
     Route::post('/teachers/login', [TeacherAuthController::class, 'login']);
+
+    Route::post('/admin/google-login', [AdminAuthController::class, 'googleLogin']);
+    Route::post('/students/google-login', [StudentAuthController::class, 'googleLogin']);
+    Route::post('/teachers/google-login', [TeacherAuthController::class, 'googleLogin']);
 });
 
 // Nhóm API quản trị lớp học, dùng để xem sinh viên theo từng lớp.
