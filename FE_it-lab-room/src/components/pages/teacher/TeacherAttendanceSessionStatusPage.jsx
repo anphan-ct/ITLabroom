@@ -172,7 +172,7 @@ export default function TeacherAttendanceSessionStatusPage() {
           </div>
           <div className="rounded-lg border border-slate-200 bg-white p-4">
             <div className="flex items-center gap-3">
-              <MonitorCheck className="text-indigo-700" size={20} />
+              <MonitorCheck className="text-blue-700" size={20} />
               <div>
                 <p className="text-xs font-semibold uppercase text-slate-500">Máy đã gán</p>
                 <p className="text-xl font-bold text-slate-900">{checkedInStudents.length}</p>

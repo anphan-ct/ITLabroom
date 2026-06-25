@@ -1,9 +1,9 @@
-import { useMemo, useState } from "react";
-import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Save } from "lucide-react";
 import AppShell from "../../common/AppShell";
 import SectionCard from "../../common/SectionCard";
-import { getSubjects, upsertSubject } from "../../../data/subjectsStore";
+import { createSubjectFromApi, getSubjectFromApi, updateSubjectFromApi } from "../../../services/subject.service";
 
 const initialForm = {
   code: "",
@@ -15,32 +15,69 @@ const initialForm = {
 
 const subjectTypes = ["LT", "TH"];
 
-function getInitialForm(subject) {
-  if (!subject) {
-    return initialForm;
+function mapSubjectToForm(subject) {
+  return {
+    code: subject.ma_mon_hoc || "",
+    name: subject.ten_mon || "",
+    type: subject.loai_mon || "LT",
+    credits: subject.so_tin_chi || 1,
+    note: subject.mo_ta || "",
+  };
+}
+
+function getApiErrorMessage(error) {
+  const validationErrors = error.payload?.data;
+
+  if (validationErrors && typeof validationErrors === "object") {
+    const firstMessages = Object.values(validationErrors)[0];
+
+    if (Array.isArray(firstMessages) && firstMessages[0]) {
+      return firstMessages[0];
+    }
   }
 
-  return {
-    ...subject,
-    type: subject.type || "LT",
-  };
+  return error.message || "Không thể lưu môn học.";
 }
 
 export default function SubjectFormPage() {
   const navigate = useNavigate();
   const { subjectId } = useParams();
-  const subjects = useMemo(() => getSubjects(), []);
-  const editingSubject = subjectId
-    ? subjects.find((subject) => subject.id === Number(subjectId))
-    : null;
-  const [formData, setFormData] = useState(() => getInitialForm(editingSubject));
+  const isEditing = Boolean(subjectId);
+  const [formData, setFormData] = useState(initialForm);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(isEditing);
+  const [isSaving, setIsSaving] = useState(false);
 
-  if (subjectId && !editingSubject) {
-    return <Navigate to="/admin/subjects" replace />;
-  }
+  useEffect(() => {
+    if (!isEditing) {
+      return undefined;
+    }
 
-  const pageTitle = editingSubject ? "Sửa môn học" : "Thêm môn học";
+    let isMounted = true;
+
+    getSubjectFromApi(subjectId)
+      .then((response) => {
+        if (isMounted) {
+          setFormData(mapSubjectToForm(response.data));
+        }
+      })
+      .catch((apiError) => {
+        if (isMounted) {
+          setError(apiError.message || "Không thể tải dữ liệu môn học.");
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isEditing, subjectId]);
+
+  const pageTitle = isEditing ? "Sửa môn học" : "Thêm môn học";
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -50,7 +87,7 @@ export default function SubjectFormPage() {
     }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!formData.name.trim() || !formData.type) {
@@ -58,40 +95,44 @@ export default function SubjectFormPage() {
       return;
     }
 
-    const duplicatedName = subjects.some((subject) => {
-      return subject.name.toLowerCase() === formData.name.trim().toLowerCase()
-        && subject.id !== editingSubject?.id;
-    });
+    setError("");
+    setIsSaving(true);
 
-    const duplicatedCode = formData.code?.trim() && subjects.some((subject) => {
-      return subject.code?.toLowerCase() === formData.code.trim().toLowerCase()
-        && subject.id !== editingSubject?.id;
-    });
+    try {
+      const payload = {
+        ma_mon_hoc: formData.code?.trim().toUpperCase() || null,
+        ten_mon: formData.name.trim(),
+        loai_mon: formData.type,
+        so_tin_chi: Number(formData.credits),
+        mo_ta: formData.note?.trim() || null,
+      };
 
-    if (duplicatedCode) {
-      setError("Mã môn học đã tồn tại.");
-      return;
+      if (isEditing) {
+        await updateSubjectFromApi(subjectId, payload);
+      } else {
+        await createSubjectFromApi(payload);
+      }
+
+      navigate("/admin/subjects");
+    } catch (apiError) {
+      setError(getApiErrorMessage(apiError));
+    } finally {
+      setIsSaving(false);
     }
-
-    if (duplicatedName) {
-      setError("Tên môn đã tồn tại.");
-      return;
-    }
-
-    upsertSubject({
-      ...formData,
-      id: editingSubject?.id,
-    });
-    navigate("/admin/subjects");
   };
 
   return (
     <AppShell
       role="admin"
       title={pageTitle}
-      subtitle={editingSubject ? "Cập nhật thông tin môn học" : "Tạo môn học mới trong danh mục"}
+      subtitle={isEditing ? "Cập nhật thông tin môn học" : "Tạo môn học mới trong danh mục"}
     >
       <SectionCard title="Thông tin môn học">
+        {isLoading ? (
+          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-600">
+            Đang tải dữ liệu môn học...
+          </div>
+        ) : (
         <form onSubmit={handleSubmit} className="grid gap-5 lg:grid-cols-2">
           <label className="space-y-2">
             <span className="text-sm font-semibold text-slate-700">Mã môn học</span>
@@ -173,13 +214,15 @@ export default function SubjectFormPage() {
             </Link>
             <button
               type="submit"
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+              disabled={isSaving}
+              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-400"
             >
               <Save size={16} />
-              Lưu môn học
+              {isSaving ? "Đang lưu" : "Lưu môn học"}
             </button>
           </div>
         </form>
+        )}
       </SectionCard>
     </AppShell>
   );

@@ -1,31 +1,87 @@
-import { useMemo, useState } from "react";
-import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Save } from "lucide-react";
 import AppShell from "../../common/AppShell";
 import SectionCard from "../../common/SectionCard";
-import { getClasses, upsertClass } from "../../../data/classesStore";
-import { getUsers } from "../../../data/usersStore";
+import {
+  createClassFromApi,
+  getClassFromApi,
+  getClassOptionsFromApi,
+  updateClassFromApi,
+} from "../../../services/class.service";
 
 const initialForm = {
   code: "",
   courseYear: "",
   major: "",
-  advisor: "",
+  teacherId: "",
 };
+
+function mapClassToForm(classroom) {
+  return {
+    code: classroom.ma_lop || "",
+    courseYear: classroom.nien_khoa || "",
+    major: classroom.chuyen_nganh || "",
+    teacherId: String(classroom.ma_giang_vien || ""),
+  };
+}
+
+function getApiErrorMessage(error) {
+  const validationErrors = error.payload?.data;
+
+  if (validationErrors && typeof validationErrors === "object") {
+    const firstMessages = Object.values(validationErrors)[0];
+
+    if (Array.isArray(firstMessages) && firstMessages[0]) {
+      return firstMessages[0];
+    }
+  }
+
+  return error.message || "Không thể lưu lớp học.";
+}
 
 export default function ClassFormPage() {
   const navigate = useNavigate();
   const { classId } = useParams();
   const isEditing = Boolean(classId);
-  const classes = useMemo(() => getClasses(), []);
-  const teachers = useMemo(() => getUsers().filter((user) => user.role === "Giảng viên"), []);
-  const editingClass = isEditing ? classes.find((classroom) => classroom.id === Number(classId)) : null;
-  const [formData, setFormData] = useState(editingClass || initialForm);
+  const [formData, setFormData] = useState(initialForm);
+  const [teachers, setTeachers] = useState([]);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
-  if (isEditing && !editingClass) {
-    return <Navigate to="/admin/classes" replace />;
-  }
+  useEffect(() => {
+    let isMounted = true;
+    const requests = [getClassOptionsFromApi()];
+
+    if (isEditing) {
+      requests.push(getClassFromApi(classId));
+    }
+
+    Promise.all(requests)
+      .then(([optionsResponse, classResponse]) => {
+        if (isMounted) {
+          setTeachers(optionsResponse.data?.teachers || []);
+          if (classResponse) {
+            setFormData(mapClassToForm(classResponse.data));
+          }
+        }
+      })
+      .catch((apiError) => {
+        if (isMounted) {
+          setError(apiError.message || "Không thể tải dữ liệu lớp học.");
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [classId, isEditing]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -35,7 +91,7 @@ export default function ClassFormPage() {
     }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!formData.code.trim() || !formData.courseYear.trim() || !formData.major.trim()) {
@@ -43,23 +99,29 @@ export default function ClassFormPage() {
       return;
     }
 
-    const duplicatedCode = classes.some((classroom) => {
-      return classroom.code.toUpperCase() === formData.code.trim().toUpperCase()
-        && classroom.id !== editingClass?.id;
-    });
+    setError("");
+    setIsSaving(true);
 
-    if (duplicatedCode) {
-      setError("Mã lớp đã tồn tại.");
-      return;
+    try {
+      const payload = {
+        ma_lop: formData.code.trim().toUpperCase(),
+        nien_khoa: formData.courseYear.trim(),
+        chuyen_nganh: formData.major.trim(),
+        ma_giang_vien: formData.teacherId ? Number(formData.teacherId) : null,
+      };
+
+      if (isEditing) {
+        await updateClassFromApi(classId, payload);
+      } else {
+        await createClassFromApi(payload);
+      }
+
+      navigate("/admin/classes");
+    } catch (apiError) {
+      setError(getApiErrorMessage(apiError));
+    } finally {
+      setIsSaving(false);
     }
-
-    upsertClass({
-      ...formData,
-      courseYear: formData.courseYear.trim(),
-      major: formData.major.trim(),
-      id: editingClass?.id,
-    });
-    navigate("/admin/classes");
   };
 
   return (
@@ -69,6 +131,11 @@ export default function ClassFormPage() {
       subtitle={isEditing ? "Cập nhật thông tin lớp học" : "Tạo lớp học mới trong hệ thống"}
     >
       <SectionCard title="Thông tin lớp học">
+        {isLoading ? (
+          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-600">
+            Đang tải dữ liệu lớp học...
+          </div>
+        ) : (
         <form onSubmit={handleSubmit} className="grid gap-5 lg:grid-cols-2">
           <label className="space-y-2">
             <span className="text-sm font-semibold text-slate-700">Mã lớp</span>
@@ -109,15 +176,15 @@ export default function ClassFormPage() {
           <label className="space-y-2">
             <span className="text-sm font-semibold text-slate-700">Giảng viên chủ nhiệm</span>
             <select
-              name="advisor"
-              value={formData.advisor}
+              name="teacherId"
+              value={formData.teacherId}
               onChange={handleChange}
               className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
             >
               <option value="">Không chọn</option>
               {teachers.map((teacher) => (
-                <option key={teacher.id} value={teacher.name}>
-                  {teacher.code ? `${teacher.code} - ${teacher.name}` : teacher.name}
+                <option key={teacher.id} value={teacher.id}>
+                  {teacher.ma_giang_vien} - {teacher.ho_ten}
                 </option>
               ))}
             </select>
@@ -138,13 +205,15 @@ export default function ClassFormPage() {
             </Link>
             <button
               type="submit"
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+              disabled={isSaving}
+              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-400"
             >
               <Save size={16} />
-              Lưu lớp học
+              {isSaving ? "Đang lưu" : "Lưu lớp học"}
             </button>
           </div>
         </form>
+        )}
       </SectionCard>
     </AppShell>
   );

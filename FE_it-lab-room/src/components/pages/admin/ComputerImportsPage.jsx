@@ -13,11 +13,14 @@ const defaultForm = {
   so_luong: "1",
   ma_phong: "",
   nha_cung_cap: "",
-  bo_xu_ly: "",
-  ram: "",
+  hang_cpu: "Intel",
+  ma_cpu: "",
+  hang_ram: "",
+  dung_luong_ram: "8GB",
   card_do_hoa: "",
+  ten_card_roi: "",
   bo_mach_chu: "",
-  man_hinh: "",
+  hang_man_hinh: "",
   ban_phim: "",
   chuot: "",
   hdd: "",
@@ -25,17 +28,15 @@ const defaultForm = {
   ghi_chu: "",
 };
 
-const computerConfigFields = [
-  { name: "bo_xu_ly", label: "CPU", placeholder: "VD: Intel Core i5" },
-  { name: "ram", label: "RAM", placeholder: "VD: 8GB" },
-  { name: "card_do_hoa", label: "Card đồ họa", placeholder: "VD: Intel UHD" },
-  { name: "bo_mach_chu", label: "Bo mạch chủ", placeholder: "VD: H610M" },
-  { name: "man_hinh", label: "Màn hình", placeholder: "VD: 21.5 inch" },
-  { name: "ban_phim", label: "Bàn phím", placeholder: "VD: Logitech K120" },
-  { name: "chuot", label: "Chuột", placeholder: "VD: Logitech B100" },
-  { name: "hdd", label: "HDD", placeholder: "VD: 1TB" },
-  { name: "ssd", label: "SSD", placeholder: "VD: 256GB" },
-];
+const cpuBrands = ["Intel", "AMD", "Apple M"];
+const ramCapacities = ["4GB", "8GB", "16GB", "32GB", "64GB"];
+const graphicCardOptions = ["Card Onboard", "Card Rời"];
+const hddCapacities = ["500GB", "1TB", "2TB"];
+const ssdCapacities = ["128GB", "256GB", "512GB", "1TB", "2TB"];
+
+function joinText(...parts) {
+  return parts.map((part) => part.trim()).filter(Boolean).join(" ");
+}
 
 function getApiErrorMessage(error) {
   const validationErrors = error.payload?.data;
@@ -68,6 +69,41 @@ function mapImportReceipts(imports) {
 
 function cleanText(value) {
   return value.trim() || null;
+}
+
+function getGraphicCardName(form) {
+  if (form.card_do_hoa !== "Card Rời") {
+    return form.card_do_hoa;
+  }
+
+  return joinText(form.card_do_hoa, form.ten_card_roi);
+}
+
+function buildConfigSummary(form) {
+  const cpu = joinText(form.hang_cpu, form.ma_cpu);
+  const ram = joinText(form.hang_ram, form.dung_luong_ram);
+  const graphicCard = getGraphicCardName(form);
+  const monitor = form.hang_man_hinh.trim();
+
+  return [
+    cpu && `CPU: ${cpu}`,
+    ram && `RAM: ${ram}`,
+    graphicCard && `VGA: ${graphicCard}`,
+    form.bo_mach_chu && `Bo mạch chủ: ${form.bo_mach_chu}`,
+    monitor && `Màn hình: ${monitor}`,
+    form.hdd && `HDD: ${form.hdd}`,
+    form.ssd && `SSD: ${form.ssd}`,
+    form.ban_phim && `Bàn phím: ${form.ban_phim}`,
+    form.chuot && `Chuột: ${form.chuot}`,
+  ].filter(Boolean).join(" | ");
+}
+
+function buildComputerNote(form) {
+  return [
+    form.nha_cung_cap && `Nhà cung cấp: ${form.nha_cung_cap.trim()}`,
+    buildConfigSummary(form) && `Cấu hình: ${buildConfigSummary(form)}`,
+    form.ghi_chu && `Ghi chú: ${form.ghi_chu.trim()}`,
+  ].filter(Boolean).join("\n");
 }
 
 export default function ComputerImportsPage() {
@@ -113,6 +149,7 @@ export default function ComputerImportsPage() {
     setForm((currentForm) => ({
       ...currentForm,
       [name]: value,
+      ...(name === "card_do_hoa" && value !== "Card Rời" ? { ten_card_roi: "" } : {}),
     }));
   };
 
@@ -122,16 +159,16 @@ export default function ComputerImportsPage() {
     so_luong: Number(form.so_luong),
     ma_phong: Number(form.ma_phong),
     nha_cung_cap: cleanText(form.nha_cung_cap),
-    bo_xu_ly: cleanText(form.bo_xu_ly),
-    ram: cleanText(form.ram),
-    card_do_hoa: cleanText(form.card_do_hoa),
+    bo_xu_ly: cleanText(joinText(form.hang_cpu, form.ma_cpu)),
+    ram: cleanText(joinText(form.hang_ram, form.dung_luong_ram)),
+    card_do_hoa: cleanText(getGraphicCardName(form)),
     bo_mach_chu: cleanText(form.bo_mach_chu),
-    man_hinh: cleanText(form.man_hinh),
+    man_hinh: cleanText(form.hang_man_hinh),
     ban_phim: cleanText(form.ban_phim),
     chuot: cleanText(form.chuot),
     hdd: cleanText(form.hdd),
     ssd: cleanText(form.ssd),
-    ghi_chu: cleanText(form.ghi_chu),
+    ghi_chu: cleanText(buildComputerNote(form)),
   });
 
   const submit = async (event) => {
@@ -257,20 +294,118 @@ export default function ComputerImportsPage() {
               </div>
             </div>
 
-            <div className="grid gap-4 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-2">
+            <div className="grid gap-4 rounded-lg border border-blue-200 bg-white p-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
-                <h3 className="text-sm font-bold text-slate-900">Cấu hình máy nhập</h3>
+                <h3 className="text-sm font-bold text-blue-700">Cấu hình chung</h3>
               </div>
 
-              {computerConfigFields.map((field) => (
-                <Field key={field.name} label={field.label}>
+              <Field label="Hãng CPU">
+                <SelectInput value={form.hang_cpu} onChange={(value) => handleChange("hang_cpu", value)}>
+                  {cpuBrands.map((brand) => (
+                    <option key={brand} value={brand}>{brand}</option>
+                  ))}
+                </SelectInput>
+              </Field>
+
+              <Field label="Thế hệ / Mã CPU">
+                <TextInput
+                  value={form.ma_cpu}
+                  onChange={(value) => handleChange("ma_cpu", value)}
+                  placeholder="VD: Core i5 12400F"
+                />
+              </Field>
+
+              <Field label="Hãng RAM">
+                <TextInput
+                  value={form.hang_ram}
+                  onChange={(value) => handleChange("hang_ram", value)}
+                  placeholder="VD: Kingston"
+                />
+              </Field>
+
+              <Field label="Dung lượng RAM">
+                <SelectInput value={form.dung_luong_ram} onChange={(value) => handleChange("dung_luong_ram", value)}>
+                  {ramCapacities.map((capacity) => (
+                    <option key={capacity} value={capacity}>{capacity}</option>
+                  ))}
+                </SelectInput>
+              </Field>
+
+              <div className={form.card_do_hoa === "Card Rời" ? "" : "sm:col-span-2"}>
+                <Field label="Card đồ họa">
+                  <SelectInput value={form.card_do_hoa} onChange={(value) => handleChange("card_do_hoa", value)}>
+                    <option value="">Chọn card đồ họa</option>
+                    {graphicCardOptions.map((card) => (
+                      <option key={card} value={card}>{card}</option>
+                    ))}
+                  </SelectInput>
+                </Field>
+              </div>
+
+              {form.card_do_hoa === "Card Rời" && (
+                <Field label="Tên Card Rời">
                   <TextInput
-                    value={form[field.name]}
-                    onChange={(value) => handleChange(field.name, value)}
-                    placeholder={field.placeholder}
+                    value={form.ten_card_roi}
+                    onChange={(value) => handleChange("ten_card_roi", value)}
+                    placeholder="VD: RTX 3060"
                   />
                 </Field>
-              ))}
+              )}
+
+              <div className="sm:col-span-2">
+                <Field label="Bo mạch chủ">
+                  <TextInput
+                    value={form.bo_mach_chu}
+                    onChange={(value) => handleChange("bo_mach_chu", value)}
+                    placeholder="VD: H610M"
+                  />
+                </Field>
+              </div>
+
+              <div className="sm:col-span-2">
+                <Field label="Màn hình">
+                  <TextInput
+                    value={form.hang_man_hinh}
+                    onChange={(value) => handleChange("hang_man_hinh", value)}
+                    placeholder="VD: Dell"
+                  />
+                </Field>
+              </div>
+
+              <Field label="HDD">
+                <SelectInput value={form.hdd} onChange={(value) => handleChange("hdd", value)}>
+                  <option value="">Không có HDD</option>
+                  {hddCapacities.map((capacity) => (
+                    <option key={capacity} value={capacity}>{capacity}</option>
+                  ))}
+                </SelectInput>
+              </Field>
+
+              <Field label="SSD">
+                <SelectInput value={form.ssd} onChange={(value) => handleChange("ssd", value)}>
+                  <option value="">Không có SSD</option>
+                  {ssdCapacities.map((capacity) => (
+                    <option key={capacity} value={capacity}>{capacity}</option>
+                  ))}
+                </SelectInput>
+              </Field>
+
+              <Field label="Bàn phím">
+                <TextInput
+                  value={form.ban_phim}
+                  onChange={(value) => handleChange("ban_phim", value)}
+                  placeholder="VD: HP"
+                />
+              </Field>
+
+              <Field label="Chuột">
+                <TextInput
+                  value={form.chuot}
+                  onChange={(value) => handleChange("chuot", value)}
+                  placeholder="VD: HP"
+                />
+              </Field>
+
             </div>
 
             {error && (

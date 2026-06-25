@@ -1,10 +1,9 @@
-import { useMemo, useState } from "react";
-import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Save } from "lucide-react";
 import AppShell from "../../common/AppShell";
 import SectionCard from "../../common/SectionCard";
-import { getRooms, upsertRoom } from "../../../data/roomsStore";
-import { createRoomFromApi } from "../../../services/room.service";
+import { createRoomFromApi, getRoomFromApi, updateRoomFromApi } from "../../../services/room.service";
 
 const statuses = [
   { label: "Hoạt động", value: "active" },
@@ -15,25 +14,72 @@ const statuses = [
 const initialForm = {
   code: "",
   name: "",
-  location: "",
   capacity: 30,
   status: "active",
   note: "",
 };
 
+function mapRoomToForm(room) {
+  return {
+    code: room.ma_phong || "",
+    name: room.ten_phong || "",
+    capacity: room.suc_chua || 0,
+    status: room.trang_thai || "active",
+    note: room.mo_ta || "",
+  };
+}
+
+function getApiErrorMessage(error) {
+  const validationErrors = error.payload?.data;
+
+  if (validationErrors && typeof validationErrors === "object") {
+    const firstMessages = Object.values(validationErrors)[0];
+
+    if (Array.isArray(firstMessages) && firstMessages[0]) {
+      return firstMessages[0];
+    }
+  }
+
+  return error.message || "Không thể lưu phòng máy.";
+}
+
 export default function RoomFormPage() {
   const navigate = useNavigate();
   const { roomId } = useParams();
   const isEditing = Boolean(roomId);
-  const rooms = useMemo(() => getRooms(), []);
-  const editingRoom = isEditing ? rooms.find((room) => room.id === Number(roomId)) : null;
-  const [formData, setFormData] = useState(editingRoom || initialForm);
+  const [formData, setFormData] = useState(initialForm);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(isEditing);
   const [isSaving, setIsSaving] = useState(false);
 
-  if (isEditing && !editingRoom) {
-    return <Navigate to="/admin/rooms" replace />;
-  }
+  useEffect(() => {
+    if (!isEditing) {
+      return undefined;
+    }
+
+    let isMounted = true;
+
+    getRoomFromApi(roomId)
+      .then((response) => {
+        if (isMounted) {
+          setFormData(mapRoomToForm(response.data));
+        }
+      })
+      .catch((apiError) => {
+        if (isMounted) {
+          setError(apiError.message || "Không thể tải dữ liệu phòng máy.");
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isEditing, roomId]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -46,18 +92,8 @@ export default function RoomFormPage() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!formData.code.trim() || !formData.name.trim() || !formData.location.trim()) {
-      setError("Vui lòng nhập đầy đủ mã phòng, tên phòng và vị trí.");
-      return;
-    }
-
-    const duplicatedCode = rooms.some((room) => {
-      return room.code.toUpperCase() === formData.code.trim().toUpperCase()
-        && room.id !== editingRoom?.id;
-    });
-
-    if (duplicatedCode) {
-      setError("Mã phòng đã tồn tại.");
+    if (!formData.code.trim() || !formData.name.trim()) {
+      setError("Vui lòng nhập đầy đủ mã phòng và tên phòng.");
       return;
     }
 
@@ -68,29 +104,20 @@ export default function RoomFormPage() {
       const payload = {
         ma_phong: formData.code.trim().toUpperCase(),
         ten_phong: formData.name.trim(),
-        vi_tri: formData.location.trim(),
         suc_chua: Number(formData.capacity) || 0,
         trang_thai: formData.status,
         mo_ta: formData.note?.trim() || null,
       };
 
       if (isEditing) {
-        upsertRoom({
-          ...formData,
-          id: editingRoom?.id,
-        });
+        await updateRoomFromApi(roomId, payload);
       } else {
         await createRoomFromApi(payload);
       }
 
       navigate("/admin/rooms");
     } catch (apiError) {
-      const validationErrors = apiError.payload?.data;
-      const firstValidationError = validationErrors
-        ? Object.values(validationErrors).flat()[0]
-        : "";
-
-      setError(firstValidationError || apiError.message || "Không thể lưu phòng máy.");
+      setError(getApiErrorMessage(apiError));
     } finally {
       setIsSaving(false);
     }
@@ -103,6 +130,11 @@ export default function RoomFormPage() {
       subtitle={isEditing ? "Cập nhật thông tin và trạng thái phòng máy" : "Tạo phòng máy mới trong hệ thống"}
     >
       <SectionCard title="Thông tin phòng máy">
+        {isLoading ? (
+          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-600">
+            Đang tải dữ liệu phòng máy...
+          </div>
+        ) : (
         <form onSubmit={handleSubmit} className="grid gap-5 lg:grid-cols-2">
           <label className="space-y-2">
             <span className="text-sm font-semibold text-slate-700">Mã phòng</span>
@@ -124,18 +156,6 @@ export default function RoomFormPage() {
               value={formData.name}
               onChange={handleChange}
               placeholder="VD: Phòng máy 04"
-              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
-            />
-          </label>
-
-          <label className="space-y-2">
-            <span className="text-sm font-semibold text-slate-700">Vị trí</span>
-            <input
-              type="text"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-              placeholder="VD: Tầng 4"
               className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
             />
           </label>
@@ -203,6 +223,7 @@ export default function RoomFormPage() {
               </button>
           </div>
         </form>
+        )}
       </SectionCard>
     </AppShell>
   );

@@ -1,11 +1,28 @@
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
+import { ChevronDown, LogOut, UserRound } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { roleMenus } from "./navigation.jsx";
+import { getAuthSession } from "../../services/auth.service.jsx";
 
-export default function Sidebar({ role = "admin", open = false, onClose }) {
+const roleLabels = {
+  admin: "Quản trị viên",
+  teacher: "Giảng viên",
+  student: "Sinh viên",
+};
+
+export default function Sidebar({
+  role = "admin",
+  open = false,
+  onClose,
+  onLogout,
+  mobileOnly = false,
+  mobileSide = "left",
+}) {
   const location = useLocation();
+  const currentUser = getAuthSession()?.user;
   const navRef = useRef(null);
   const scrollStorageKey = `it-lab-room-sidebar-scroll-${role}`;
+  const [expandedSections, setExpandedSections] = useState({});
 
   useLayoutEffect(() => {
     const savedScrollTop = Number(sessionStorage.getItem(scrollStorageKey) || 0);
@@ -19,10 +36,17 @@ export default function Sidebar({ role = "admin", open = false, onClose }) {
     sessionStorage.setItem(scrollStorageKey, String(event.currentTarget.scrollTop));
   };
 
+  const toggleExpanded = (itemKey) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [itemKey]: !prev[itemKey],
+    }));
+  };
+
   const linkClassName = ({ isActive }) =>
     `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition ${
       isActive
-        ? "bg-blue-600 text-white shadow-sm"
+        ? "bg-blue-50 text-[#193D87] md:bg-[#193D87] md:text-white md:shadow-sm"
         : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
     }`;
 
@@ -36,10 +60,29 @@ export default function Sidebar({ role = "admin", open = false, onClose }) {
       />
 
       <aside
-        className={`fixed left-0 top-0 z-40 flex h-screen w-72 flex-col border-r border-slate-200 bg-white pt-20 shadow-xl transition-transform md:static md:z-auto md:h-full md:shrink-0 md:translate-x-0 md:rounded-lg md:border md:pt-0 md:shadow-sm ${
-          open ? "translate-x-0" : "-translate-x-full"
+        className={`fixed top-0 z-40 flex h-screen w-72 flex-col overflow-hidden border-slate-200 bg-white shadow-xl transition-transform md:static md:z-auto md:h-full md:shrink-0 md:translate-x-0 md:rounded-lg md:border md:shadow-sm ${mobileOnly ? "md:hidden" : ""} ${
+          mobileSide === "right" ? "right-0 rounded-l-3xl border-l" : "left-0 rounded-r-3xl border-r"
+        } ${
+          open ? "translate-x-0" : mobileSide === "right" ? "translate-x-full" : "-translate-x-full"
         }`}
       >
+        <div className="border-b border-slate-100 bg-slate-50/70 p-4 md:hidden">
+          <p className="mb-3 text-xs font-bold uppercase tracking-wide text-[#193D87]">Tài khoản</p>
+          <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#193D87]">
+              <UserRound size={25} />
+            </span>
+            <div className="min-w-0 leading-tight">
+              <p className="truncate text-sm font-bold text-slate-900">
+                {currentUser?.full_name || currentUser?.name || roleLabels[role]}
+              </p>
+              <p className="mt-1 truncate text-xs text-slate-500">
+                {currentUser?.email || roleLabels[role]}
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div className="hidden border-b border-slate-200 px-4 py-4 md:block">
           <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Điều hướng</p>
           <p className="mt-1 text-sm font-semibold text-slate-900">Quản trị phòng máy</p>
@@ -47,26 +90,42 @@ export default function Sidebar({ role = "admin", open = false, onClose }) {
         <nav
           ref={navRef}
           onScroll={handleNavScroll}
-          className="app-scrollbar flex-1 space-y-1 overflow-y-auto px-3 py-4"
+          className="app-scrollbar flex-1 space-y-1 overflow-y-auto px-3 py-3 md:py-4"
         >
           {(roleMenus[role] || []).map((item) => {
             const Icon = item.icon;
 
             if (item.children?.length) {
               const hasActiveChild = item.children.some((child) => child.to === location.pathname);
+              const isExpanded = expandedSections[item.to] || hasActiveChild;
 
               return (
                 <div key={item.to} className="group space-y-1">
-                  <NavLink
-                    to={item.to}
-                    onClick={onClose}
-                    className={linkClassName}
-                  >
-                    <Icon size={18} />
-                    <span>{item.label}</span>
-                  </NavLink>
+                  <div className="flex items-center justify-between">
+                    <NavLink
+                      to={item.to}
+                      onClick={onClose}
+                      className={`flex-1 ${linkClassName({ isActive: location.pathname === item.to })}`}
+                    >
+                      <Icon size={18} />
+                      <span>{item.label}</span>
+                    </NavLink>
+                    <button
+                      type="button"
+                      onClick={() => toggleExpanded(item.to)}
+                      className="md:hidden ml-2 p-1.5 hover:bg-slate-100 rounded-lg transition"
+                      aria-label="Toggle submenu"
+                    >
+                      <ChevronDown
+                        size={18}
+                        className={`transition-transform ${isExpanded ? "rotate-180" : "rotate-0"}`}
+                      />
+                    </button>
+                  </div>
 
-                  <div className={`ml-4 space-y-1 border-l border-slate-200 pl-3 group-hover:block group-focus-within:block ${hasActiveChild ? "block" : "hidden"}`}>
+                  <div className={`ml-4 space-y-1 border-l border-slate-200 pl-3 md:group-hover:block md:group-focus-within:block ${
+                    isExpanded ? "block" : "hidden md:block"
+                  } ${hasActiveChild ? "md:block" : "md:hidden"}`}>
                     {item.children.map((child) => {
                       const ChildIcon = child.icon;
 
@@ -78,7 +137,7 @@ export default function Sidebar({ role = "admin", open = false, onClose }) {
                           className={({ isActive }) =>
                             `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
                               isActive
-                                ? "bg-blue-600 text-white shadow-sm"
+                                ? "bg-blue-50 text-[#193D87] md:bg-[#193D87] md:text-white md:shadow-sm"
                                 : "text-slate-500 hover:bg-slate-100 hover:text-slate-950"
                             }`
                           }
@@ -107,6 +166,17 @@ export default function Sidebar({ role = "admin", open = false, onClose }) {
             );
           })}
         </nav>
+
+        <div className="border-t border-slate-100 p-3 md:hidden">
+          <button
+            type="button"
+            onClick={onLogout}
+            className="flex w-full items-center justify-center gap-3 rounded-xl bg-[#193D87] px-3 py-3 text-sm font-semibold text-white hover:bg-[#102752]"
+          >
+            <LogOut size={18} />
+            <span>Đăng xuất</span>
+          </button>
+        </div>
       </aside>
     </>
   );

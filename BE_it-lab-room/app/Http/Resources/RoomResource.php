@@ -13,7 +13,6 @@ class RoomResource extends JsonResource
             'id' => $this->id,
             'ma_phong' => $this->ma_phong,
             'ten_phong' => $this->ten_phong,
-            'vi_tri' => $this->vi_tri,
             'suc_chua' => $this->suc_chua,
             'trang_thai' => $this->trang_thai,
             'mo_ta' => $this->mo_ta,

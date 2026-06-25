@@ -135,6 +135,11 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        // Tạo dữ liệu nền để màn quản trị có thể thêm lịch sử dụng phòng máy.
+        $this->call(ComputerLabScheduleSeeder::class);
+        $this->call(AdditionalAcademicDataSeeder::class);
+        $this->call(CourseSectionStudentSeeder::class);
+
         // Xóa token cũ của tài khoản test để tránh token tồn đọng sau khi seed lại.
         $admin->tokens()->delete();
         $teacherUser->tokens()->delete();

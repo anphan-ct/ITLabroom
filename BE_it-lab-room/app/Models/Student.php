@@ -17,4 +17,8 @@ class Student extends Model
     public function user(): BelongsTo { return $this->belongsTo(User::class, 'ma_nguoi_dung'); }
     public function class(): BelongsTo { return $this->belongsTo(SchoolClass::class, 'ma_lop'); }
     public function attendanceRecords(): HasMany { return $this->hasMany(Attendance::class, 'ma_sinh_vien'); }
+    public function courseSectionDetails(): HasMany
+    {
+        return $this->hasMany(CourseSectionStudent::class, 'ma_sinh_vien');
+    }
 }

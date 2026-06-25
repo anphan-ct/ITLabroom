@@ -10,7 +10,7 @@ export function getCurrentStudentClassCode() {
 
   const classroom = getClasses().find((item) => item.id === Number(student.class_id));
 
-  return classroom?.code || student.class_code || "";
+  return student.class_code || classroom?.code || "";
 }
 
 export function filterByCurrentStudentClass(items) {

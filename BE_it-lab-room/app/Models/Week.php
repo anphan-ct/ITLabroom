@@ -31,13 +31,13 @@ class Week extends Model
         return $this->belongsTo(AcademicYear::class, 'ma_nam_hoc');
     }
 
-    public function roomUsageHistories(): HasMany
+    public function computerLabSchedules(): HasMany
     {
-        return $this->hasMany(RoomUsageHistory::class, 'ma_tuan');
+        return $this->hasMany(ComputerLabSchedule::class, 'ma_tuan');
     }
 
     public function roomBookingRequests(): HasMany
     {
-        return $this->hasMany(RoomBookingRequest::class, 'ma_tuan');
+        return $this->hasMany(RoomBooking::class, 'ma_tuan');
     }
 }

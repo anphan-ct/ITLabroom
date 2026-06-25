@@ -7,7 +7,13 @@ import StatusBadge from "../../common/StatusBadge";
 import { getComputerFromApi } from "../../../services/computer.service";
 
 function getStatusLabel(status) {
-  return status === "active" ? "Hoạt động" : status || "";
+  const statusLabels = {
+    active: "Hoạt động",
+    broken: "Hỏng",
+    maintenance: "Bảo trì",
+  };
+
+  return statusLabels[status] || status || "";
 }
 
 function SpecItem({ label, value }) {

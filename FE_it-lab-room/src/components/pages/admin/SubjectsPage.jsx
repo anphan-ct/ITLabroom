@@ -1,14 +1,55 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Edit, Plus, Search, Trash2 } from "lucide-react";
 import AppShell from "../../common/AppShell";
 import SectionCard from "../../common/SectionCard";
 import DataTable from "../../common/DataTable";
-import { deleteSubject, getSubjects } from "../../../data/subjectsStore";
+import { deleteSubjectFromApi, getSubjectsFromApi } from "../../../services/subject.service";
+
+function mapSubject(subject) {
+  return {
+    id: subject.id,
+    code: subject.ma_mon_hoc || "",
+    name: subject.ten_mon,
+    type: subject.loai_mon,
+    credits: subject.so_tin_chi,
+    note: subject.mo_ta || "",
+  };
+}
 
 export default function SubjectsPage() {
-  const [subjects, setSubjects] = useState(() => getSubjects());
+  const [subjects, setSubjects] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState("");
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [deletingId, setDeletingId] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    getSubjectsFromApi()
+      .then((response) => {
+        if (isMounted) {
+          setSubjects((response.data || []).map(mapSubject));
+        }
+      })
+      .catch((apiError) => {
+        if (isMounted) {
+          setError(apiError.message || "Không thể tải danh sách môn học.");
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const filteredSubjects = useMemo(() => {
     const keyword = searchKeyword.trim().toLowerCase();
 
@@ -18,11 +59,23 @@ export default function SubjectsPage() {
     });
   }, [subjects, searchKeyword]);
 
-  const handleDelete = (subject) => {
+  const handleDelete = async (subject) => {
     const accepted = window.confirm(`Xóa môn học ${subject.name}?`);
 
     if (accepted) {
-      setSubjects(deleteSubject(subject.id));
+      setError("");
+      setSuccessMessage("");
+      setDeletingId(subject.id);
+
+      try {
+        await deleteSubjectFromApi(subject.id);
+        setSubjects((currentSubjects) => currentSubjects.filter((item) => item.id !== subject.id));
+        setSuccessMessage(`Đã xóa môn học ${subject.name}.`);
+      } catch (apiError) {
+        setError(apiError.message || "Không thể xóa môn học.");
+      } finally {
+        setDeletingId(null);
+      }
     }
   };
 
@@ -52,6 +105,16 @@ export default function SubjectsPage() {
         }
         title="Danh sách môn học"
       >
+        {error && (
+          <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+            {error}
+          </div>
+        )}
+        {successMessage && (
+          <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+            {successMessage}
+          </div>
+        )}
         <DataTable
           columns={[
             { key: "ordinal", title: "TT" },
@@ -74,10 +137,11 @@ export default function SubjectsPage() {
                   <button
                     type="button"
                     onClick={() => handleDelete(subject)}
-                    className="inline-flex items-center gap-2 rounded-lg bg-rose-100 px-3 py-1.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-200"
+                    disabled={deletingId === subject.id}
+                    className="inline-flex items-center gap-2 rounded-lg bg-rose-100 px-3 py-1.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-200 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
                   >
                     <Trash2 size={15} />
-                    Xóa
+                    {deletingId === subject.id ? "Đang xóa" : "Xóa"}
                   </button>
                 </div>
               ),
@@ -87,6 +151,7 @@ export default function SubjectsPage() {
             ...subject,
             ordinal: index + 1,
           }))}
+          emptyText={isLoading ? "Đang tải danh sách môn học" : "Chưa có môn học"}
         />
       </SectionCard>
     </AppShell>

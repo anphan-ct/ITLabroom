@@ -17,7 +17,7 @@ class ComputerImportController extends Controller
     public function index()
     {
         try {
-           
+        
             $phieuNhaps = ComputerImport::query()
                 ->select(['id', 'ma_phieu_nhap', 'ngay_nhap', 'so_luong', 'nha_cung_cap', 'ghi_chu'])
                 ->with([
@@ -180,7 +180,7 @@ class ComputerImportController extends Controller
     public function show(ComputerImport $computerImport)
     {
         try {
-           
+        
             $computerImport->load([
                 'details:id,ma_phieu_nhap,ma_may_tinh,ghi_chu',
                 'details.computer:id,ma_phong,ma_may,ten_may,vi_tri,ma_qr,bo_xu_ly,ram,card_do_hoa,bo_mach_chu,man_hinh,ban_phim,chuot,hdd,ssd,trang_thai,ghi_chu',

@@ -194,7 +194,7 @@ export default function TeacherStudentAttendanceDetailPage() {
             </div>
             <div className="rounded-lg border border-slate-200 bg-white p-4">
               <div className="flex items-center gap-3">
-                <Monitor className="text-indigo-700" size={20} />
+                <Monitor className="text-blue-700" size={20} />
                 <div>
                   <p className="text-xs font-semibold uppercase text-slate-500">Máy gần nhất</p>
                   <p className="mt-1 font-bold text-slate-900">
