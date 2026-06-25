@@ -11,6 +11,12 @@ const AUTH_ENDPOINTS = {
   [AUTH_ROLES.TEACHER]: CONST_APIS.AUTH.TEACHER_LOGIN,
 };
 
+const HOME_PATHS = {
+  [AUTH_ROLES.ADMIN]: "/admin",
+  [AUTH_ROLES.TEACHER]: "/teacher",
+  [AUTH_ROLES.STUDENT]: "/student",
+};
+
 export async function loginByRole(role, credentials) {
   const endpoint = AUTH_ENDPOINTS[role];
 
@@ -77,6 +83,28 @@ export async function loginWithGoogleAPI(credential, role = AUTH_ROLES.STUDENT) 
   }
 
   return fetcher(endpoint, {
+    method: CONST_METHODS.POST,
+    body: { credential },
+  });
+}
+
+// Hàm dùng để xác định đường dẫn home dựa trên vai trò
+export function resolveHomePath(role) {
+  return HOME_PATHS[role] || "/login";
+}
+
+export async function login(credentials) {
+  return fetcher(CONST_APIS.AUTH.LOGIN, {
+    method: CONST_METHODS.POST,
+    body: {
+      email: credentials.email?.trim(),
+      password: credentials.password,
+    },
+  });
+}
+
+export async function loginWithGoogle(credential) {
+  return fetcher(CONST_APIS.AUTH.GOOGLE_LOGIN, {
     method: CONST_METHODS.POST,
     body: { credential },
   });

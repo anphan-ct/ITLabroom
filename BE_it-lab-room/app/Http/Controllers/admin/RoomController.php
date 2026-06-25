@@ -19,7 +19,6 @@ class RoomController extends Controller
             $room = Room::create([
                 'ma_phong' => strtoupper(trim($data['ma_phong'])),
                 'ten_phong' => trim($data['ten_phong']),
-                'vi_tri' => $data['vi_tri'] ?? null,
                 'suc_chua' => $data['suc_chua'],
                 'trang_thai' => $data['trang_thai'] ?? 'active',
                 'mo_ta' => $data['mo_ta'] ?? null,
@@ -46,9 +45,14 @@ class RoomController extends Controller
         try {
 
             $rooms = Room::query()
-                ->select(['id', 'ma_phong', 'ten_phong', 'vi_tri', 'suc_chua', 'trang_thai', 'mo_ta'])
+                ->select(['id', 'ma_phong', 'ten_phong', 'suc_chua', 'trang_thai', 'mo_ta'])
                 ->where('trang_thai', 'active')
-                ->orderBy('ma_phong')
+                ->orderByRaw("
+                    CAST(REPLACE(SUBSTRING_INDEX(ma_phong, '.', 1), 'F', '') AS UNSIGNED)
+                ")
+                ->orderByRaw("
+                    CAST(SUBSTRING_INDEX(ma_phong, '.', -1) AS UNSIGNED)
+                ")
                 ->get();
 
             return response()->json([

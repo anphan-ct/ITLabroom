@@ -21,7 +21,6 @@ class ComputerController extends Controller
                     'ma_phong',
                     'ma_may',
                     'ten_may',
-                    'vi_tri',
                     'ma_qr',
                     'bo_xu_ly',
                     'ram',

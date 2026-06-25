@@ -93,7 +93,6 @@ class ComputerImportController extends Controller
                         'ma_phong' => $data['ma_phong'],
                         'ma_may' => $maMay,
                         'ten_may' => $tenMay,
-                        'vi_tri' => null,
                         'ma_qr' => $maMay,
                         'bo_xu_ly' => $data['bo_xu_ly'] ?? null,
                         'ram' => $data['ram'] ?? null,

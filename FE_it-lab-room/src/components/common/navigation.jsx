@@ -27,10 +27,6 @@ export const roleMenus = {
       to: "/admin/users",
       label: "Quản lý Tài khoản",
       icon: Users,
-      children: [
-        { to: "/admin/users/students", label: "Sinh viên", icon: UserRound },
-        { to: "/admin/users/teachers", label: "Giảng viên", icon: Presentation },
-      ],
     },
     {
       to: "/admin/classes",

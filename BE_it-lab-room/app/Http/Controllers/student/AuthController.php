@@ -3,24 +3,21 @@
 namespace App\Http\Controllers\student;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\GoogleLoginRequest;
 use App\Http\Resources\AuthUserResource;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 use Throwable;
 use Google_Client;
 use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
         try {
-            $request->validate([
-                'email' => 'required|email|max:255',
-                'password' => 'required|string|min:6|max:255',
-            ]);
+            $credentials = $request->validated();
 
             // Query student kèm role và hồ sơ sinh viên để tránh N+1 khi trả response.
             $user = User::query()
@@ -31,14 +28,14 @@ class AuthController extends Controller
                     'student:id,ma_nguoi_dung,ma_lop,ma_sinh_vien,nien_khoa',
                     'student.class:id,ma_lop',
                 ])
-                ->where('email', $request->email)
+                ->where('email', $credentials['email'])
                 ->whereHas('role', function ($query) {
                     $query->where('ten_vai_tro', 'student');
                 })
                 ->whereHas('student')
                 ->first();
 
-            if (! $user || ! Hash::check($request->password, $user->mat_khau)) {
+            if (! $user || ! Hash::check($credentials['password'], $user->mat_khau)) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Email hoặc mật khẩu không chính xác',
@@ -70,13 +67,6 @@ class AuthController extends Controller
                     'user' => new AuthUserResource($user),
                 ],
             ], 200);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Dữ liệu đăng nhập không hợp lệ',
-                'error_code' => 422,
-                'data' => $e->errors(),
-            ], 422);
         } catch (Throwable $e) {
             return response()->json([
                 'status' => false,
@@ -90,15 +80,13 @@ class AuthController extends Controller
 
     // Đăng nhập bằng Google cho phân hệ: student.
     // Xác thực token Google, kiểm tra domain, role, trạng thái tài khoản.
-    public function googleLogin(Request $request)
+    public function googleLogin(GoogleLoginRequest $request)
     {
-        $request->validate([
-            'credential' => 'required|string',
-        ]);
+        $credential = $request->validated('credential');
 
         try {
             $client = new Google_Client(['client_id' => env('GOOGLE_CLIENT_ID')]);
-            $payload = $client->verifyIdToken($request->credential);
+            $payload = $client->verifyIdToken($credential);
 
             if (!$payload) {
                 return response()->json([
@@ -165,7 +153,6 @@ class AuthController extends Controller
                     'user' => new AuthUserResource($user),
                 ],
             ], 200);
-
         } catch (\Exception $e) {
             Log::error('Google Login Student Error: ' . $e->getMessage());
             return response()->json([

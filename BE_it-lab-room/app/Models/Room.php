@@ -11,7 +11,7 @@ class Room extends Model
     use HasFactory;
 
     protected $table = 'phong_may';
-    protected $fillable = ['ma_phong', 'ten_phong', 'vi_tri', 'suc_chua', 'trang_thai', 'mo_ta'];
+    protected $fillable = ['ma_phong', 'ten_phong', 'suc_chua', 'trang_thai', 'mo_ta'];
     protected $casts = ['suc_chua' => 'integer'];
 
     public function computers(): HasMany { return $this->hasMany(Computer::class, 'ma_phong'); }

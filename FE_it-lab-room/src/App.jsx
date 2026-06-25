@@ -1,8 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import StudentLogin from "./components/pages/student/StudentLogin.jsx";
-import AdminLogin from "./components/pages/admin/AdminLogin.jsx"
-import TeacherLogin from "./components/pages/teacher/TeacherLogin.jsx"
-import { ProtectedRoute, PublicOnlyRoute } from "./components/common/ProtectedRoute.jsx";
+import Login from "./components/common/Login.jsx";
+import { ProtectedRoute, PublicOnlyAnyRoute } from "./components/common/ProtectedRoute.jsx";
 import AdminDashboard from "./components/pages/admin/AdminDashboard.jsx";
 import UsersPage from "./components/pages/admin/UsersPage.jsx";
 import UserFormPage from "./components/pages/admin/UserFormPage.jsx";
@@ -54,11 +52,10 @@ import StudentAttendanceClassHistoryPage from "./components/pages/student/Studen
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/student/login" replace />} />
+      <Route path="/" element={<Navigate to="/login" replace />} />
 
-      <Route path="/student/login" element={<PublicOnlyRoute role="student"><StudentLogin /></PublicOnlyRoute>} />
-      <Route path="/teacher/login" element={<PublicOnlyRoute role="teacher"><TeacherLogin /></PublicOnlyRoute>} />
-      <Route path="/admin/login" element={<PublicOnlyRoute role="admin"><AdminLogin /></PublicOnlyRoute>} />
+      <Route path="/login" element={<PublicOnlyAnyRoute><Login /></PublicOnlyAnyRoute>} />
+
       <Route path="/admin" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
       <Route path="/admin/users" element={<ProtectedRoute role="admin"><UsersPage /></ProtectedRoute>} />
       <Route path="/admin/users/create" element={<ProtectedRoute role="admin"><UserFormPage /></ProtectedRoute>} />
