@@ -14,6 +14,13 @@ export function getComputerFromApi(id) {
   });
 }
 
+export function updateComputerFromApi(id, payload) {
+  return fetcher(CONST_APIS.COMPUTERS.UPDATE(id), {
+    method: CONST_METHODS.PUT,
+    body: payload,
+  });
+}
+
 export function deleteComputerFromApi(id) {
   return fetcher(CONST_APIS.COMPUTERS.DESTROY(id), {
     method: CONST_METHODS.DELETE,

@@ -16,5 +16,5 @@ class SchoolClass extends Model
 
     public function teacher(): BelongsTo { return $this->belongsTo(Teacher::class, 'ma_giang_vien'); }
     public function students(): HasMany { return $this->hasMany(Student::class, 'ma_lop'); }
-    public function roomUsageHistories(): HasMany { return $this->hasMany(RoomUsageHistory::class, 'ma_lop'); }
+    public function computerLabSchedules(): HasMany { return $this->hasMany(ComputerLabSchedule::class, 'ma_lop'); }
 }

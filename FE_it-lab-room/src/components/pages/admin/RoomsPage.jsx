@@ -21,7 +21,6 @@ function mapRoom(room) {
     id: room.id,
     code: room.ma_phong,
     name: room.ten_phong,
-    location: room.vi_tri || "",
     capacity: room.suc_chua || 0,
     status: getRoomStatus(room.trang_thai),
     note: room.mo_ta || "",
@@ -59,7 +58,7 @@ export default function RoomsPage() {
     const keyword = searchKeyword.trim().toLowerCase();
 
     return rooms.filter((room) => {
-      const searchContent = [room.code, room.name, room.location, room.capacity, room.status, room.note].join(" ").toLowerCase();
+      const searchContent = [room.code, room.name, room.capacity, room.status, room.note].join(" ").toLowerCase();
       return !keyword || searchContent.includes(keyword);
     });
   }, [rooms, searchKeyword]);
@@ -124,7 +123,6 @@ export default function RoomsPage() {
           columns={[
             { key: "code", title: "Mã phòng" },
             { key: "name", title: "Tên phòng" },
-            { key: "location", title: "Vị trí" },
             { key: "capacity", title: "Sức chứa" },
             { key: "status", title: "Trạng thái", isStatus: true },
             { key: "note", title: "Mô tả" },
@@ -154,6 +152,7 @@ export default function RoomsPage() {
             },
           ]}
           data={filteredRooms}
+          getRowLink={(room) => `/admin/rooms/${room.id}/computers`}
           emptyText={error ? "Không có dữ liệu để hiển thị" : "Đang tải danh sách phòng máy"}
         />
       </SectionCard>

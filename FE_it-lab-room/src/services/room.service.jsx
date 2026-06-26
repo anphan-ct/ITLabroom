@@ -15,6 +15,25 @@ export function createRoomFromApi(payload) {
   });
 }
 
+export function getRoomFromApi(id) {
+  return fetcher(CONST_APIS.ROOMS.SHOW(id), {
+    method: CONST_METHODS.GET,
+  });
+}
+
+export function getRoomComputersFromApi(id) {
+  return fetcher(CONST_APIS.ROOMS.COMPUTERS(id), {
+    method: CONST_METHODS.GET,
+  });
+}
+
+export function updateRoomFromApi(id, payload) {
+  return fetcher(CONST_APIS.ROOMS.UPDATE(id), {
+    method: CONST_METHODS.PUT,
+    body: payload,
+  });
+}
+
 export function deleteRoomFromApi(id) {
   return fetcher(CONST_APIS.ROOMS.DESTROY(id), {
     method: CONST_METHODS.DELETE,

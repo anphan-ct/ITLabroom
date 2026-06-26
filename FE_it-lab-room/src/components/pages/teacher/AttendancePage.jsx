@@ -116,7 +116,7 @@ export default function AttendancePage() {
         </div>
         <div className="rounded-lg border border-slate-200 bg-white p-4">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 text-indigo-700">
+            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
               <MonitorCheck size={20} />
             </span>
             <div>

@@ -16,6 +16,6 @@ class Room extends Model
 
     public function computers(): HasMany { return $this->hasMany(Computer::class, 'ma_phong'); }
     public function equipments(): HasMany { return $this->hasMany(Equipment::class, 'ma_phong'); }
-    public function roomUsageHistories(): HasMany { return $this->hasMany(RoomUsageHistory::class, 'ma_phong'); }
-    public function roomBookingRequests(): HasMany { return $this->hasMany(RoomBookingRequest::class, 'ma_phong'); }
+    public function computerLabSchedules(): HasMany { return $this->hasMany(ComputerLabSchedule::class, 'ma_phong'); }
+    public function roomBookingRequests(): HasMany { return $this->hasMany(RoomBooking::class, 'ma_phong'); }
 }

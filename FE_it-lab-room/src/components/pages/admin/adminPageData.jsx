@@ -1,8 +1,3 @@
-export const initialDepartments = [
-  { id: 1, code: "CNTT", name: "Công nghệ thông tin", status: "Hoạt động", note: "Khoa quản lý phòng máy" },
-  { id: 2, code: "DTVT", name: "Điện tử viễn thông", status: "Hoạt động", note: "Khoa sử dụng phòng máy" },
-];
-
 export const initialImportReceipts = [
   { id: 1, code: "PN-0001", quantity: 2, supplier: "Công ty ABC", date: "2026-05-01", note: "Nhập máy thực hành web" },
 ];

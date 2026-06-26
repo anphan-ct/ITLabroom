@@ -2,14 +2,11 @@ import {
   AlertTriangle,
   ArrowRightLeft,
   BookOpen,
-  Building2,
   CalendarDays,
   ClipboardCheck,
   ClipboardList,
   FileText,
   GraduationCap,
-  Home,
-  LayoutDashboard,
   ListTree,
   Monitor,
   PackagePlus,
@@ -22,7 +19,6 @@ import {
 
 export const roleMenus = {
   admin: [
-    { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
     {
       to: "/admin/users",
       label: "Quản lý Tài khoản",
@@ -36,7 +32,6 @@ export const roleMenus = {
         { to: "/admin/classes", label: "Lớp học", icon: GraduationCap },
         { to: "/admin/course-sections", label: "Lớp học phần", icon: ListTree },
         { to: "/admin/subjects", label: "Môn học", icon: BookOpen },
-        { to: "/admin/departments", label: "Phòng ban", icon: Building2 },
       ],
     },
     { to: "/admin/schedules", label: "Lịch phòng máy", icon: CalendarDays },
@@ -66,7 +61,6 @@ export const roleMenus = {
     { to: "/admin/room-bookings", label: "Đăng ký phòng", icon: ClipboardList },
   ],
   teacher: [
-    { to: "/teacher", label: "Dashboard", icon: Home },
     { to: "/teacher/schedules", label: "Lịch giảng dạy", icon: CalendarDays },
     { to: "/teacher/attendance", label: "Điểm danh", icon: ClipboardCheck },
     {
@@ -91,7 +85,6 @@ export const roleMenus = {
     { to: "/teacher/bookings", label: "Đăng ký phòng", icon: ClipboardList },
   ],
   student: [
-    { to: "/student", label: "Dashboard", icon: Home },
     { to: "/student/schedules", label: "Lịch học", icon: CalendarDays },
     { to: "/student/computers", label: "Tra cứu máy", icon: Monitor },
     { to: "/student/incidents", label: "Báo hỏng", icon: AlertTriangle },

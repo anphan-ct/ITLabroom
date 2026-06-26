@@ -36,3 +36,17 @@
     background-clip: padding-box;
   }
 }
+
+/* Đồng bộ các nút/nền xanh cũ về đúng màu thương hiệu. */
+.bg-blue-500,
+.bg-blue-600,
+.bg-blue-700,
+.bg-blue-800 {
+  background-color: #193d87 !important;
+}
+
+.hover\:bg-blue-700:hover,
+.hover\:bg-blue-800:hover,
+.hover\:bg-blue-900:hover {
+  background-color: #102752 !important;
+}

@@ -28,5 +28,9 @@ class Subject extends Model
             'id'
         );
     }
-    public function roomBookingRequests(): HasMany { return $this->hasMany(RoomBookingRequest::class, 'ma_mon'); }
+
+    public function courseSections(): HasMany
+    {
+        return $this->hasMany(CourseSection::class, 'ma_mon');
+    }
 }

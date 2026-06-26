@@ -18,7 +18,7 @@ class Teacher extends Model
     public function department(): BelongsTo { return $this->belongsTo(Department::class, 'ma_phong_ban'); }
     public function classes(): HasMany { return $this->hasMany(SchoolClass::class, 'ma_giang_vien'); }
     public function assignments(): HasMany { return $this->hasMany(TeacherAssignment::class, 'ma_giang_vien'); }
-    public function roomUsageHistories(): HasMany { return $this->hasMany(RoomUsageHistory::class, 'ma_giang_vien'); }
-    public function roomBookingRequests(): HasMany { return $this->hasMany(RoomBookingRequest::class, 'ma_giang_vien'); }
+    public function computerLabSchedules(): HasMany { return $this->hasMany(ComputerLabSchedule::class, 'ma_giang_vien'); }
+    public function roomBookingRequests(): HasMany { return $this->hasMany(RoomBooking::class, 'ma_giang_vien'); }
     public function loanRequests(): HasMany { return $this->hasMany(LoanRequest::class, 'ma_giang_vien'); }
 }

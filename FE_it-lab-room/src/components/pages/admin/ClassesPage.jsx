@@ -1,14 +1,54 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Edit, Plus, Search, Trash2 } from "lucide-react";
 import AppShell from "../../common/AppShell";
 import SectionCard from "../../common/SectionCard";
 import DataTable from "../../common/DataTable";
-import { deleteClass, getClasses } from "../../../data/classesStore";
+import { deleteClassFromApi, getClassesFromApi } from "../../../services/class.service";
+
+function mapClassroom(classroom) {
+  return {
+    id: classroom.id,
+    code: classroom.ma_lop,
+    courseYear: classroom.nien_khoa,
+    major: classroom.chuyen_nganh,
+    advisor: classroom.giang_vien?.ho_ten || "Chưa phân công",
+    studentCount: classroom.so_sinh_vien || 0,
+  };
+}
 
 export default function ClassesPage() {
-  const [classes, setClasses] = useState(() => getClasses());
+  const [classes, setClasses] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState("");
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [deletingId, setDeletingId] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    getClassesFromApi()
+      .then((response) => {
+        if (isMounted) {
+          setClasses((response.data || []).map(mapClassroom));
+        }
+      })
+      .catch((apiError) => {
+        if (isMounted) {
+          setError(apiError.message || "Không thể tải danh sách lớp học.");
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
   const filteredClasses = useMemo(() => {
     const keyword = searchKeyword.trim().toLowerCase();
 
@@ -24,11 +64,23 @@ export default function ClassesPage() {
     });
   }, [classes, searchKeyword]);
 
-  const handleDelete = (classroom) => {
+  const handleDelete = async (classroom) => {
     const accepted = window.confirm(`Xóa lớp học ${classroom.code}?`);
 
     if (accepted) {
-      setClasses(deleteClass(classroom.id));
+      setError("");
+      setSuccessMessage("");
+      setDeletingId(classroom.id);
+
+      try {
+        await deleteClassFromApi(classroom.id);
+        setClasses((currentClasses) => currentClasses.filter((item) => item.id !== classroom.id));
+        setSuccessMessage(`Đã xóa lớp học ${classroom.code}.`);
+      } catch (apiError) {
+        setError(apiError.message || "Không thể xóa lớp học.");
+      } finally {
+        setDeletingId(null);
+      }
     }
   };
 
@@ -61,12 +113,23 @@ export default function ClassesPage() {
         }
         title="Danh sách lớp"
       >
+        {error && (
+          <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+            {error}
+          </div>
+        )}
+        {successMessage && (
+          <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+            {successMessage}
+          </div>
+        )}
         <DataTable
           columns={[
             { key: "code", title: "Mã lớp" },
             { key: "courseYear", title: "Niên khóa" },
             { key: "major", title: "Chuyên ngành" },
             { key: "advisor", title: "GVCN" },
+            { key: "studentCount", title: "Số sinh viên" },
             {
               key: "actions",
               title: "Thao tác",
@@ -82,10 +145,11 @@ export default function ClassesPage() {
                   <button
                     type="button"
                     onClick={() => handleDelete(classroom)}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-rose-100 px-3 py-1 text-rose-700 transition hover:bg-rose-200"
+                    disabled={deletingId === classroom.id}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-rose-100 px-3 py-1 text-rose-700 transition hover:bg-rose-200 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
                   >
                     <Trash2 size={14} />
-                    Xóa
+                    {deletingId === classroom.id ? "Đang xóa" : "Xóa"}
                   </button>
                 </div>
               ),
@@ -93,6 +157,7 @@ export default function ClassesPage() {
           ]}
           data={filteredClasses}
           getRowLink={(classroom) => `/admin/classes/${classroom.id}/students`}
+          emptyText={isLoading ? "Đang tải danh sách lớp học" : "Chưa có lớp học"}
         />
       </SectionCard>
     </AppShell>

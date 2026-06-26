@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class RoomUsageHistory extends Model
+class ComputerLabSchedule extends Model
 {
     use HasFactory;
 
@@ -20,7 +20,6 @@ class RoomUsageHistory extends Model
         'ma_giang_vien',
         'ma_tuan',
         'ngay_hoc_cu_the',
-        'tuan',
         'thu_trong_tuan',
         'so_tiet_bat_dau',
         'so_tiet_ket_thuc',
@@ -32,7 +31,6 @@ class RoomUsageHistory extends Model
 
     protected $casts = [
         'ngay_hoc_cu_the' => 'date',
-        'tuan' => 'integer',
         'so_tiet_bat_dau' => 'integer',
         'so_tiet_ket_thuc' => 'integer',
     ];
@@ -52,6 +50,11 @@ class RoomUsageHistory extends Model
         return $this->belongsTo(Teacher::class, 'ma_giang_vien');
     }
 
+    public function courseSection(): BelongsTo
+    {
+        return $this->belongsTo(CourseSection::class, 'ma_lop_hoc_phan');
+    }
+
     public function week(): BelongsTo
     {
         return $this->belongsTo(Week::class, 'ma_tuan');
@@ -59,7 +62,7 @@ class RoomUsageHistory extends Model
 
     public function roomBookingRequest(): BelongsTo
     {
-        return $this->belongsTo(RoomBookingRequest::class, 'ma_dat_phong_may');
+        return $this->belongsTo(RoomBooking::class, 'ma_dat_phong_may');
     }
 
     public function attendanceRecords(): HasMany

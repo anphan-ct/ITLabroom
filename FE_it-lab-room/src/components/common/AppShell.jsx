@@ -33,25 +33,33 @@ export default function AppShell({ role, title, subtitle, children }) {
       <Header
         onMenuToggle={() => setOpen(true)}
         onLogout={handleLogout}
-        showMenuButton={isAdmin}
+        showMenuButton
         showLoginLinks={false}
         showLogout
+        hideLogoutOnMobile
       />
 
       {!isAdmin && <TopNav role={role} />}
 
       <div
-        className={`flex min-h-0 flex-1 bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.08),transparent_34rem)] ${
+        className={`flex min-h-0 flex-1 bg-[radial-gradient(circle_at_top_left,rgba(25,61,135,0.08),transparent_34rem)] ${
           isAdmin ? "gap-4 px-3 py-3 md:gap-5 md:px-5 md:py-5" : "px-3 py-4 sm:px-5 sm:py-5"
         }`}
       >
-        {isAdmin && (
-          <Sidebar role={role} open={open} onClose={() => setOpen(false)} />
+        {(
+          <Sidebar
+            role={role}
+            open={open}
+            onClose={() => setOpen(false)}
+            onLogout={handleLogout}
+            mobileOnly={!isAdmin}
+            mobileSide="right"
+          />
         )}
 
         <main className="app-scrollbar min-w-0 flex-1 overflow-y-auto">
           <div className="mx-auto max-w-[1440px] space-y-5 pb-4 md:space-y-6">
-            {(title || subtitle) && (
+            {isAdmin && (title || subtitle) && (
               <div className="border-b border-slate-200/80 pb-4">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                   <div>

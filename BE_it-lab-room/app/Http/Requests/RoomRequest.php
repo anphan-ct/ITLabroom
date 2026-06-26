@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\Rule;
 
 class RoomRequest extends FormRequest
 {
@@ -15,10 +16,12 @@ class RoomRequest extends FormRequest
 
     public function rules(): array
     {
+        $room = $this->route('room');
+        $roomId = $room?->id;
+
         return [
-            'ma_phong' => ['required', 'string', 'max:255', 'unique:phong_may,ma_phong'],
+            'ma_phong' => ['required', 'string', 'max:255', Rule::unique('phong_may', 'ma_phong')->ignore($roomId)],
             'ten_phong' => ['required', 'string', 'max:255'],
-            'vi_tri' => ['nullable', 'string', 'max:255'],
             'suc_chua' => ['required', 'integer', 'min:0'],
             'trang_thai' => ['nullable', 'string', 'in:active,maintenance,inactive'],
             'mo_ta' => ['nullable', 'string'],
@@ -36,9 +39,6 @@ class RoomRequest extends FormRequest
             'ten_phong.required' => 'Vui lòng nhập tên phòng.',
             'ten_phong.string' => 'Tên phòng không hợp lệ.',
             'ten_phong.max' => 'Tên phòng không được vượt quá 255 ký tự.',
-
-            'vi_tri.string' => 'Vị trí không hợp lệ.',
-            'vi_tri.max' => 'Vị trí không được vượt quá 255 ký tự.',
 
             'suc_chua.required' => 'Vui lòng nhập sức chứa.',
             'suc_chua.integer' => 'Sức chứa phải là số nguyên.',

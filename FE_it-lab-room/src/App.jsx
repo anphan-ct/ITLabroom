@@ -11,6 +11,7 @@ import SubjectsPage from "./components/pages/admin/SubjectsPage.jsx";
 import SubjectFormPage from "./components/pages/admin/SubjectFormPage.jsx";
 import RoomsPage from "./components/pages/admin/RoomsPage.jsx";
 import RoomFormPage from "./components/pages/admin/RoomFormPage.jsx";
+import RoomComputersPage from "./components/pages/admin/RoomComputersPage.jsx";
 import ComputerDetailPage from "./components/pages/admin/ComputerDetailPage.jsx";
 import ComputersPage from "./components/pages/admin/ComputersPage.jsx";
 import ComputerCreatePage from "./components/pages/admin/ComputerCreatePage.jsx";
@@ -28,13 +29,10 @@ import ComputerReturnDetailsPage from "./components/pages/admin/ComputerReturnDe
 import ComputerReturnsPage from "./components/pages/teacher/ComputerReturnsPage.jsx";
 import ComputerTransfersPage from "./components/pages/admin/ComputerTransfersPage.jsx";
 import CourseSectionsPage from "./components/pages/admin/CourseSectionsPage.jsx";
-import DepartmentsPage from "./components/pages/admin/DepartmentsPage.jsx";
 import CourseSectionFormPage from "./components/pages/admin/CourseSectionFormPage.jsx";
-import DepartmentFormPage from "./components/pages/admin/DepartmentFormPage.jsx";
 import LoanDetailsPage from "./components/pages/admin/LoanDetailsPage.jsx";
 import RepairLogsPage from "./components/pages/admin/RepairLogsPage.jsx";
 
-import TeacherDashboard from "./components/pages/teacher/TeacherDashboard.jsx";
 import TeacherSchedulePage from "./components/pages/teacher/TeacherSchedulePage.jsx";
 import AttendancePage from "./components/pages/teacher/AttendancePage.jsx";
 import TeacherAttendanceSessionStatusPage from "./components/pages/teacher/TeacherAttendanceSessionStatusPage.jsx";
@@ -42,7 +40,6 @@ import TeacherStudentAttendanceDetailPage from "./components/pages/teacher/Teach
 import RoomBookingPage from "./components/pages/teacher/RoomBookingPage.jsx";
 import IncidentPage from "./components/common/IncidentPage.jsx";
 
-import StudentDashboard from "./components/pages/student/StudentDashboard.jsx";
 import StudentSchedulePage from "./components/pages/student/StudentSchedulePage.jsx";
 import ComputerLookupPage from "./components/pages/student/ComputerLookupPage.jsx";
 import StudentIncidentPage from "./components/pages/student/StudentIncidentPage.jsx";
@@ -75,6 +72,7 @@ export default function App() {
       <Route path="/admin/rooms" element={<ProtectedRoute role="admin"><RoomsPage /></ProtectedRoute>} />
       <Route path="/admin/rooms/create" element={<ProtectedRoute role="admin"><RoomFormPage /></ProtectedRoute>} />
       <Route path="/admin/rooms/:roomId/edit" element={<ProtectedRoute role="admin"><RoomFormPage /></ProtectedRoute>} />
+      <Route path="/admin/rooms/:roomId/computers" element={<ProtectedRoute role="admin"><RoomComputersPage /></ProtectedRoute>} />
       <Route path="/admin/computers" element={<ProtectedRoute role="admin"><ComputersPage /></ProtectedRoute>} />
       <Route path="/admin/computers/:computerId" element={<ProtectedRoute role="admin"><ComputerDetailPage /></ProtectedRoute>} />
       <Route path="/admin/computers/create" element={<ProtectedRoute role="admin"><ComputerCreatePage /></ProtectedRoute>} />
@@ -89,15 +87,12 @@ export default function App() {
       <Route path="/admin/loan-approvals" element={<ProtectedRoute role="admin"><LoanApprovalPage /></ProtectedRoute>} />
       <Route path="/admin/return-approvals" element={<ProtectedRoute role="admin"><ReturnApprovalPage /></ProtectedRoute>} />
       <Route path="/admin/room-bookings" element={<ProtectedRoute role="admin"><RoomBookingsManagePage /></ProtectedRoute>} />
-      <Route path="/admin/departments" element={<ProtectedRoute role="admin"><DepartmentsPage /></ProtectedRoute>} />
-      <Route path="/admin/departments/create" element={<ProtectedRoute role="admin"><DepartmentFormPage /></ProtectedRoute>} />
-      <Route path="/admin/departments/:departmentId/edit" element={<ProtectedRoute role="admin"><DepartmentFormPage /></ProtectedRoute>} />
       <Route path="/admin/course-sections" element={<ProtectedRoute role="admin"><CourseSectionsPage /></ProtectedRoute>} />
       <Route path="/admin/course-sections/create" element={<ProtectedRoute role="admin"><CourseSectionFormPage /></ProtectedRoute>} />
       <Route path="/admin/course-sections/:courseSectionId/edit" element={<ProtectedRoute role="admin"><CourseSectionFormPage /></ProtectedRoute>} />
       <Route path="/admin/repair-logs" element={<ProtectedRoute role="admin"><RepairLogsPage /></ProtectedRoute>} />
       <Route path="/admin/computer-transfers" element={<ProtectedRoute role="admin"><ComputerTransfersPage /></ProtectedRoute>} />
-      <Route path="/teacher" element={<ProtectedRoute role="teacher"><TeacherDashboard /></ProtectedRoute>} />
+      <Route path="/teacher" element={<ProtectedRoute role="teacher"><Navigate to="/teacher/schedules" replace /></ProtectedRoute>} />
       <Route path="/teacher/schedules" element={<ProtectedRoute role="teacher"><TeacherSchedulePage /></ProtectedRoute>} />
       <Route path="/teacher/attendance" element={<ProtectedRoute role="teacher"><AttendancePage /></ProtectedRoute>} />
       <Route path="/teacher/loan-requests" element={<ProtectedRoute role="teacher"><LoanRequestsManagePage /></ProtectedRoute>} />
@@ -122,7 +117,7 @@ export default function App() {
       />
       <Route path="/teacher/bookings" element={<ProtectedRoute role="teacher"><RoomBookingPage /></ProtectedRoute>} />
 
-      <Route path="/student" element={<ProtectedRoute role="student"><StudentDashboard /></ProtectedRoute>} />
+      <Route path="/student" element={<ProtectedRoute role="student"><Navigate to="/student/schedules" replace /></ProtectedRoute>} />
       <Route path="/student/schedules" element={<ProtectedRoute role="student"><StudentSchedulePage /></ProtectedRoute>} />
       <Route path="/student/computers" element={<ProtectedRoute role="student"><ComputerLookupPage /></ProtectedRoute>} />
       <Route path="/student/incidents" element={<ProtectedRoute role="student"><StudentIncidentPage /></ProtectedRoute>} />

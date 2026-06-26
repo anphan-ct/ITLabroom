@@ -3,25 +3,21 @@
 namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ClassStudentRequest;
 use App\Http\Resources\AdminClassStudentResource;
 use App\Models\SchoolClass;
 use App\Models\Student;
-use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 use Throwable;
 
 class ClassStudentController extends Controller
 {
-    public function index(Request $request, SchoolClass $class)
+    public function index(ClassStudentRequest $request, SchoolClass $class)
     {
         try {
-            $request->validate([
-                'keyword' => 'nullable|string|max:255',
-                'per_page' => 'nullable|integer|min:1|max:100',
-            ]);
+            $data = $request->validated();
 
-            $keyword = trim((string) $request->input('keyword', ''));
-            $perPage = (int) $request->input('per_page', 15);
+            $keyword = (string) ($data['keyword'] ?? '');
+            $perPage = (int) ($data['per_page'] ?? 15);
 
             // Load sinh viên theo lớp kèm user để tránh N+1 khi render danh sách.
             $students = Student::query()
@@ -69,13 +65,6 @@ class ClassStudentController extends Controller
                     ],
                 ],
             ], 200);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Dữ liệu lọc sinh viên không hợp lệ',
-                'error_code' => 422,
-                'data' => $e->errors(),
-            ], 422);
         } catch (Throwable $e) {
             return response()->json([
                 'status' => false,

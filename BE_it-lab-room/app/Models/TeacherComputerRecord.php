@@ -18,6 +18,6 @@ class TeacherComputerRecord extends Model
         'ghi_chu_buoi_hoc',
     ];
 
-    public function roomUsageHistory(): BelongsTo { return $this->belongsTo(RoomUsageHistory::class, 'ma_lich_su_dung'); }
+    public function computerLabSchedule(): BelongsTo { return $this->belongsTo(ComputerLabSchedule::class, 'ma_lich_su_dung'); }
     public function computer(): BelongsTo { return $this->belongsTo(Computer::class, 'ma_may_tinh_giao_vien'); }
 }

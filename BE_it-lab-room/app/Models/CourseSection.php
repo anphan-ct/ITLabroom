@@ -46,4 +46,14 @@ class CourseSection extends Model
     {
         return $this->hasMany(TeacherAssignment::class, 'ma_lop_hoc_phan');
     }
+
+    public function computerLabSchedules(): HasMany
+    {
+        return $this->hasMany(ComputerLabSchedule::class, 'ma_lop_hoc_phan');
+    }
+
+    public function studentDetails(): HasMany
+    {
+        return $this->hasMany(CourseSectionStudent::class, 'ma_lop_hoc_phan');
+    }
 }

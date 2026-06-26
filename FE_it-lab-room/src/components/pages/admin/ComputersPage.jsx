@@ -8,6 +8,12 @@ import { deleteComputerFromApi, getComputersFromApi } from "../../../services/co
 import { getRoomsFromApi } from "../../../services/room.service";
 
 function mapComputer(computer) {
+  const statusLabels = {
+    active: "Hoạt động",
+    broken: "Hỏng",
+    maintenance: "Bảo trì",
+  };
+
   return {
     id: computer.id,
     code: computer.ma_may,
@@ -24,7 +30,7 @@ function mapComputer(computer) {
     mouse: computer.chuot || "",
     hdd: computer.hdd || "",
     ssd: computer.ssd || "",
-    status: computer.trang_thai === "active" ? "Hoạt động" : computer.trang_thai,
+    status: statusLabels[computer.trang_thai] || computer.trang_thai,
     note: computer.ghi_chu || "",
   };
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RoomRequest;
+use App\Http\Resources\ComputerResource;
 use App\Http\Resources\RoomResource;
 use App\Models\Room;
 use Illuminate\Http\Request;
@@ -71,6 +72,104 @@ class RoomController extends Controller
         }
     }
 
+    public function show(Room $room)
+    {
+        try {
+            return response()->json([
+                'status' => true,
+                'message' => 'Lấy chi tiết phòng máy thành công',
+                'error_code' => 200,
+                'data' => new RoomResource($room),
+            ], 200);
+        } catch (Throwable $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Hiện tại tôi không thể xử lí yêu cầu của bạn',
+                'error_code' => 500,
+                'data' => '',
+            ], 500);
+        }
+    }
+
+    public function computers(Request $request, Room $room)
+    {
+        try {
+            $request->validate([]);
+
+            // Chỉ lấy máy thuộc phòng đang chọn và eager load phòng để tránh N+1.
+            $computers = $room->computers()
+                ->select([
+                    'id',
+                    'ma_phong',
+                    'ma_may',
+                    'ten_may',
+                    'vi_tri',
+                    'ma_qr',
+                    'bo_xu_ly',
+                    'ram',
+                    'card_do_hoa',
+                    'bo_mach_chu',
+                    'man_hinh',
+                    'ban_phim',
+                    'chuot',
+                    'hdd',
+                    'ssd',
+                    'trang_thai',
+                    'ghi_chu',
+                ])
+                ->with('room:id,ma_phong,ten_phong')
+                ->orderBy('ma_may')
+                ->get();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Lấy danh sách máy tính theo phòng thành công',
+                'error_code' => 200,
+                'data' => [
+                    'room' => new RoomResource($room),
+                    'computers' => ComputerResource::collection($computers),
+                ],
+            ], 200);
+        } catch (Throwable $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Hiện tại tôi không thể xử lí yêu cầu của bạn',
+                'error_code' => 500,
+                'data' => '',
+            ], 500);
+        }
+    }
+
+    public function update(RoomRequest $request, Room $room)
+    {
+        try {
+            $data = $request->validated();
+
+            // Cập nhật trực tiếp thông tin phòng máy, giữ nguyên các quan hệ hiện có.
+            $room->update([
+                'ma_phong' => strtoupper($data['ma_phong']),
+                'ten_phong' => $data['ten_phong'],
+                'suc_chua' => $data['suc_chua'],
+                'trang_thai' => $data['trang_thai'] ?? 'active',
+                'mo_ta' => $data['mo_ta'] ?? null,
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Cập nhật phòng máy thành công',
+                'error_code' => 200,
+                'data' => new RoomResource($room),
+            ], 200);
+        } catch (Throwable $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Hiện tại tôi không thể xử lí yêu cầu của bạn',
+                'error_code' => 500,
+                'data' => '',
+            ], 500);
+        }
+    }
+
     public function destroy(Request $request, Room $room)
     {
         $request->validate([]);
@@ -80,7 +179,7 @@ class RoomController extends Controller
             $room->loadCount([
                 'computers',
                 'equipments',
-                'roomUsageHistories',
+                'computerLabSchedules',
                 'roomBookingRequests',
             ]);
 
