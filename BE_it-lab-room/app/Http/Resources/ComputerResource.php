@@ -16,6 +16,7 @@ class ComputerResource extends JsonResource
             'ten_may' => $this->ten_may,
             'vi_tri' => $this->vi_tri,
             'ma_qr' => $this->ma_qr,
+            'ma_qr_payload' => $this->ma_qr,
             'bo_xu_ly' => $this->bo_xu_ly,
             'ram' => $this->ram,
             'card_do_hoa' => $this->card_do_hoa,

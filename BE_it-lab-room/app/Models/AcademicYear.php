@@ -34,8 +34,4 @@ class AcademicYear extends Model
         return $this->hasMany(CourseSection::class, 'ma_nam_hoc');
     }
 
-    public function roomBookingRequests(): HasMany
-    {
-        return $this->hasMany(RoomBooking::class, 'ma_nam_hoc');
-    }
 }

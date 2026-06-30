@@ -1,222 +1,261 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, BookOpen, CalendarDays, ClipboardCheck, Smartphone } from "lucide-react";
+import {
+  CalendarDays,
+  ClipboardCheck,
+  DoorOpen,
+  Search,
+  Users,
+} from "lucide-react";
 import AppShell from "../../common/AppShell";
+import DataTable from "../../common/DataTable";
 import SectionCard from "../../common/SectionCard";
 import StatusBadge from "../../common/StatusBadge";
-import { schedules } from "../../../data/mockData";
-import { filterByCurrentStudentClass } from "../../../helpers/student-class.helper";
+import {
+  formatDateInput,
+  formatVietnameseDate,
+  getScheduleWeekOptions,
+  getWeekRangeForDate,
+  getWeekRangeKey,
+  isScheduleInWeek,
+  mapComputerLabSchedule,
+  mapComputerLabWeekOption,
+} from "../../../helpers/computer-lab-schedule.helper";
+import { getCurrentStudentClassCode } from "../../../helpers/student-class.helper";
+import { getStudentComputerLabSchedulesFromApi } from "../../../services/schedules.service";
 
-const scheduleStudyDates = {
-  1: "10/06/2026",
-  2: "12/06/2026",
-  3: "17/06/2026",
-  4: "19/06/2026",
-};
-
-const attendanceStates = {
-  1: {
-    status: "Đã điểm danh",
-    computerCode: "PC001",
-    checkedInAt: "07:05",
-  },
-  3: {
-    status: "Chưa điểm danh",
-    computerCode: "",
-    checkedInAt: "",
-  },
-};
-
-function getAttendanceState(scheduleId) {
-  return attendanceStates[scheduleId] || {
-    status: "Chưa có dữ liệu",
-    computerCode: "",
-    checkedInAt: "",
-  };
+function getUniqueCount(items) {
+  return new Set(items.filter((item) => item && item !== "-")).size;
 }
 
 export default function StudentAttendancePage() {
-  const [selectedSubject, setSelectedSubject] = useState("");
-  const studentSchedules = filterByCurrentStudentClass(schedules).map((schedule) => ({
-    ...schedule,
-    studyDate: schedule.studyDate || scheduleStudyDates[schedule.id] || "-",
-    attendance: getAttendanceState(schedule.id),
-  }));
+  const currentWeekRange = useMemo(() => getWeekRangeForDate(), []);
+  const studentClassCode = useMemo(() => getCurrentStudentClassCode(), []);
+  const [selectedWeek, setSelectedWeek] = useState(() => getWeekRangeKey(currentWeekRange));
+  const [schedules, setSchedules] = useState([]);
+  const [weeks, setWeeks] = useState([]);
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const subjects = useMemo(() => {
-    const subjectMap = new Map();
+  useEffect(() => {
+    let isMounted = true;
 
-    studentSchedules.forEach((schedule) => {
-      const currentSubject = subjectMap.get(schedule.subject) || {
-        subject: schedule.subject,
-        className: schedule.className,
-        teacher: schedule.teacher,
-        roomNames: new Set(),
-        totalSessions: 0,
-        checkedInSessions: 0,
-      };
+    setIsLoading(true);
+    setError("");
 
-      currentSubject.roomNames.add(schedule.room);
-      currentSubject.totalSessions += 1;
-      currentSubject.checkedInSessions += schedule.attendance.checkedInAt ? 1 : 0;
-      subjectMap.set(schedule.subject, currentSubject);
+    getStudentComputerLabSchedulesFromApi({ per_page: 100 })
+      .then((response) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setSchedules((response.data?.items || []).map(mapComputerLabSchedule));
+        setWeeks((response.data?.week_options || []).map(mapComputerLabWeekOption));
+      })
+      .catch((apiError) => {
+        if (isMounted) {
+          setError(apiError?.payload?.message || apiError.message || "Không thể tải lịch phòng máy của sinh viên.");
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const weekOptions = useMemo(() => {
+    return getScheduleWeekOptions(schedules, currentWeekRange, weeks);
+  }, [currentWeekRange, schedules, weeks]);
+
+  useEffect(() => {
+    if (weekOptions.length === 0 || weekOptions.some((weekItem) => weekItem.key === selectedWeek)) {
+      return;
+    }
+
+    const today = formatDateInput(new Date());
+    const currentAcademicWeek = weekOptions.find((weekItem) => (
+      today >= weekItem.range.start && today <= weekItem.range.end
+    ));
+
+    setSelectedWeek((currentAcademicWeek || weekOptions[0]).key);
+  }, [selectedWeek, weekOptions]);
+
+  const selectedWeekSchedules = useMemo(() => {
+    const selectedOption = weekOptions.find((option) => option.key === selectedWeek);
+
+    if (!selectedOption) {
+      return [];
+    }
+
+    return schedules.filter((schedule) => isScheduleInWeek(schedule, selectedOption.range));
+  }, [schedules, selectedWeek, weekOptions]);
+
+  const filteredSchedules = useMemo(() => {
+    const keyword = searchKeyword.trim().toLowerCase();
+
+    if (!keyword) {
+      return selectedWeekSchedules;
+    }
+
+    return selectedWeekSchedules.filter((schedule) => {
+      const searchContent = [
+        schedule.subject,
+        schedule.className,
+        schedule.room,
+        schedule.teacher,
+        schedule.day,
+        schedule.time,
+        schedule.studyDate ? formatVietnameseDate(schedule.studyDate) : "",
+        schedule.status,
+      ].join(" ").toLowerCase();
+
+      return searchContent.includes(keyword);
     });
+  }, [searchKeyword, selectedWeekSchedules]);
 
-    return Array.from(subjectMap.values()).map((subject) => ({
-      ...subject,
-      roomNames: Array.from(subject.roomNames).join(", "),
-    }));
-  }, [studentSchedules]);
-
-  const selectedSubjectInfo = subjects.find((subject) => subject.subject === selectedSubject);
-  const selectedSubjectSchedules = studentSchedules.filter((schedule) => schedule.subject === selectedSubject);
+  const today = formatDateInput(new Date());
+  const todayScheduleCount = schedules.filter((schedule) => schedule.studyDate === today).length;
+  const roomCount = getUniqueCount(selectedWeekSchedules.map((schedule) => schedule.room));
+  const subjectCount = getUniqueCount(selectedWeekSchedules.map((schedule) => schedule.subject));
 
   return (
     <AppShell
       role="student"
       title="Điểm danh buổi học"
-      subtitle="Chọn môn học, xem các buổi và trạng thái điểm danh từ ứng dụng di động"
+      subtitle="Chọn lịch phòng máy của bạn để xem thông tin điểm danh"
     >
-      <SectionCard
-        title={selectedSubjectInfo ? `Các buổi học - ${selectedSubjectInfo.subject}` : "Môn học của bạn"}
-        rightAction={
-          selectedSubjectInfo ? (
-            <button
-              type="button"
-              onClick={() => setSelectedSubject("")}
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-            >
-              <ArrowLeft size={16} />
-              Quay lại
-            </button>
-          ) : null
-        }
-      >
-
-        {!selectedSubjectInfo ? (
-          <div className="overflow-x-auto rounded-lg border border-slate-200">
-            <table className="min-w-full text-sm">
-              <thead className="bg-slate-50 text-xs font-bold uppercase text-slate-500">
-                <tr>
-                  <th className="px-4 py-3 text-left">Môn học</th>
-                  <th className="px-4 py-3 text-left">Lớp</th>
-                  <th className="px-4 py-3 text-left">Phòng</th>
-                  <th className="px-4 py-3 text-left">Giảng viên</th>
-                  <th className="px-4 py-3 text-left">Điểm danh</th>
-                  <th className="px-4 py-3 text-right">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 bg-white">
-                {subjects.map((subject) => (
-                  <tr key={subject.subject} className="hover:bg-slate-50">
-                    <td className="whitespace-nowrap px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
-                          <BookOpen size={18} />
-                        </span>
-                        <span className="font-bold text-slate-900">{subject.subject}</span>
-                      </div>
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 font-semibold text-slate-900">
-                      {subject.className}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 font-semibold text-blue-700">
-                      {subject.roomNames}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-slate-700">
-                      {subject.teacher}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-slate-700">
-                      {subject.checkedInSessions}/{subject.totalSessions} buổi
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-right">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedSubject(subject.subject)}
-                        className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
-                      >
-                        <CalendarDays size={16} />
-                        Xem buổi học
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {subjects.length === 0 ? (
-              <div className="bg-white px-4 py-10 text-center text-sm text-slate-500">
-                Chưa có môn học điểm danh cho lớp của bạn.
-              </div>
-            ) : null}
+      <div className="grid gap-4 md:grid-cols-4">
+        <div className="rounded-lg border border-slate-200 bg-white p-4">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
+              <ClipboardCheck size={20} />
+            </span>
+            <div>
+              <p className="text-xs font-semibold uppercase text-slate-500">Lịch phòng máy</p>
+              <p className="text-xl font-bold text-slate-900">{selectedWeekSchedules.length}</p>
+            </div>
           </div>
-        ) : (
-          <>
-            <div className="mb-4 grid gap-3 text-sm md:grid-cols-3">
-              <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-                <p className="text-slate-500">Lớp</p>
-                <p className="mt-1 font-semibold text-slate-900">{selectedSubjectInfo.className}</p>
-              </div>
-              <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-                <p className="text-slate-500">Phòng</p>
-                <p className="mt-1 font-semibold text-blue-700">{selectedSubjectInfo.roomNames}</p>
-              </div>
-              <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-                <p className="text-slate-500">Số buổi</p>
-                <p className="mt-1 font-semibold text-slate-900">{selectedSubjectSchedules.length} buổi</p>
-              </div>
+        </div>
+        <div className="rounded-lg border border-slate-200 bg-white p-4">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+              <CalendarDays size={20} />
+            </span>
+            <div>
+              <p className="text-xs font-semibold uppercase text-slate-500">Hôm nay</p>
+              <p className="text-xl font-bold text-slate-900">{todayScheduleCount}</p>
             </div>
+          </div>
+        </div>
+        <div className="rounded-lg border border-slate-200 bg-white p-4">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-sky-50 text-sky-700">
+              <DoorOpen size={20} />
+            </span>
+            <div>
+              <p className="text-xs font-semibold uppercase text-slate-500">Phòng</p>
+              <p className="text-xl font-bold text-slate-900">{roomCount}</p>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-lg border border-slate-200 bg-white p-4">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-50 text-violet-700">
+              <Users size={20} />
+            </span>
+            <div>
+              <p className="text-xs font-semibold uppercase text-slate-500">Môn học</p>
+              <p className="text-xl font-bold text-slate-900">{subjectCount}</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
-            <div className="overflow-x-auto rounded-lg border border-slate-200">
-              <table className="min-w-full text-sm">
-                <thead className="bg-slate-50 text-xs font-bold uppercase text-slate-500">
-                  <tr>
-                    <th className="px-4 py-3 text-left">Ngày học</th>
-                    <th className="px-4 py-3 text-left">Thứ/Ca</th>
-                    <th className="px-4 py-3 text-left">Phòng</th>
-                    <th className="px-4 py-3 text-left">Trạng thái</th>
-                    <th className="px-4 py-3 text-left">Máy</th>
-                    <th className="px-4 py-3 text-left">Check-in</th>
-                    <th className="px-4 py-3 text-right">Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 bg-white">
-                  {selectedSubjectSchedules.map((schedule) => (
-                    <tr key={schedule.id} className="hover:bg-slate-50">
-                      <td className="whitespace-nowrap px-4 py-3 font-semibold text-slate-900">
-                        {schedule.studyDate}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-slate-700">
-                        {schedule.day}, {schedule.time}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 font-semibold text-blue-700">
-                        {schedule.room}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3">
-                        <StatusBadge value={schedule.attendance.status} />
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 font-semibold text-blue-700">
-                        {schedule.attendance.computerCode || "-"}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-slate-700">
-                        {schedule.attendance.checkedInAt || "-"}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-right">
-                        <Link
-                          to={`/student/attendance/${schedule.id}`}
-                          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
-                        >
-                          <ClipboardCheck size={16} />
-                          Chi tiết
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      <div className="mt-6">
+        <SectionCard
+          title="Danh sách lịch phòng máy"
+          rightAction={
+            <div className="flex w-full flex-wrap items-center justify-end gap-3">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700">
+                Lớp {studentClassCode || "chưa phân lớp"}
+              </div>
+              <select
+                value={selectedWeek}
+                onChange={(event) => setSelectedWeek(event.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-300 focus:ring-2 focus:ring-blue-100 sm:w-80"
+              >
+                {weekOptions.map((weekItem) => (
+                  <option key={weekItem.key} value={weekItem.key}>
+                    {weekItem.label}
+                  </option>
+                ))}
+              </select>
+              <div className="relative w-full sm:w-96">
+                <Search
+                  size={18}
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+                <input
+                  type="search"
+                  value={searchKeyword}
+                  onChange={(event) => setSearchKeyword(event.target.value)}
+                  placeholder="Tìm môn học, lớp, phòng..."
+                  className="w-full rounded-xl border border-slate-200 py-2.5 pl-10 pr-3 text-sm outline-none transition focus:border-blue-300 focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
             </div>
-          </>
-        )}
-      </SectionCard>
+          }
+        >
+          {error ? (
+            <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+              {error}
+            </div>
+          ) : null}
+
+          <DataTable
+            columns={[
+              {
+                key: "studyDate",
+                title: "Ngày học",
+                render: (value) => value ? formatVietnameseDate(value) : "-",
+              },
+              { key: "day", title: "Thứ" },
+              { key: "time", title: "Tiết" },
+              { key: "subject", title: "Môn học" },
+              { key: "className", title: "Lớp học phần" },
+              { key: "room", title: "Phòng" },
+              { key: "teacher", title: "Giảng viên" },
+              {
+                key: "status",
+                title: "Trạng thái",
+                render: (value) => <StatusBadge value={value || "Chưa xác định"} />,
+              },
+              {
+                key: "actions",
+                title: "Thao tác",
+                render: (_, row) => (
+                  <Link
+                    to={`/student/attendance/${row.id}`}
+                    className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-800"
+                  >
+                    <ClipboardCheck size={16} />
+                    Chi tiết
+                  </Link>
+                ),
+              },
+            ]}
+            data={filteredSchedules}
+            getRowLink={(row) => `/student/attendance/${row.id}`}
+            emptyText={isLoading ? "Đang tải lịch phòng máy..." : "Chưa có lịch phòng máy trong tuần đã chọn."}
+          />
+        </SectionCard>
+      </div>
     </AppShell>
   );
 }

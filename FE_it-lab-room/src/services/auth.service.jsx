@@ -11,6 +11,12 @@ const AUTH_ENDPOINTS = {
   [AUTH_ROLES.TEACHER]: CONST_APIS.AUTH.TEACHER_LOGIN,
 };
 
+const HOME_PATHS = {
+  [AUTH_ROLES.ADMIN]: "/admin",
+  [AUTH_ROLES.TEACHER]: "/teacher",
+  [AUTH_ROLES.STUDENT]: "/student",
+};
+
 export async function loginByRole(role, credentials) {
   const endpoint = AUTH_ENDPOINTS[role];
 
@@ -62,3 +68,44 @@ export function getAuthToken() {
 }
 
 export { AUTH_COOKIE_KEY };
+
+export async function loginWithGoogleAPI(credential, role = AUTH_ROLES.STUDENT) {
+  const GOOGLE_LOGIN_ENDPOINTS = {
+    [AUTH_ROLES.STUDENT]: '/api/auth/students/google-login',
+    [AUTH_ROLES.TEACHER]: '/api/auth/teachers/google-login',
+    [AUTH_ROLES.ADMIN]: '/api/auth/admin/google-login',
+  };
+
+  const endpoint = GOOGLE_LOGIN_ENDPOINTS[role];
+
+  if (!endpoint) {
+    throw new Error('Vai trò không hợp lệ cho Google Login');
+  }
+
+  return fetcher(endpoint, {
+    method: CONST_METHODS.POST,
+    body: { credential },
+  });
+}
+
+// Hàm dùng để xác định đường dẫn home dựa trên vai trò
+export function resolveHomePath(role) {
+  return HOME_PATHS[role] || "/login";
+}
+
+export async function login(credentials) {
+  return fetcher(CONST_APIS.AUTH.LOGIN, {
+    method: CONST_METHODS.POST,
+    body: {
+      email: credentials.email?.trim(),
+      password: credentials.password,
+    },
+  });
+}
+
+export async function loginWithGoogle(credential) {
+  return fetcher(CONST_APIS.AUTH.GOOGLE_LOGIN, {
+    method: CONST_METHODS.POST,
+    body: { credential },
+  });
+}

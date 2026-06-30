@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import AppShell from "../../common/AppShell";
 import SectionCard from "../../common/SectionCard";
 import ScheduleMatrix from "../../common/ScheduleMatrix";
 import {
+  formatDateInput,
   mapComputerLabWeekOption,
   getScheduleWeekOptions,
   getWeekRangeForDate,
@@ -53,6 +53,19 @@ export default function TeacherSchedulePage() {
     return getScheduleWeekOptions(teacherSchedules, currentWeekRange, weeks);
   }, [currentWeekRange, teacherSchedules, weeks]);
 
+  useEffect(() => {
+    if (weekOptions.length === 0 || weekOptions.some((weekItem) => weekItem.key === selectedWeek)) {
+      return;
+    }
+
+    const today = formatDateInput(new Date());
+    const currentAcademicWeek = weekOptions.find((weekItem) => (
+      today >= weekItem.range.start && today <= weekItem.range.end
+    ));
+
+    setSelectedWeek((currentAcademicWeek || weekOptions[0]).key);
+  }, [selectedWeek, weekOptions]);
+
   const filteredSchedules = useMemo(() => {
     const selectedOption = weekOptions.find((option) => option.key === selectedWeek);
 
@@ -83,25 +96,7 @@ export default function TeacherSchedulePage() {
         {isLoading ? (
           <div className="rounded-lg border border-slate-200 bg-white px-4 py-10 text-center text-sm text-slate-500">Đang tải lịch giảng dạy...</div>
         ) : filteredSchedules.length > 0 ? (
-          <ScheduleMatrix
-            data={filteredSchedules}
-            renderActions={() => (
-              <Link
-                to="/teacher/attendance"
-                className="block w-full rounded-lg bg-[#193D87] px-3 py-2 text-center text-xs font-bold text-white transition hover:bg-[#102752]"
-              >
-                Điểm danh sinh viên
-              </Link>
-            )}
-            renderMobileActions={() => (
-              <Link
-                to="/teacher/attendance"
-                className="block w-full rounded-lg bg-[#193D87] px-4 py-2.5 text-center text-sm font-bold text-white transition hover:bg-[#102752]"
-              >
-                Điểm danh sinh viên
-              </Link>
-            )}
-          />
+          <ScheduleMatrix data={filteredSchedules} />
         ) : (
           <div className="rounded-lg border border-slate-200 bg-white px-4 py-10 text-center text-sm text-slate-500">Chưa có lịch giảng dạy cho tuần đã chọn.</div>
         )}

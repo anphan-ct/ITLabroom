@@ -9,6 +9,8 @@ import { Link } from "react-router-dom";
 export default function Header({
   onMenuToggle,
   onLogout,
+  currentUser,
+  roleLabel,
   showMenuButton = true,
   showLoginLinks = true,
   showLogout = false,
@@ -50,34 +52,29 @@ export default function Header({
         </Link>
 
         {showLogout && (
-          <button
-            className={`ml-auto h-10 items-center gap-2 rounded-lg border border-white/30 bg-white/10 px-3 text-sm font-semibold text-white hover:bg-white/20 ${hideLogoutOnMobile ? "hidden md:inline-flex" : "inline-flex"}`}
-            onClick={onLogout}
-            type="button"
-          >
-            <LogOut size={16} />
-            <span className="hidden sm:inline">Đăng xuất</span>
-          </button>
-        )}
-
-        {showLoginLinks && (
-          <div className="ml-auto flex items-center gap-2 text-sm font-semibold text-white">
-            <Link
-              to="/teacher/login"
-              className="inline-flex h-10 items-center gap-1 whitespace-nowrap rounded-lg px-2 hover:bg-white/15"
+          <div className="ml-auto hidden min-w-0 items-center gap-3 md:flex">
+            <div className="min-w-0 text-right leading-tight">
+              <p className="truncate text-sm font-bold text-white">
+                {currentUser?.full_name || currentUser?.name || "Tài khoản"}
+              </p>
+              <p className="mt-1 truncate text-xs font-medium text-blue-100">
+                {currentUser?.email || roleLabel || "Đang đăng nhập"}
+              </p>
+            </div>
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/25 bg-white/10">
+              <UserRound size={20} />
+            </span>
+            <button
+              className={`h-10 items-center gap-2 rounded-lg border border-white/30 bg-white/10 px-3 text-sm font-semibold text-white hover:bg-white/20 ${hideLogoutOnMobile ? "hidden md:inline-flex" : "inline-flex"}`}
+              onClick={onLogout}
+              type="button"
             >
-              <Briefcase size={16} />
-              <span className="hidden sm:inline">Giảng viên</span>
-            </Link>
-            <Link
-              to="/student/login"
-              className="inline-flex h-10 items-center gap-1 whitespace-nowrap rounded-lg px-2 hover:bg-white/15"
-            >
-              <GraduationCap size={18} />
-              <span className="hidden sm:inline">Sinh viên</span>
-            </Link>
+              <LogOut size={16} />
+              <span className="hidden sm:inline">Đăng xuất</span>
+            </button>
           </div>
         )}
+
       </div>
     </header>
   );

@@ -89,6 +89,7 @@ class ComputerLabScheduleController extends Controller
             $options = [
                 'rooms' => Room::query()
                     ->select(['id', 'ma_phong', 'ten_phong'])
+                    ->where('ma_phong', '!=', 'KHO')
                     ->orderBy('ma_phong')
                     ->get(),
 

@@ -8,6 +8,8 @@ use App\Http\Resources\CourseSectionResource;
 use App\Models\AcademicYear;
 use App\Models\CourseSection;
 use App\Models\Room;
+use App\Models\SchoolClass;
+use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Teacher;
 use Illuminate\Database\QueryException;
@@ -24,11 +26,21 @@ class CourseSectionController extends Controller
 
             $courseSections = CourseSection::query()
                 ->select([
-                    'id', 'ma_lop_hoc_phan', 'ma_mon', 'ma_nam_hoc', 'ma_phong',
+                    'id', 'ma_lop_hoc_phan', 'ma_mon', 'ma_nam_hoc', 'ma_lop', 'ma_phong',
                     'si_so_toi_da', 'trang_thai', 'ghi_chu',
                 ])
                 ->with($this->relations())
                 ->withCount('studentDetails')
+                ->selectSub(function ($query) {
+                    $query->from('sinh_vien')
+                        ->selectRaw('COUNT(*)')
+                        ->whereColumn('sinh_vien.ma_lop', 'lop_hoc_phan.ma_lop')
+                        ->whereNotExists(function ($subQuery) {
+                            $subQuery->from('chi_tiet_lop_hoc_phan')
+                                ->whereColumn('chi_tiet_lop_hoc_phan.ma_lop_hoc_phan', 'lop_hoc_phan.id')
+                                ->whereColumn('chi_tiet_lop_hoc_phan.ma_sinh_vien', 'sinh_vien.id');
+                        });
+                }, 'class_students_count')
                 ->when($data['search'] ?? null, function ($query, string $keyword) {
                     $query->where(function ($searchQuery) use ($keyword) {
                         $searchQuery->where('ma_lop_hoc_phan', 'like', "%{$keyword}%")
@@ -58,7 +70,10 @@ class CourseSectionController extends Controller
                 ->orderBy('ten_mon')->get();
             $academicYears = AcademicYear::query()->select(['id', 'ten_nam_hoc'])
                 ->orderByDesc('ngay_bat_dau')->get();
+            $classes = SchoolClass::query()->select(['id', 'ma_lop'])
+                ->orderBy('ma_lop')->get();
             $rooms = Room::query()->select(['id', 'ma_phong', 'ten_phong'])
+                ->where('ma_phong', '!=', 'KHO')
                 ->orderBy('ma_phong')->get();
             $teachers = Teacher::query()->select(['id', 'ma_nguoi_dung', 'ma_giang_vien'])
                 ->with('user:id,ho_ten')->orderBy('ma_giang_vien')->get()
@@ -71,6 +86,7 @@ class CourseSectionController extends Controller
             return $this->response(true, 'Lấy tùy chọn lớp học phần thành công', 200, [
                 'subjects' => $subjects,
                 'academic_years' => $academicYears,
+                'classes' => $classes,
                 'rooms' => $rooms,
                 'teachers' => $teachers,
                 'statuses' => ['active', 'paused', 'completed'],
@@ -168,7 +184,7 @@ class CourseSectionController extends Controller
 
     private function courseSectionData(array $data): array
     {
-        return [
+        $courseSectionData = [
             'ma_lop_hoc_phan' => strtoupper(trim($data['ma_lop_hoc_phan'])),
             'ma_mon' => $data['ma_mon'],
             'ma_nam_hoc' => $data['ma_nam_hoc'],
@@ -177,6 +193,13 @@ class CourseSectionController extends Controller
             'trang_thai' => $data['trang_thai'],
             'ghi_chu' => isset($data['ghi_chu']) ? trim($data['ghi_chu']) : null,
         ];
+
+        // Chỉ cập nhật lớp học khi request có gửi trường ma_lop.
+        if (array_key_exists('ma_lop', $data)) {
+            $courseSectionData['ma_lop'] = $data['ma_lop'];
+        }
+
+        return $courseSectionData;
     }
 
     private function syncTeacher(CourseSection $courseSection, ?int $teacherId): void
@@ -196,6 +219,7 @@ class CourseSectionController extends Controller
         return [
             'subject:id,ma_mon_hoc,ten_mon',
             'academicYear:id,ten_nam_hoc',
+            'class:id,ma_lop',
             'room:id,ma_phong,ten_phong',
             'assignments:id,ma_lop_hoc_phan,ma_giang_vien',
             'assignments.teacher:id,ma_nguoi_dung,ma_giang_vien',
@@ -206,6 +230,20 @@ class CourseSectionController extends Controller
     private function loadRelations(CourseSection $courseSection): void
     {
         $courseSection->load($this->relations())->loadCount('studentDetails');
+
+        if ($courseSection->ma_lop) {
+            // Đếm sinh viên theo lớp học, trừ sinh viên đã được thêm riêng vào lớp học phần.
+            $classStudentCount = Student::query()
+                ->where('ma_lop', $courseSection->ma_lop)
+                ->whereNotExists(function ($query) use ($courseSection) {
+                    $query->from('chi_tiet_lop_hoc_phan')
+                        ->where('ma_lop_hoc_phan', $courseSection->id)
+                        ->whereColumn('chi_tiet_lop_hoc_phan.ma_sinh_vien', 'sinh_vien.id');
+                })
+                ->count();
+
+            $courseSection->class_students_count = $classStudentCount;
+        }
     }
 
     private function response(bool $status, string $message, int $errorCode, mixed $data, int $httpCode)

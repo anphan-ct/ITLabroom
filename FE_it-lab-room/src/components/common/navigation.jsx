@@ -23,10 +23,6 @@ export const roleMenus = {
       to: "/admin/users",
       label: "Quản lý Tài khoản",
       icon: Users,
-      children: [
-        { to: "/admin/users/students", label: "Sinh viên", icon: UserRound },
-        { to: "/admin/users/teachers", label: "Giảng viên", icon: Presentation },
-      ],
     },
     {
       to: "/admin/classes",
@@ -34,6 +30,7 @@ export const roleMenus = {
       icon: GraduationCap,
       children: [
         { to: "/admin/classes", label: "Lớp học", icon: GraduationCap },
+        { to: "/admin/academic-years", label: "Năm học", icon: CalendarDays },
         { to: "/admin/course-sections", label: "Lớp học phần", icon: ListTree },
         { to: "/admin/subjects", label: "Môn học", icon: BookOpen },
       ],

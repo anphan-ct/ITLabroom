@@ -3,6 +3,7 @@ import AppShell from "../../common/AppShell";
 import SectionCard from "../../common/SectionCard";
 import ScheduleMatrix from "../../common/ScheduleMatrix";
 import {
+  formatDateInput,
   mapComputerLabWeekOption,
   getScheduleWeekOptions,
   getWeekRangeForDate,
@@ -51,6 +52,19 @@ export default function StudentSchedulePage() {
   const weekOptions = useMemo(() => {
     return getScheduleWeekOptions(studentSchedules, currentWeekRange, weeks);
   }, [currentWeekRange, studentSchedules, weeks]);
+
+  useEffect(() => {
+    if (weekOptions.length === 0 || weekOptions.some((weekItem) => weekItem.key === selectedWeek)) {
+      return;
+    }
+
+    const today = formatDateInput(new Date());
+    const currentAcademicWeek = weekOptions.find((weekItem) => (
+      today >= weekItem.range.start && today <= weekItem.range.end
+    ));
+
+    setSelectedWeek((currentAcademicWeek || weekOptions[0]).key);
+  }, [selectedWeek, weekOptions]);
 
   const filteredSchedules = useMemo(() => {
     const selectedOption = weekOptions.find((option) => option.key === selectedWeek);

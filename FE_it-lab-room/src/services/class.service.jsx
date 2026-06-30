@@ -38,6 +38,32 @@ export function getClassStudentsFromApi(id, params = {}) {
   });
 }
 
+export function getClassStudentOptionsFromApi(id) {
+  return fetcher(CONST_APIS.CLASSES.STUDENT_OPTIONS(id), {
+    method: CONST_METHODS.GET,
+  });
+}
+
+export function addClassStudentFromApi(id, payload) {
+  return fetcher(CONST_APIS.CLASSES.STUDENTS(id), {
+    method: CONST_METHODS.POST,
+    body: payload,
+  });
+}
+
+export function updateClassStudentFromApi(classId, studentId, payload) {
+  return fetcher(CONST_APIS.CLASSES.STUDENT_DETAIL(classId, studentId), {
+    method: CONST_METHODS.PUT,
+    body: payload,
+  });
+}
+
+export function deleteClassStudentFromApi(classId, studentId) {
+  return fetcher(CONST_APIS.CLASSES.STUDENT_DETAIL(classId, studentId), {
+    method: CONST_METHODS.DELETE,
+  });
+}
+
 export function updateClassFromApi(id, payload) {
   return fetcher(CONST_APIS.CLASSES.UPDATE(id), {
     method: CONST_METHODS.PUT,

@@ -4,7 +4,7 @@ import Sidebar from "./Sidebar.jsx";
 import TopNav from "./TopNav.jsx";
 import Header from "../layout/Header.jsx";
 import Footer from "../layout/Footer.jsx";
-import { clearAuthSession } from "../../services/auth.service.jsx";
+import { clearAuthSession, getAuthSession } from "../../services/auth.service.jsx";
 
 const roleLabels = {
   admin: "Quản trị hệ thống",
@@ -22,6 +22,7 @@ export default function AppShell({ role, title, subtitle, children }) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const isAdmin = role === "admin";
+  const currentUser = getAuthSession()?.user;
 
   const handleLogout = () => {
     clearAuthSession();
@@ -33,6 +34,8 @@ export default function AppShell({ role, title, subtitle, children }) {
       <Header
         onMenuToggle={() => setOpen(true)}
         onLogout={handleLogout}
+        currentUser={currentUser}
+        roleLabel={roleLabels[role]}
         showMenuButton
         showLoginLinks={false}
         showLogout

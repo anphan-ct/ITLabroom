@@ -2,8 +2,16 @@ import { CONST_APIS } from "../constants/apis.constant";
 import { CONST_METHODS } from "../constants/methods.constant";
 import { fetcher } from "../helpers/fetcher.helper";
 
-export function getRoomsFromApi() {
-  return fetcher(CONST_APIS.ROOMS.INDEX, {
+export function getRoomsFromApi(params = {}) {
+  const queryParams = new URLSearchParams();
+
+  if (params.includeStorage) {
+    queryParams.set("include_storage", "1");
+  }
+
+  const queryString = queryParams.toString();
+
+  return fetcher(`${CONST_APIS.ROOMS.INDEX}${queryString ? `?${queryString}` : ""}`, {
     method: CONST_METHODS.GET,
   });
 }

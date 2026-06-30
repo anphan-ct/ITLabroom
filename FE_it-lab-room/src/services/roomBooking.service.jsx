@@ -57,3 +57,8 @@ export function updateAdminRoomBookingFromApi(id, approvalStatus) {
     body: { approval_status: approvalStatus },
   });
 }
+export function cancelTeacherRoomBookingFromApi(id) {
+  return fetcher(CONST_APIS.TEACHER_ROOM_BOOKINGS.CANCEL(id), {
+    method: "PATCH",
+  });
+}

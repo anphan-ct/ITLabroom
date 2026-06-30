@@ -16,10 +16,12 @@ class AdminClassStudentResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'user_id' => $this->ma_nguoi_dung,
             'student_code' => $this->ma_sinh_vien,
             'full_name' => $this->whenLoaded('user', fn () => $this->user?->ho_ten),
             'email' => $this->whenLoaded('user', fn () => $this->user?->email),
             'class_id' => $this->ma_lop,
+            'class_code' => $this->whenLoaded('class', fn () => $this->class?->ma_lop),
             'course_year' => $this->nien_khoa,
             'status' => $this->whenLoaded('user', fn () => $this->user?->trang_thai),
         ];

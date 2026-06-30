@@ -21,6 +21,22 @@ export function updateComputerFromApi(id, payload) {
   });
 }
 
+export function generateComputerQrCodeFromApi(id) {
+  return fetcher(CONST_APIS.COMPUTERS.GENERATE_QR_CODE(id), {
+    method: CONST_METHODS.PATCH,
+  });
+}
+
+export function getComputerQrImageUrl(qrCode, size = 180) {
+  if (!qrCode) {
+    return "";
+  }
+
+  const encodedQrCode = encodeURIComponent(qrCode);
+
+  return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodedQrCode}`;
+}
+
 export function deleteComputerFromApi(id) {
   return fetcher(CONST_APIS.COMPUTERS.DESTROY(id), {
     method: CONST_METHODS.DELETE,

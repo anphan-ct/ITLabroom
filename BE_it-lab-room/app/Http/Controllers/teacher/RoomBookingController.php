@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\TeacherRoomBookingRequest;
 use App\Http\Resources\RoomBookingResource;
 use App\Http\Resources\RoomResource;
+use App\Http\Resources\WeekResource;
 use App\Models\ComputerLabSchedule;
 use App\Models\Room;
 use App\Models\RoomBooking;
+use App\Models\Week;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -66,11 +68,18 @@ class RoomBookingController extends Controller
                 ->where('so_tiet_bat_dau', '<=', $data['lesson_end'])
                 ->where('so_tiet_ket_thuc', '>=', $data['lesson_start'])
                 ->pluck('ma_phong');
+            // Lấy tuần tương ứng với ngày được chọn để giao diện đăng ký hiển thị rõ ngữ cảnh năm học.
+            $week = Week::query()
+                ->select(['id', 'ma_nam_hoc', 'so_tuan', 'ngay_bat_dau', 'ngay_ket_thuc'])
+                ->whereDate('ngay_bat_dau', '<=', $data['date'])
+                ->whereDate('ngay_ket_thuc', '>=', $data['date'])
+                ->orderByDesc('ngay_bat_dau')
+                ->first();
 
             $rooms = Room::query()
                 ->select(['id', 'ma_phong', 'ten_phong', 'suc_chua', 'trang_thai', 'mo_ta'])
                 // Không hiển thị phòng kho trong danh sách đăng ký phòng.
-                ->where('ten_phong', 'not like', '%kho%')
+                ->where('ma_phong', '!=', 'KHO')
                 ->orderBy('ma_phong')
                 ->get()
                 ->map(function (Room $room) use ($bookingRoomIds, $scheduleRoomIds) {
@@ -95,7 +104,10 @@ class RoomBookingController extends Controller
                 'status' => true,
                 'message' => 'Kiểm tra phòng trống thành công',
                 'error_code' => 200,
-                'data' => ['items' => $rooms],
+                'data' => [
+                    'week' => $week ? new WeekResource($week) : null,
+                    'items' => $rooms,
+                ],
             ], 200);
         } catch (Throwable $e) {
             return $this->serverErrorResponse('Không thể kiểm tra phòng trống');
@@ -157,6 +169,44 @@ class RoomBookingController extends Controller
             ], 201);
         } catch (Throwable $e) {
             return $this->serverErrorResponse('Không thể gửi yêu cầu đặt phòng');
+        }
+    }
+
+    public function cancel($id, Request $request)
+    {
+        try {
+            $teacher = $request->user()?->teacher;
+
+            if (! $teacher) {
+                return $this->forbiddenResponse();
+            }
+
+            $booking = RoomBooking::query()
+                ->whereKey($id)
+                ->where('ma_giang_vien', $teacher->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($booking->trang_thai_duyet === 'rejected') {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Yêu cầu đã bị từ chối nên không thể hủy',
+                    'error_code' => 409,
+                    'data' => '',
+                ], 409);
+            }
+
+            // Hủy yêu cầu bằng cách xóa bản ghi đặt phòng của chính giảng viên đang đăng nhập.
+            $booking->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Hủy yêu cầu đặt phòng thành công',
+                'error_code' => 200,
+                'data' => '',
+            ], 200);
+        } catch (Throwable $e) {
+            return $this->serverErrorResponse('Không thể hủy yêu cầu đặt phòng');
         }
     }
 

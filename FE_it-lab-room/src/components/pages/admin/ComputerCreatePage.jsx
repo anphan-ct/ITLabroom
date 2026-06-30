@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, QrCode, Save } from "lucide-react";
 import AppShell from "../../common/AppShell";
 import SectionCard from "../../common/SectionCard";
 import { Field, SelectInput, TextInput } from "./adminFormControls";
-import { getComputerFromApi, updateComputerFromApi } from "../../../services/computer.service";
+import {
+  generateComputerQrCodeFromApi,
+  getComputerFromApi,
+  updateComputerFromApi,
+} from "../../../services/computer.service";
 import { getRoomsFromApi } from "../../../services/room.service";
 
 const statuses = [
@@ -154,6 +158,7 @@ export default function ComputerCreatePage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(isEditing);
   const [isSaving, setIsSaving] = useState(false);
+  const [isGeneratingQr, setIsGeneratingQr] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -247,6 +252,25 @@ export default function ComputerCreatePage() {
     }
   };
 
+  const handleGenerateQrCode = async () => {
+    if (!isEditing) {
+      setError("Vui lòng tạo máy mới thông qua chức năng phiếu nhập máy.");
+      return;
+    }
+
+    setError("");
+    setIsGeneratingQr(true);
+
+    try {
+      const response = await generateComputerQrCodeFromApi(computerId);
+      setFormData(mapComputerToForm(response.data));
+    } catch (apiError) {
+      setError(apiError.message || "Không thể tạo mã QR cho máy tính.");
+    } finally {
+      setIsGeneratingQr(false);
+    }
+  };
+
   return (
     <AppShell
       role="admin"
@@ -322,11 +346,22 @@ export default function ComputerCreatePage() {
             </Field>
 
             <Field label="Mã QR">
-              <TextInput
-                value={formData.qrCode || ""}
-                onChange={(value) => handleChange({ target: { name: "qrCode", value } })}
-                placeholder="VD: QR-PC022"
-              />
+              <div className="flex gap-2">
+                <TextInput
+                  value={formData.qrCode || ""}
+                  onChange={(value) => handleChange({ target: { name: "qrCode", value } })}
+                  placeholder="VD: QR-PC022"
+                />
+                <button
+                  type="button"
+                  onClick={handleGenerateQrCode}
+                  disabled={isGeneratingQr}
+                  className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+                >
+                  <QrCode size={16} />
+                  {isGeneratingQr ? "Đang tạo" : "Tạo lại mã QR"}
+                </button>
+              </div>
             </Field>
           </div>
 

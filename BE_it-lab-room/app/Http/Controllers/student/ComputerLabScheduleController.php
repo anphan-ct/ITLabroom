@@ -26,7 +26,7 @@ class ComputerLabScheduleController extends Controller
                 ], 403);
             }
 
-            // Chỉ lấy lịch thuộc lớp học phần mà sinh viên đã được ghi danh.
+            // Lấy lịch theo lớp học của sinh viên hoặc lớp học phần đã ghi danh.
             $schedules = ComputerLabSchedule::query()
                 ->select([
                     'id',
@@ -53,10 +53,22 @@ class ComputerLabScheduleController extends Controller
                     'teacher.user:id,ho_ten',
                     'week:id,so_tuan,ngay_bat_dau,ngay_ket_thuc',
                 ])
-                ->whereHas('courseSection.studentDetails', function ($query) use ($student) {
+                ->where(function ($query) use ($student) {
                     $query
-                        ->where('ma_sinh_vien', $student->id)
-                        ->where('trang_thai', 'active');
+                        ->where(function ($classQuery) use ($student) {
+                            $classQuery
+                                ->where('ma_lop', $student->ma_lop)
+                                ->whereDoesntHave('courseSection.studentDetails', function ($detailQuery) use ($student) {
+                                    $detailQuery
+                                        ->where('ma_sinh_vien', $student->id)
+                                        ->where('trang_thai', 'inactive');
+                                });
+                        })
+                        ->orWhereHas('courseSection.studentDetails', function ($studentQuery) use ($student) {
+                            $studentQuery
+                                ->where('ma_sinh_vien', $student->id)
+                                ->where('trang_thai', 'active');
+                        });
                 })
                 ->when($data['week_id'] ?? null, fn ($query, $weekId) => $query->where('ma_tuan', $weekId))
                 ->orderBy('ngay_hoc_cu_the')

@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, QrCode } from "lucide-react";
 import AppShell from "../../common/AppShell";
 import SectionCard from "../../common/SectionCard";
 import StatusBadge from "../../common/StatusBadge";
-import { getComputerFromApi } from "../../../services/computer.service";
+import {
+  generateComputerQrCodeFromApi,
+  getComputerFromApi,
+  getComputerQrImageUrl,
+} from "../../../services/computer.service";
 
 function getStatusLabel(status) {
   const statusLabels = {
@@ -40,6 +44,8 @@ export default function ComputerDetailPage() {
   const { computerId } = useParams();
   const [computer, setComputer] = useState(null);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [isGeneratingQr, setIsGeneratingQr] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -61,6 +67,22 @@ export default function ComputerDetailPage() {
     };
   }, [computerId]);
 
+  const handleGenerateQrCode = async () => {
+    setError("");
+    setSuccessMessage("");
+    setIsGeneratingQr(true);
+
+    try {
+      const response = await generateComputerQrCodeFromApi(computerId);
+      setComputer(response.data);
+      setSuccessMessage("Đã tạo mã QR máy tính.");
+    } catch (apiError) {
+      setError(apiError.message || "Không thể tạo mã QR cho máy tính.");
+    } finally {
+      setIsGeneratingQr(false);
+    }
+  };
+
   return (
     <AppShell
       role="admin"
@@ -79,6 +101,11 @@ export default function ComputerDetailPage() {
         {error && (
           <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
             {error}
+          </div>
+        )}
+        {successMessage && (
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+            {successMessage}
           </div>
         )}
 
@@ -100,6 +127,28 @@ export default function ComputerDetailPage() {
                 </div>
                 <NoteItem value={computer.ghi_chu} />
               </div>
+            </SectionCard>
+
+            <SectionCard title="Mã QR">
+              {computer.ma_qr ? (
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                  <div className="w-fit rounded-lg border border-slate-200 bg-white p-3">
+                    <img
+                      src={getComputerQrImageUrl(computer.ma_qr, 180)}
+                      alt={`QR ${computer.ma_may}`}
+                      className="h-[180px] w-[180px]"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold uppercase text-slate-500">Giá trị mã QR</p>
+                    <p className="mt-2 break-all text-base font-bold text-slate-900">{computer.ma_qr}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-600">
+                  Máy tính này chưa có mã QR.
+                </div>
+              )}
             </SectionCard>
 
             <SectionCard title="Cấu hình máy">

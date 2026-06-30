@@ -8,6 +8,7 @@ import {
 import AppShell from "../../common/AppShell";
 import SectionCard from "../../common/SectionCard";
 import {
+  cancelTeacherRoomBookingFromApi,
   createTeacherRoomBookingFromApi,
   getAvailableRoomsFromApi,
   getTeacherRoomBookingsFromApi,
@@ -24,29 +25,34 @@ const requestStatusStyles = {
   pending: "border-amber-200 bg-amber-50 text-amber-700",
   approved: "border-emerald-200 bg-emerald-50 text-emerald-700",
   rejected: "border-rose-200 bg-rose-50 text-rose-700",
+  cancelled: "border-slate-200 bg-slate-100 text-slate-600",
 };
 
 const requestStatusLabels = {
   pending: "Chờ duyệt",
   approved: "Đã duyệt",
   rejected: "Từ chối",
+  cancelled: "Đã hủy",
 };
 
 function formatDate(date) {
-  if (!date) {
-    return "";
-  }
-
+  if (!date) return "";
   return new Intl.DateTimeFormat("vi-VN").format(new Date(date));
 }
 
 export default function RoomBookingPage() {
   const location = useLocation();
-  const [activeView, setActiveView] = useState(location.state?.activeView || "booking");
-  const [bookingDate, setBookingDate] = useState(() => new Date().toISOString().slice(0, 10));
+
+  const [activeView, setActiveView] = useState(
+    location.state?.activeView || "booking"
+  );
+  const [bookingDate, setBookingDate] = useState(() =>
+    new Date().toISOString().slice(0, 10)
+  );
   const [lessonStart, setLessonStart] = useState(1);
   const [lessonEnd, setLessonEnd] = useState(3);
   const [rooms, setRooms] = useState([]);
+  const [selectedWeek, setSelectedWeek] = useState(null);
   const [bookingRequests, setBookingRequests] = useState([]);
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [purpose, setPurpose] = useState("");
@@ -54,7 +60,9 @@ export default function RoomBookingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [modalError, setModalError] = useState("");
-  const [successMessage, setSuccessMessage] = useState(location.state?.successMessage || "");
+  const [successMessage, setSuccessMessage] = useState(
+    location.state?.successMessage || ""
+  );
 
   const invalidLessonRange = useMemo(() => {
     return (
@@ -66,11 +74,12 @@ export default function RoomBookingPage() {
 
   const roomStatuses = useMemo(() => {
     return rooms.map((room) => {
-      const status = room.unavailable_reason === "maintenance"
-        ? "Bảo trì"
-        : room.unavailable_reason === "inactive"
+      const status =
+        room.unavailable_reason === "maintenance"
+          ? "Bảo trì"
+          : room.unavailable_reason === "inactive"
           ? "Ngừng hoạt động"
-        : !room.is_available
+          : !room.is_available
           ? "Đã đăng ký"
           : "Trống";
 
@@ -79,15 +88,16 @@ export default function RoomBookingPage() {
         code: room.ma_phong,
         name: room.ten_phong,
         status,
-        currentUse: status === "Bảo trì"
-          ? "Phòng đang bảo trì"
-          : room.unavailable_reason === "schedule"
+        currentUse:
+          status === "Bảo trì"
+            ? "Phòng đang bảo trì"
+            : room.unavailable_reason === "schedule"
             ? "Đã có lịch học chính thức"
             : room.unavailable_reason === "booking"
-              ? "Đã có yêu cầu đặt phòng"
-              : room.unavailable_reason === "inactive"
-                ? "Phòng đang ngừng hoạt động"
-              : "Có thể đăng ký",
+            ? "Đã có yêu cầu đặt phòng"
+            : room.unavailable_reason === "inactive"
+            ? "Phòng đang ngừng hoạt động"
+            : "Có thể đăng ký",
       };
     });
   }, [rooms]);
@@ -98,14 +108,23 @@ export default function RoomBookingPage() {
 
     try {
       const [roomsResponse, bookingsResponse] = await Promise.all([
-        getAvailableRoomsFromApi({ date: bookingDate, lesson_start: lessonStart, lesson_end: lessonEnd }),
+        getAvailableRoomsFromApi({
+          date: bookingDate,
+          lesson_start: lessonStart,
+          lesson_end: lessonEnd,
+        }),
         getTeacherRoomBookingsFromApi({ per_page: 100 }),
       ]);
 
       setRooms(roomsResponse.data?.items || []);
+      setSelectedWeek(roomsResponse.data?.week || null);
       setBookingRequests(bookingsResponse.data?.items || []);
     } catch (apiError) {
-      setError(apiError?.payload?.message || apiError?.message || "Không thể tải dữ liệu đăng ký phòng.");
+      setError(
+        apiError?.payload?.message ||
+          apiError?.message ||
+          "Không thể tải dữ liệu đăng ký phòng."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -113,7 +132,6 @@ export default function RoomBookingPage() {
 
   useEffect(() => {
     const timeout = setTimeout(loadInitialData, 0);
-
     return () => clearTimeout(timeout);
   }, [loadInitialData]);
 
@@ -136,9 +154,7 @@ export default function RoomBookingPage() {
   };
 
   const closeBookingModal = () => {
-    if (isSubmitting) {
-      return;
-    }
+    if (isSubmitting) return;
 
     setSelectedRoom(null);
     setPurpose("");
@@ -170,9 +186,40 @@ export default function RoomBookingPage() {
       setSuccessMessage("Yêu cầu đặt phòng đã được gửi. Hãy chờ admin duyệt.");
       await loadInitialData();
     } catch (apiError) {
-      setModalError(apiError?.payload?.message || apiError?.message || "Không thể gửi yêu cầu đặt phòng.");
+      setModalError(
+        apiError?.payload?.message ||
+          apiError?.message ||
+          "Không thể gửi yêu cầu đặt phòng."
+      );
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleCancelBooking = async (request) => {
+    const status = request.approval_status || request.trang_thai_duyet;
+
+    if (!["pending", "approved"].includes(status)) {
+      return;
+    }
+
+    if (!window.confirm("Bạn có chắc muốn hủy yêu cầu đặt phòng này không?")) {
+      return;
+    }
+
+    setError("");
+    setSuccessMessage("");
+
+    try {
+      await cancelTeacherRoomBookingFromApi(request.id);
+      setSuccessMessage("Hủy yêu cầu đặt phòng thành công.");
+      await loadInitialData();
+    } catch (apiError) {
+      setError(
+        apiError?.payload?.message ||
+          apiError?.message ||
+          "Không thể hủy yêu cầu đặt phòng."
+      );
     }
   };
 
@@ -196,6 +243,7 @@ export default function RoomBookingPage() {
             <CalendarCheck size={16} />
             Đăng ký phòng
           </button>
+
           <button
             type="button"
             onClick={() => setActiveView("requests")}
@@ -241,35 +289,85 @@ export default function RoomBookingPage() {
                     <th className="px-4 py-3 text-left">Tiết</th>
                     <th className="px-4 py-3 text-left">Mục đích</th>
                     <th className="px-4 py-3 text-left">Trạng thái</th>
+                    <th className="px-4 py-3 text-right">Thao tác</th>
                   </tr>
                 </thead>
+
                 <tbody>
-                  {bookingRequests.map((request) => (
-                    <tr
-                      key={request.id}
-                      className="border-t border-slate-100 hover:bg-slate-50"
-                    >
-                      <td className="whitespace-nowrap px-4 py-3 font-bold text-slate-900">
-                        {request.room?.code || request.room?.ma_phong || "-"}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-slate-700">
-                        {formatDate(request.date || request.bookingDate)}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-slate-700">
-                        Tiết {request.lesson_start || request.so_tiet_bat_dau} - {request.lesson_end || request.so_tiet_ket_thuc}
-                      </td>
-                      <td className="max-w-[260px] px-4 py-3 text-slate-700">{request.purpose || request.muc_dich || "-"}</td>
-                      <td className="whitespace-nowrap px-4 py-3">
-                        <span
-                          className={`inline-flex rounded-full border px-3 py-1 text-xs font-bold ${
-                            requestStatusStyles[request.approval_status || request.trang_thai_duyet] || requestStatusStyles.pending
-                          }`}
-                        >
-                          {requestStatusLabels[request.approval_status || request.trang_thai_duyet] || "Chờ duyệt"}
-                        </span>
+                  {bookingRequests.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={6}
+                        className="px-4 py-10 text-center text-slate-500"
+                      >
+                        Chưa có yêu cầu đăng ký phòng.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    bookingRequests.map((request) => {
+                      const approvalStatus =
+                        request.approval_status || request.trang_thai_duyet;
+                      const canCancel = ["pending", "approved"].includes(
+                        approvalStatus
+                      );
+
+                      return (
+                        <tr
+                          key={request.id}
+                          className="border-t border-slate-100 hover:bg-slate-50"
+                        >
+                          <td className="whitespace-nowrap px-4 py-3 font-bold text-slate-900">
+                            {request.room?.code ||
+                              request.room?.ma_phong ||
+                              "-"}
+                          </td>
+
+                          <td className="whitespace-nowrap px-4 py-3 text-slate-700">
+                            {formatDate(request.date || request.bookingDate)}
+                          </td>
+
+                          <td className="whitespace-nowrap px-4 py-3 text-slate-700">
+                            Tiết{" "}
+                            {request.lesson_start ||
+                              request.so_tiet_bat_dau}{" "}
+                            -{" "}
+                            {request.lesson_end ||
+                              request.so_tiet_ket_thuc}
+                          </td>
+
+                          <td className="max-w-[260px] px-4 py-3 text-slate-700">
+                            {request.purpose || request.muc_dich || "-"}
+                          </td>
+
+                          <td className="whitespace-nowrap px-4 py-3">
+                            <span
+                              className={`inline-flex rounded-full border px-3 py-1 text-xs font-bold ${
+                                requestStatusStyles[approvalStatus] ||
+                                requestStatusStyles.pending
+                              }`}
+                            >
+                              {requestStatusLabels[approvalStatus] ||
+                                "Chờ duyệt"}
+                            </span>
+                          </td>
+
+                          <td className="whitespace-nowrap px-4 py-3 text-right">
+                            {canCancel ? (
+                              <button
+                                type="button"
+                                onClick={() => handleCancelBooking(request)}
+                                className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-100"
+                              >
+                                Hủy
+                              </button>
+                            ) : (
+                              <span className="text-sm text-slate-400">-</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
@@ -277,9 +375,11 @@ export default function RoomBookingPage() {
         ) : (
           <>
             <SectionCard title="Kiểm tra phòng trống">
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-4">
                 <label className="space-y-2">
-                  <span className="text-sm font-semibold text-slate-700">Ngày đặt</span>
+                  <span className="text-sm font-semibold text-slate-700">
+                    Ngày đặt
+                  </span>
                   <input
                     type="date"
                     value={bookingDate}
@@ -288,44 +388,77 @@ export default function RoomBookingPage() {
                   />
                 </label>
 
+                <div className="space-y-2">
+                  <span className="text-sm font-semibold text-slate-700">
+                    Tuần
+                  </span>
+                  <div className="min-h-[50px] rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
+                    {selectedWeek ? (
+                      <>
+                        Tuần {selectedWeek.so_tuan}
+                        <span className="block text-xs font-medium text-slate-500">
+                          {formatDate(selectedWeek.ngay_bat_dau)} -{" "}
+                          {formatDate(selectedWeek.ngay_ket_thuc)}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-slate-500">Chưa có tuần</span>
+                    )}
+                  </div>
+                </div>
+
                 <label className="space-y-2">
-                  <span className="text-sm font-semibold text-slate-700">Từ tiết</span>
+                  <span className="text-sm font-semibold text-slate-700">
+                    Từ tiết
+                  </span>
                   <select
                     value={lessonStart}
                     onChange={handleLessonChange(setLessonStart)}
                     className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 outline-none"
                   >
-                    {Array.from({ length: 12 }, (_, index) => index + 1).map((lesson) => (
-                      <option key={lesson} value={lesson}>
-                        Tiết {lesson}
-                      </option>
-                    ))}
+                    {Array.from({ length: 12 }, (_, index) => index + 1).map(
+                      (lesson) => (
+                        <option key={lesson} value={lesson}>
+                          Tiết {lesson}
+                        </option>
+                      )
+                    )}
                   </select>
                 </label>
 
                 <label className="space-y-2">
-                  <span className="text-sm font-semibold text-slate-700">Đến tiết</span>
+                  <span className="text-sm font-semibold text-slate-700">
+                    Đến tiết
+                  </span>
                   <select
                     value={lessonEnd}
                     onChange={handleLessonChange(setLessonEnd)}
                     className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 outline-none"
                   >
-                    {Array.from({ length: 12 }, (_, index) => index + 1).map((lesson) => (
-                      <option key={lesson} value={lesson}>
-                        Tiết {lesson}
-                      </option>
-                    ))}
+                    {Array.from({ length: 12 }, (_, index) => index + 1).map(
+                      (lesson) => (
+                        <option key={lesson} value={lesson}>
+                          Tiết {lesson}
+                        </option>
+                      )
+                    )}
                   </select>
                 </label>
               </div>
+
               {invalidLessonRange ? (
                 <p className="mt-3 text-sm font-semibold text-rose-600">
-                  Khoảng tiết phải từ tiết 1 đến tiết 12 và tiết bắt đầu không được lớn hơn tiết kết thúc.
+                  Khoảng tiết phải từ tiết 1 đến tiết 12 và tiết bắt đầu không
+                  được lớn hơn tiết kết thúc.
                 </p>
               ) : null}
             </SectionCard>
 
-            <SectionCard title={`Danh sách phòng ngày ${formatDate(bookingDate)}, tiết ${lessonStart}-${lessonEnd}`}>
+            <SectionCard
+              title={`Danh sách phòng ngày ${formatDate(
+                bookingDate
+              )}, tiết ${lessonStart}-${lessonEnd}`}
+            >
               <div className="overflow-x-auto rounded-lg border border-slate-200">
                 <table className="min-w-full text-sm">
                   <thead className="bg-slate-50 text-xs font-bold uppercase text-slate-500">
@@ -337,22 +470,30 @@ export default function RoomBookingPage() {
                       <th className="px-4 py-3 text-right">Thao tác</th>
                     </tr>
                   </thead>
+
                   <tbody>
                     {isLoading ? (
                       <tr>
-                        <td colSpan={5} className="px-4 py-10 text-center text-slate-500">
+                        <td
+                          colSpan={5}
+                          className="px-4 py-10 text-center text-slate-500"
+                        >
                           Đang tải danh sách phòng…
                         </td>
                       </tr>
                     ) : roomStatuses.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="px-4 py-10 text-center text-slate-500">
+                        <td
+                          colSpan={5}
+                          className="px-4 py-10 text-center text-slate-500"
+                        >
                           Chưa có phòng máy để hiển thị.
                         </td>
                       </tr>
                     ) : (
                       roomStatuses.map((room) => {
                         const isAvailable = room.status === "Trống";
+
                         return (
                           <tr
                             key={room.id}
@@ -364,22 +505,35 @@ export default function RoomBookingPage() {
                                   <Monitor size={18} />
                                 </span>
                                 <div>
-                                  <p className="font-bold text-slate-900">{room.code}</p>
-                                  <p className="text-xs text-slate-500">{room.name}</p>
+                                  <p className="font-bold text-slate-900">
+                                    {room.code}
+                                  </p>
+                                  <p className="text-xs text-slate-500">
+                                    {room.name}
+                                  </p>
                                 </div>
                               </div>
                             </td>
-                            <td className="whitespace-nowrap px-4 py-3 text-slate-700">{room.suc_chua ?? room.computers} máy</td>
+
+                            <td className="whitespace-nowrap px-4 py-3 text-slate-700">
+                              {room.suc_chua ?? room.computers} máy
+                            </td>
+
                             <td className="whitespace-nowrap px-4 py-3">
                               <span
                                 className={`inline-flex rounded-full border px-3 py-1 text-xs font-bold ${
-                                  statusStyles[room.status] || statusStyles.Trống
+                                  statusStyles[room.status] ||
+                                  statusStyles.Trống
                                 }`}
                               >
                                 {room.status}
                               </span>
                             </td>
-                            <td className="px-4 py-3 text-slate-600">{room.currentUse}</td>
+
+                            <td className="px-4 py-3 text-slate-600">
+                              {room.currentUse}
+                            </td>
+
                             <td className="whitespace-nowrap px-4 py-3 text-right">
                               <button
                                 type="button"
@@ -403,7 +557,6 @@ export default function RoomBookingPage() {
                 </table>
               </div>
             </SectionCard>
-
           </>
         )}
       </div>
@@ -414,12 +567,16 @@ export default function RoomBookingPage() {
             <h2 className="text-xl font-bold text-[#193D87]">
               Đăng ký {selectedRoom.code || selectedRoom.ma_phong}
             </h2>
+
             <p className="mt-4 text-sm font-semibold text-slate-700">
-              Thời gian: {formatDate(bookingDate)}, Tiết {lessonStart} - {lessonEnd}
+              Thời gian: {formatDate(bookingDate)}, Tiết {lessonStart} -{" "}
+              {lessonEnd}
             </p>
 
             <label className="mt-5 block space-y-2">
-              <span className="text-sm font-bold text-slate-700">Mục đích mượn phòng:</span>
+              <span className="text-sm font-bold text-slate-700">
+                Mục đích mượn phòng:
+              </span>
               <textarea
                 value={purpose}
                 onChange={(event) => setPurpose(event.target.value)}
@@ -429,7 +586,9 @@ export default function RoomBookingPage() {
             </label>
 
             {modalError ? (
-              <p className="mt-3 text-sm font-semibold text-rose-600">{modalError}</p>
+              <p className="mt-3 text-sm font-semibold text-rose-600">
+                {modalError}
+              </p>
             ) : null}
 
             <div className="mt-6 flex justify-end gap-3">
@@ -441,6 +600,7 @@ export default function RoomBookingPage() {
               >
                 Hủy
               </button>
+
               <button
                 type="button"
                 onClick={submitBookingRequest}

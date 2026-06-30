@@ -262,7 +262,7 @@ export default function ScheduleFormPage() {
             </label>
 
             <label className="space-y-2">
-              <span className="text-sm font-semibold text-slate-700">Phòng máy</span>
+              <span className="text-sm font-semibold text-slate-700">Phòng học</span>
               <select name="roomId" value={formData.roomId} onChange={handleChange} className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-blue-500">
                 <option value="">Chọn phòng máy</option>
                 {options.rooms.map((room) => <option key={room.id} value={room.id}>{room.code} - {room.name}</option>)}

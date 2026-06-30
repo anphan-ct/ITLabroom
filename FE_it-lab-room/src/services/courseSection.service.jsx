@@ -39,3 +39,43 @@ export function deleteCourseSectionFromApi(id) {
     method: CONST_METHODS.DELETE,
   });
 }
+
+export function getCourseSectionStudentsFromApi(id, params = {}) {
+  const query = new URLSearchParams(params).toString();
+
+  return fetcher(`${CONST_APIS.COURSE_SECTIONS.STUDENTS(id)}${query ? `?${query}` : ""}`, {
+    method: CONST_METHODS.GET,
+  });
+}
+
+export function getCourseSectionStudentOptionsFromApi(id) {
+  return fetcher(CONST_APIS.COURSE_SECTIONS.STUDENT_OPTIONS(id), {
+    method: CONST_METHODS.GET,
+  });
+}
+
+export function addCourseSectionStudentFromApi(id, payload) {
+  return fetcher(CONST_APIS.COURSE_SECTIONS.STUDENTS(id), {
+    method: CONST_METHODS.POST,
+    body: payload,
+  });
+}
+
+export function updateCourseSectionStudentFromApi(courseSectionId, studentDetailId, payload) {
+  return fetcher(CONST_APIS.COURSE_SECTIONS.STUDENT_DETAIL(courseSectionId, studentDetailId), {
+    method: CONST_METHODS.PUT,
+    body: payload,
+  });
+}
+
+export function deleteCourseSectionStudentFromApi(courseSectionId, studentDetailId) {
+  return fetcher(CONST_APIS.COURSE_SECTIONS.STUDENT_DETAIL(courseSectionId, studentDetailId), {
+    method: CONST_METHODS.DELETE,
+  });
+}
+
+export function deleteCourseSectionStudentByStudentFromApi(courseSectionId, studentId) {
+  return fetcher(CONST_APIS.COURSE_SECTIONS.STUDENT_BY_STUDENT(courseSectionId, studentId), {
+    method: CONST_METHODS.DELETE,
+  });
+}

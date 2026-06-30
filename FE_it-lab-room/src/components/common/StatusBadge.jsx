@@ -27,6 +27,7 @@ const styles = {
   "Chưa điểm danh": "bg-amber-100 text-amber-700",
   "Chưa mở": "bg-slate-100 text-slate-700",
   "Đang mở": "bg-emerald-100 text-emerald-700",
+  "Đang diễn ra": "bg-emerald-100 text-emerald-700",
   "Đã đóng": "bg-slate-200 text-slate-700",
   "Có dữ liệu": "bg-emerald-100 text-emerald-700",
   "Chưa có dữ liệu": "bg-slate-100 text-slate-700",

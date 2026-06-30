@@ -17,7 +17,7 @@ class ComputerImportController extends Controller
     public function index()
     {
         try {
-        
+
             $phieuNhaps = ComputerImport::query()
                 ->select(['id', 'ma_phieu_nhap', 'ngay_nhap', 'so_luong', 'nha_cung_cap', 'ghi_chu'])
                 ->with([
@@ -69,8 +69,8 @@ class ComputerImportController extends Controller
 
                 for ($i = 1; $i <= (int) $data['so_luong']; $i++) {
                     $soThuTuMay = str_pad((string) $i, 3, '0', STR_PAD_LEFT);
-                    $maMay = 'PC-' . $maPhieuNhapNumber . '-' . $soThuTuMay;
-                    $tenMay = 'Máy ' . ($soTenMayLonNhatTrongPhong + $i);
+                    $maMay = 'PC-'.$maPhieuNhapNumber.'-'.$soThuTuMay;
+                    $tenMay = 'Máy '.($soTenMayLonNhatTrongPhong + $i);
 
                     if (Computer::where('ma_may', $maMay)->exists()) {
                         throw ValidationException::withMessages([
@@ -93,8 +93,7 @@ class ComputerImportController extends Controller
                         'ma_phong' => $data['ma_phong'],
                         'ma_may' => $maMay,
                         'ten_may' => $tenMay,
-                        'vi_tri' => null,
-                        'ma_qr' => $maMay,
+                        'ma_qr' => $this->generateUniqueQrCode($maMay),
                         'bo_xu_ly' => $data['bo_xu_ly'] ?? null,
                         'ram' => $data['ram'] ?? null,
                         'card_do_hoa' => $data['card_do_hoa'] ?? null,
@@ -165,7 +164,7 @@ class ComputerImportController extends Controller
     private function generateImportCode(): string
     {
         for ($attempt = 1; $attempt <= 50; $attempt++) {
-            $code = 'PN-' . str_pad((string) random_int(0, 9999), 4, '0', STR_PAD_LEFT);
+            $code = 'PN-'.str_pad((string) random_int(0, 9999), 4, '0', STR_PAD_LEFT);
 
             if (! ComputerImport::where('ma_phieu_nhap', $code)->exists()) {
                 return $code;
@@ -177,10 +176,27 @@ class ComputerImportController extends Controller
         ]);
     }
 
+    private function generateUniqueQrCode(string $maMay): string
+    {
+        $normalizedMaMay = strtoupper(preg_replace('/[^A-Z0-9]+/', '-', $maMay));
+
+        for ($attempt = 1; $attempt <= 50; $attempt++) {
+            $code = 'QR-'.$normalizedMaMay.'-'.strtoupper(bin2hex(random_bytes(4)));
+
+            if (! Computer::query()->where('ma_qr', $code)->exists()) {
+                return $code;
+            }
+        }
+
+        throw ValidationException::withMessages([
+            'ma_qr' => ['Không thể tạo mã QR duy nhất, vui lòng thử lại.'],
+        ]);
+    }
+
     public function show(ComputerImport $computerImport)
     {
         try {
-        
+
             $computerImport->load([
                 'details:id,ma_phieu_nhap,ma_may_tinh,ghi_chu',
                 'details.computer:id,ma_phong,ma_may,ten_may,vi_tri,ma_qr,bo_xu_ly,ram,card_do_hoa,bo_mach_chu,man_hinh,ban_phim,chuot,hdd,ssd,trang_thai,ghi_chu',

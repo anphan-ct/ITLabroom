@@ -117,7 +117,7 @@ export default function ComputerImportsPage() {
   useEffect(() => {
     let isMounted = true;
 
-    Promise.all([getRoomsFromApi(), getComputerImports(), generateComputerImportCode()])
+    Promise.all([getRoomsFromApi({ includeStorage: true }), getComputerImports(), generateComputerImportCode()])
       .then(([roomsResponse, importsResponse, codeResponse]) => {
         if (!isMounted) {
           return;

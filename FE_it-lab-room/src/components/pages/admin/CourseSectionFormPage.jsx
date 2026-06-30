@@ -14,6 +14,7 @@ const initialForm = {
   code: "",
   subjectId: "",
   academicYearId: "",
+  classId: "",
   teacherId: "",
   roomId: "",
   maxStudents: "40",
@@ -46,6 +47,7 @@ function mapCourseSectionToForm(item) {
     code: item.ma_lop_hoc_phan || "",
     subjectId: item.ma_mon ? String(item.ma_mon) : "",
     academicYearId: item.ma_nam_hoc ? String(item.ma_nam_hoc) : "",
+    classId: item.ma_lop ? String(item.ma_lop) : "",
     teacherId: item.ma_giang_vien ? String(item.ma_giang_vien) : "",
     roomId: item.ma_phong ? String(item.ma_phong) : "",
     maxStudents: String(item.si_so_toi_da || 40),
@@ -59,7 +61,7 @@ export default function CourseSectionFormPage() {
   const { courseSectionId } = useParams();
   const isEditing = Boolean(courseSectionId);
   const [formData, setFormData] = useState(initialForm);
-  const [options, setOptions] = useState({ subjects: [], academic_years: [], teachers: [], rooms: [] });
+  const [options, setOptions] = useState({ subjects: [], academic_years: [], classes: [], teachers: [], rooms: [] });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -134,6 +136,7 @@ export default function CourseSectionFormPage() {
         ma_lop_hoc_phan: formData.code.trim().toUpperCase(),
         ma_mon: Number(formData.subjectId),
         ma_nam_hoc: Number(formData.academicYearId),
+        ma_lop: formData.classId ? Number(formData.classId) : null,
         ma_giang_vien: formData.teacherId ? Number(formData.teacherId) : null,
         ma_phong: formData.roomId ? Number(formData.roomId) : null,
         si_so_toi_da: maxStudents,
@@ -204,6 +207,17 @@ export default function CourseSectionFormPage() {
                 <option value="">Chưa phân công</option>
                 {options.teachers?.map((teacher) => (
                   <option key={teacher.id} value={teacher.id}>{teacher.ho_ten}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="space-y-2">
+              <span className="text-sm font-semibold text-slate-700">Lớp học</span>
+              <select name="classId" value={formData.classId} onChange={handleChange}
+                className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white">
+                <option value="">Chọn lớp học</option>
+                {options.classes?.map((classroom) => (
+                  <option key={classroom.id} value={classroom.id}>{classroom.ma_lop}</option>
                 ))}
               </select>
             </label>

@@ -1,8 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import StudentLogin from "./components/pages/student/StudentLogin.jsx";
-import AdminLogin from "./components/pages/admin/AdminLogin.jsx"
-import TeacherLogin from "./components/pages/teacher/TeacherLogin.jsx"
-import { ProtectedRoute, PublicOnlyRoute } from "./components/common/ProtectedRoute.jsx";
+import Login from "./components/common/Login.jsx";
+import { ProtectedRoute, PublicOnlyAnyRoute } from "./components/common/ProtectedRoute.jsx";
+import AdminDashboard from "./components/pages/admin/AdminDashboard.jsx";
 import UsersPage from "./components/pages/admin/UsersPage.jsx";
 import UserFormPage from "./components/pages/admin/UserFormPage.jsx";
 import ClassesPage from "./components/pages/admin/ClassesPage.jsx";
@@ -31,13 +30,15 @@ import ComputerReturnsPage from "./components/pages/teacher/ComputerReturnsPage.
 import ComputerTransfersPage from "./components/pages/admin/ComputerTransfersPage.jsx";
 import CourseSectionsPage from "./components/pages/admin/CourseSectionsPage.jsx";
 import CourseSectionFormPage from "./components/pages/admin/CourseSectionFormPage.jsx";
+import CourseSectionStudentsPage from "./components/pages/admin/CourseSectionStudentsPage.jsx";
+import AcademicYearsPage from "./components/pages/admin/AcademicYearsPage.jsx";
+import AcademicYearFormPage from "./components/pages/admin/AcademicYearFormPage.jsx";
 import LoanDetailsPage from "./components/pages/admin/LoanDetailsPage.jsx";
 import RepairLogsPage from "./components/pages/admin/RepairLogsPage.jsx";
 
 import TeacherSchedulePage from "./components/pages/teacher/TeacherSchedulePage.jsx";
 import AttendancePage from "./components/pages/teacher/AttendancePage.jsx";
-import TeacherAttendanceSessionStatusPage from "./components/pages/teacher/TeacherAttendanceSessionStatusPage.jsx";
-import TeacherStudentAttendanceDetailPage from "./components/pages/teacher/TeacherStudentAttendanceDetailPage.jsx";
+import TeacherScheduleAttendancePage from "./components/pages/teacher/TeacherScheduleAttendancePage.jsx";
 import RoomBookingPage from "./components/pages/teacher/RoomBookingPage.jsx";
 import IncidentPage from "./components/common/IncidentPage.jsx";
 
@@ -50,12 +51,11 @@ import StudentAttendanceClassHistoryPage from "./components/pages/student/Studen
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/student/login" replace />} />
+      <Route path="/" element={<Navigate to="/login" replace />} />
 
-      <Route path="/student/login" element={<PublicOnlyRoute role="student"><StudentLogin /></PublicOnlyRoute>} />
-      <Route path="/teacher/login" element={<PublicOnlyRoute role="teacher"><TeacherLogin /></PublicOnlyRoute>} />
-      <Route path="/admin/login" element={<PublicOnlyRoute role="admin"><AdminLogin /></PublicOnlyRoute>} />
-      <Route path="/admin" element={<ProtectedRoute role="admin"><Navigate to="/admin/users" replace /></ProtectedRoute>} />
+      <Route path="/login" element={<PublicOnlyAnyRoute><Login /></PublicOnlyAnyRoute>} />
+
+      <Route path="/admin" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
       <Route path="/admin/users" element={<ProtectedRoute role="admin"><UsersPage /></ProtectedRoute>} />
       <Route path="/admin/users/create" element={<ProtectedRoute role="admin"><UserFormPage /></ProtectedRoute>} />
       <Route path="/admin/users/:userId/edit" element={<ProtectedRoute role="admin"><UserFormPage /></ProtectedRoute>} />
@@ -71,6 +71,9 @@ export default function App() {
       <Route path="/admin/subjects" element={<ProtectedRoute role="admin"><SubjectsPage /></ProtectedRoute>} />
       <Route path="/admin/subjects/create" element={<ProtectedRoute role="admin"><SubjectFormPage /></ProtectedRoute>} />
       <Route path="/admin/subjects/:subjectId/edit" element={<ProtectedRoute role="admin"><SubjectFormPage /></ProtectedRoute>} />
+      <Route path="/admin/academic-years" element={<ProtectedRoute role="admin"><AcademicYearsPage /></ProtectedRoute>} />
+      <Route path="/admin/academic-years/create" element={<ProtectedRoute role="admin"><AcademicYearFormPage /></ProtectedRoute>} />
+      <Route path="/admin/academic-years/:academicYearId/edit" element={<ProtectedRoute role="admin"><AcademicYearFormPage /></ProtectedRoute>} />
       <Route path="/admin/rooms" element={<ProtectedRoute role="admin"><RoomsPage /></ProtectedRoute>} />
       <Route path="/admin/rooms/create" element={<ProtectedRoute role="admin"><RoomFormPage /></ProtectedRoute>} />
       <Route path="/admin/rooms/:roomId/edit" element={<ProtectedRoute role="admin"><RoomFormPage /></ProtectedRoute>} />
@@ -92,18 +95,17 @@ export default function App() {
       <Route path="/admin/course-sections" element={<ProtectedRoute role="admin"><CourseSectionsPage /></ProtectedRoute>} />
       <Route path="/admin/course-sections/create" element={<ProtectedRoute role="admin"><CourseSectionFormPage /></ProtectedRoute>} />
       <Route path="/admin/course-sections/:courseSectionId/edit" element={<ProtectedRoute role="admin"><CourseSectionFormPage /></ProtectedRoute>} />
+      <Route path="/admin/course-sections/:courseSectionId/students" element={<ProtectedRoute role="admin"><CourseSectionStudentsPage /></ProtectedRoute>} />
       <Route path="/admin/repair-logs" element={<ProtectedRoute role="admin"><RepairLogsPage /></ProtectedRoute>} />
       <Route path="/admin/computer-transfers" element={<ProtectedRoute role="admin"><ComputerTransfersPage /></ProtectedRoute>} />
       <Route path="/teacher" element={<ProtectedRoute role="teacher"><Navigate to="/teacher/schedules" replace /></ProtectedRoute>} />
       <Route path="/teacher/schedules" element={<ProtectedRoute role="teacher"><TeacherSchedulePage /></ProtectedRoute>} />
       <Route path="/teacher/attendance" element={<ProtectedRoute role="teacher"><AttendancePage /></ProtectedRoute>} />
+      <Route path="/teacher/attendance/schedules/:scheduleId" element={<ProtectedRoute role="teacher"><TeacherScheduleAttendancePage /></ProtectedRoute>} />
       <Route path="/teacher/loan-requests" element={<ProtectedRoute role="teacher"><LoanRequestsManagePage /></ProtectedRoute>} />
       <Route path="/teacher/loan-details" element={<ProtectedRoute role="teacher"><LoanDetailsPage /></ProtectedRoute>} />
       <Route path="/teacher/computer-returns" element={<ProtectedRoute role="teacher"><ComputerReturnsPage /></ProtectedRoute>} />
       <Route path="/teacher/computer-return-details" element={<ProtectedRoute role="teacher"><ComputerReturnDetailsPage /></ProtectedRoute>} />
-      <Route path="/teacher/attendance/sessions/:sessionId" element={<ProtectedRoute role="teacher"><TeacherAttendanceSessionStatusPage /></ProtectedRoute>} />
-      <Route path="/teacher/attendance/sessions/:sessionId/students/:studentId" element={<ProtectedRoute role="teacher"><TeacherStudentAttendanceDetailPage /></ProtectedRoute>} />
-      <Route path="/teacher/attendance/students/:studentId" element={<ProtectedRoute role="teacher"><TeacherStudentAttendanceDetailPage /></ProtectedRoute>} />
       <Route
         path="/teacher/incidents"
         element={

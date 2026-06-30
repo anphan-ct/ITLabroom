@@ -37,7 +37,7 @@ export default function RoomsPage() {
   useEffect(() => {
     let isMounted = true;
 
-    getRoomsFromApi()
+    getRoomsFromApi({ includeStorage: true })
       .then((response) => {
         if (isMounted) {
           setRooms((response.data || []).map(mapRoom));

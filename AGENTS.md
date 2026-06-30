@@ -28,8 +28,12 @@
 - API chi tiết/show dùng Resource chi tiết khi cần đầy đủ dữ liệu hơn.
 
 ## Quy tắc Controller
-- Validate ngay đầu mỗi function bằng `$request->validate([...])`.
-- Không tạo FormRequest riêng trừ khi người dùng yêu cầu rõ.
+<!-- - Validate ngay đầu mỗi function bằng `$request->validate([...])`.
+- Không tạo FormRequest riêng trừ khi người dùng yêu cầu rõ. -->
+- Sử dụng Form Request trong `app/Http/Requests` cho tất cả API cần validate dữ liệu.
+- Không sử dụng `$request->validate()` trực tiếp trong Controller.
+- Controller chỉ xử lý nghiệp vụ sau khi dữ liệu đã được validate.
+- Sử dụng `$request->validated()` để lấy dữ liệu hợp lệ.
 - Dùng một khối `try-catch` lớn bao quanh logic chính trong mỗi function.
 - Business logic viết trực tiếp trong function Controller theo yêu cầu dự án.
 - Dùng Eloquent Model trực tiếp hoặc Query Builder.

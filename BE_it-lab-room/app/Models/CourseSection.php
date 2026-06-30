@@ -17,6 +17,7 @@ class CourseSection extends Model
         'ma_lop_hoc_phan',
         'ma_mon',
         'ma_nam_hoc',
+        'ma_lop',
         'ma_phong',
         'si_so_toi_da',
         'trang_thai',
@@ -40,6 +41,11 @@ class CourseSection extends Model
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class, 'ma_phong');
+    }
+
+    public function class(): BelongsTo
+    {
+        return $this->belongsTo(SchoolClass::class, 'ma_lop');
     }
 
     public function assignments(): HasMany

@@ -21,8 +21,10 @@ function mapCourseSection(item) {
     code: item.ma_lop_hoc_phan,
     subject: item.mon_hoc?.ten_mon || "",
     academicYear: item.nam_hoc?.ten_nam_hoc || "",
+    classCode: item.lop?.ma_lop || "Không gắn lớp",
     teacher: item.giang_vien?.ho_ten || "Chưa phân công",
     room: item.phong?.ma_phong || "Chưa xếp phòng",
+    studentCount: item.so_sinh_vien ?? 0,
     maxStudents: item.si_so_toi_da,
     status: statusLabels[item.trang_thai] || item.trang_thai,
     note: item.ghi_chu || "",
@@ -67,7 +69,7 @@ export default function CourseSectionsPage() {
 
     return items.filter((item) => {
       const searchContent = [
-        item.code, item.subject, item.academicYear, item.teacher,
+        item.code, item.subject, item.academicYear, item.classCode, item.teacher,
         item.room, item.status, item.note,
       ].join(" ").toLowerCase();
 
@@ -136,8 +138,10 @@ export default function CourseSectionsPage() {
             { key: "code", title: "Mã LHP" },
             { key: "subject", title: "Môn" },
             { key: "academicYear", title: "Năm học" },
+            { key: "classCode", title: "Lớp" },
             { key: "teacher", title: "Giảng viên" },
             { key: "room", title: "Phòng" },
+            { key: "studentCount", title: "Sinh viên" },
             { key: "maxStudents", title: "Sĩ số tối đa" },
             { key: "status", title: "Trạng thái", isStatus: true },
             { key: "note", title: "Ghi chú" },
@@ -167,6 +171,7 @@ export default function CourseSectionsPage() {
             },
           ]}
           data={filteredItems}
+          getRowLink={(item) => `/admin/course-sections/${item.id}/students`}
           emptyText={isLoading ? "Đang tải danh sách lớp học phần" : "Chưa có lớp học phần"}
         />
       </SectionCard>

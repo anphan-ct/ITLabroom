@@ -12,12 +12,15 @@ class CourseSectionResource extends JsonResource
         $assignment = $this->relationLoaded('assignments')
             ? $this->assignments->first()
             : null;
+        $classStudentCount = $this->class_students_count ?? 0;
+        $manualStudentCount = $this->student_details_count ?? 0;
 
         return [
             'id' => $this->id,
             'ma_lop_hoc_phan' => $this->ma_lop_hoc_phan,
             'ma_mon' => $this->ma_mon,
             'ma_nam_hoc' => $this->ma_nam_hoc,
+            'ma_lop' => $this->ma_lop,
             'ma_phong' => $this->ma_phong,
             'ma_giang_vien' => $assignment?->ma_giang_vien,
             'si_so_toi_da' => $this->si_so_toi_da,
@@ -32,6 +35,10 @@ class CourseSectionResource extends JsonResource
                 'id' => $this->academicYear?->id,
                 'ten_nam_hoc' => $this->academicYear?->ten_nam_hoc,
             ]),
+            'lop' => $this->whenLoaded('class', fn () => $this->class ? [
+                'id' => $this->class->id,
+                'ma_lop' => $this->class->ma_lop,
+            ] : null),
             'phong' => $this->whenLoaded('room', fn () => [
                 'id' => $this->room?->id,
                 'ma_phong' => $this->room?->ma_phong,
@@ -42,7 +49,9 @@ class CourseSectionResource extends JsonResource
                 'ma_giang_vien' => $assignment->teacher?->ma_giang_vien,
                 'ho_ten' => $assignment->teacher?->user?->ho_ten,
             ] : null),
-            'so_sinh_vien' => $this->whenCounted('studentDetails'),
+            'so_sinh_vien' => $this->ma_lop
+                ? $classStudentCount + $manualStudentCount
+                : $this->whenCounted('studentDetails'),
         ];
     }
 }

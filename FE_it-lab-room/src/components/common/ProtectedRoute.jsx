@@ -20,7 +20,7 @@ export function ProtectedRoute({ role, children }) {
   if (!session?.accessToken || session.role !== role) {
     return (
       <Navigate
-        to={loginPaths[role] || "/student/login"}
+        to="/login"
         replace
         state={{ from: location.pathname }}
       />
@@ -30,11 +30,13 @@ export function ProtectedRoute({ role, children }) {
   return children;
 }
 
-export function PublicOnlyRoute({ role, children }) {
+// Dùng cho trang /login chung: nếu đã đăng nhập rồi (bất kể role nào)
+// thì tự chuyển thẳng vào dashboard tương ứng, không cho xem lại trang login.
+export function PublicOnlyAnyRoute({ children }) {
   const session = getAuthSession();
 
-  if (session?.accessToken && session.role === role) {
-    return <Navigate to={homePaths[role] || "/"} replace />;
+  if (session?.accessToken && session.role) {
+    return <Navigate to={homePaths[session.role] || "/login"} replace />;
   }
 
   return children;

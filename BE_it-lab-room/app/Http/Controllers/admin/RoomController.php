@@ -18,8 +18,8 @@ class RoomController extends Controller
             $data = $request->validated();
 
             $room = Room::create([
-                'ma_phong' => strtoupper($data['ma_phong']),
-                'ten_phong' => $data['ten_phong'],
+                'ma_phong' => strtoupper(trim($data['ma_phong'])),
+                'ten_phong' => trim($data['ten_phong']),
                 'suc_chua' => $data['suc_chua'],
                 'trang_thai' => $data['trang_thai'] ?? 'active',
                 'mo_ta' => $data['mo_ta'] ?? null,
@@ -41,13 +41,30 @@ class RoomController extends Controller
         }
     }
 
-    public function index()
+    public function index(Request $request)
     {
         try {
+            $includeStorage = $request->boolean('include_storage');
 
             $rooms = Room::query()
                 ->select(['id', 'ma_phong', 'ten_phong', 'suc_chua', 'trang_thai', 'mo_ta'])
-                ->orderBy('ma_phong')
+                ->when(
+                    $includeStorage,
+                    fn ($query) => $query->where(
+                        fn ($roomQuery) => $roomQuery
+                            ->where('trang_thai', 'active')
+                            ->orWhere('ma_phong', 'KHO')
+                    ),
+                    fn ($query) => $query
+                        ->where('trang_thai', 'active')
+                        ->where('ma_phong', '!=', 'KHO')
+                )
+                ->orderByRaw("
+                    CAST(REPLACE(SUBSTRING_INDEX(ma_phong, '.', 1), 'F', '') AS UNSIGNED)
+                ")
+                ->orderByRaw("
+                    CAST(SUBSTRING_INDEX(ma_phong, '.', -1) AS UNSIGNED)
+                ")
                 ->get();
 
             return response()->json([
@@ -85,11 +102,9 @@ class RoomController extends Controller
         }
     }
 
-    public function computers(Request $request, Room $room)
+    public function computers(Room $room)
     {
         try {
-            $request->validate([]);
-
             // Chỉ lấy máy thuộc phòng đang chọn và eager load phòng để tránh N+1.
             $computers = $room->computers()
                 ->select([
@@ -164,12 +179,9 @@ class RoomController extends Controller
         }
     }
 
-    public function destroy(Request $request, Room $room)
+    public function destroy(Room $room)
     {
-        $request->validate([]);
-
         try {
-            
             $room->loadCount([
                 'computers',
                 'equipments',
@@ -177,17 +189,22 @@ class RoomController extends Controller
                 'roomBookingRequests',
             ]);
 
-            if (
-                $room->computers_count > 0
-                || $room->equipments_count > 0
-                || $room->room_usage_histories_count > 0
-                || $room->room_booking_requests_count > 0
-            ) {
+            // Giữ lại phòng máy đã phát sinh dữ liệu nghiệp vụ để tránh mất lịch sử.
+            $relatedData = [
+                'máy tính' => $room->computers_count,
+                'thiết bị' => $room->equipments_count,
+                'lịch sử dụng phòng' => $room->computer_lab_schedules_count,
+                'yêu cầu đặt phòng' => $room->room_booking_requests_count,
+            ];
+
+            $blockingData = array_filter($relatedData, fn ($count) => $count > 0);
+
+            if (! empty($blockingData)) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Không thể xóa phòng máy vì đã có dữ liệu liên quan',
                     'error_code' => 409,
-                    'data' => '',
+                    'data' => $relatedData,
                 ], 409);
             }
 
